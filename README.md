@@ -17,6 +17,22 @@
 ## Quickstart
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+```
+
+## Run LedgerLite
+
+```bash
+source .venv/bin/activate
+uvicorn ledgerlite.main:app --reload --port 8000
+```
+
+The API will be available at <http://localhost:8000>.
+Interactive docs: <http://localhost:8000/docs>
+
+## Run Tests
+
+```bash
+.venv/bin/pytest ledgerlite/tests/ -q
 ```
