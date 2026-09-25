@@ -1,0 +1,8 @@
+{
+  "id": "REQ-10",
+  "status": "missing",
+  "reason": "No sanctions list check exists anywhere in the codebase. create_transfer() in ledgerlite/services.py performs KYC, balance, and large-transfer-threshold checks but contains no reference to SANCTIONED_COUNTRIES, KP, IR, SY, or CU. No audit entry is written for a sanctions-blocked transfer, and no test covers this behaviour.",
+  "code_evidence": [],
+  "test_evidence": [],
+  "suggested_fix": "Define SANCTIONED_COUNTRIES = {'KP', 'IR', 'SY', 'CU'} in services.py. In create_transfer(), after loading the recipient, check if recipient.country_code in SANCTIONED_COUNTRIES; if so, call _write_audit with action='transfer_blocked_sanctions' and raise HTTPException(status_code=403, detail='sanctions'). Add tests asserting (1) a transfer to a sanctioned country returns 403 with a detail containing 'sanctions', and (2) an audit entry with action='transfer_blocked_sanctions' is written."
+}

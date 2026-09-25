@@ -100,6 +100,14 @@ class AuditEntryResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class StatementAccountResponse(AccountResponse):
+    """AccountResponse variant used in statements: account_number is masked."""
+
+    @field_serializer("account_number")
+    def serialize_account_number(self, v: str) -> str:
+        return "******" + v[-4:]
+
+
 class StatementResponse(BaseModel):
-    account: AccountResponse
+    account: StatementAccountResponse
     transactions: list[TransferResponse]

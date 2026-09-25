@@ -1,8 +1,37 @@
 {
   "id": "REQ-10",
-  "status": "missing",
-  "reason": "No sanctions list check exists anywhere in the codebase. create_transfer() in ledgerlite/services.py performs KYC, balance, and large-transfer-threshold checks but contains no reference to SANCTIONED_COUNTRIES, KP, IR, SY, or CU. No audit entry is written for a sanctions-blocked transfer, and no test covers this behaviour.",
-  "code_evidence": [],
-  "test_evidence": [],
-  "suggested_fix": "Define SANCTIONED_COUNTRIES = {'KP', 'IR', 'SY', 'CU'} in services.py. In create_transfer(), after loading the recipient, check if recipient.country_code in SANCTIONED_COUNTRIES; if so, call _write_audit with action='transfer_blocked_sanctions' and raise HTTPException(status_code=403, detail='sanctions'). Add tests asserting (1) a transfer to a sanctioned country returns 403 with a detail containing 'sanctions', and (2) an audit entry with action='transfer_blocked_sanctions' is written."
+  "status": "covered",
+  "reason": "Transfers where the sender or recipient has a country_code in {KP, IR, SY, CU} are rejected with HTTP 400 and detail 'sanctions'. A sanctions_blocked audit entry is written before rejection. All 9 test cases (4 sender-blocked, 4 recipient-blocked, 1 audit-entry) pass.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/services.py",
+      "line": 23,
+      "snippet": "_SANCTIONED_COUNTRIES = {\"KP\", \"IR\", \"SY\", \"CU\"}",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 180,
+      "snippet": "    if sender.country_code in _SANCTIONED_COUNTRIES or recipient.country_code in _SANCTIONED_COUNTRIES:",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 184,
+      "snippet": "            action=\"sanctions_blocked\",",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 190,
+      "snippet": "        raise HTTPException(status_code=400, detail=\"sanctions\")",
+      "verified": true
+    }
+  ],
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "test_name": "test_audit_entry_written_for_sanctions_block"
+    }
+  ]
 }

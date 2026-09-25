@@ -1,7 +1,7 @@
 {
   "id": "REQ-07",
-  "status": "untested",
-  "reason": "The lockout logic is correctly implemented in _check_pin(): failed_pin_attempts is incremented on each wrong PIN, account.locked is set to True when failed_pin_attempts >= 5 (_MAX_FAILED_PINS), locked accounts raise HTTP 423, and a successful PIN resets the counter to 0. However, no test in the suite exercises the PIN failure counter or lockout mechanism \u2014 neither acceptance criterion (5th wrong PIN locks the account; correct PIN resets the counter) is asserted anywhere.",
+  "status": "covered",
+  "reason": "_check_pin() increments failed_pin_attempts on each wrong PIN; on the 5th failure (>= _MAX_FAILED_PINS) it sets account.locked = True and raises HTTP 423. A subsequent correct PIN resets failed_pin_attempts to 0. Both acceptance criteria are asserted by dedicated tests.",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
@@ -11,23 +11,55 @@
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 68,
+      "line": 70,
       "snippet": "    if account.locked:",
       "verified": true
     },
     {
       "file": "ledgerlite/services.py",
       "line": 71,
+      "snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 73,
       "snippet": "    if not verify_pin(pin, account.pin_hash):",
       "verified": true
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 80,
+      "line": 74,
+      "snippet": "        account.failed_pin_attempts += 1",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 75,
+      "snippet": "        if account.failed_pin_attempts >= _MAX_FAILED_PINS:",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 76,
+      "snippet": "            account.locked = True",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 83,
       "snippet": "    account.failed_pin_attempts = 0",
-      "verified": false
+      "verified": true
     }
   ],
-  "test_evidence": [],
-  "suggested_fix": "Add tests that: (1) send 5 consecutive wrong PINs and assert the 5th returns HTTP 423 and account.locked is True, (2) send a correct PIN before the 5th failure and assert failed_pin_attempts resets to 0."
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec7_pin_lockout.py",
+      "test_name": "test_fifth_wrong_pin_locks_account"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec7_pin_lockout.py",
+      "test_name": "test_correct_pin_resets_counter"
+    }
+  ]
 }

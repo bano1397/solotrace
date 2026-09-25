@@ -1,13 +1,13 @@
 {
   "id": "REQ-08",
-  "status": "covered",
-  "reason": "All monetary values are coerced through _to_decimal() (Decimal(str(value))) before arithmetic; the database column is Numeric(12,2); and balance is serialised as a 2dp string via @field_serializer. The critical 0.10+0.20==0.30 criterion is directly asserted by test_point_one_plus_point_two_equals_point_three.",
+  "status": "untested",
+  "reason": "The implementation correctly uses exact decimal arithmetic throughout (Decimal(str(value)) conversions, Numeric(12,2) storage, and 2dp string serialisation via field_serializer), so no contradictions exist. Acceptance criterion 2 (2dp string format) is implicitly covered by multiple tests asserting responses such as '100.00', '300.00', and '50000.00'. However, acceptance criterion 1 (0.10 + 0.20 == 0.30 exactly) has no asserting test, leaving the most critical floating-point correctness claim unverified.",
   "code_evidence": [
     {
       "file": "ledgerlite/models.py",
       "line": 24,
       "snippet": "    balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))",
-      "verified": true
+      "verified": false
     },
     {
       "file": "ledgerlite/services.py",
@@ -17,38 +17,30 @@
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 91,
+      "line": 88,
       "snippet": "def _to_decimal(value) -> Decimal:",
-      "verified": true
+      "verified": false
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 93,
-      "snippet": "        return Decimal(str(value))",
+      "line": 106,
+      "snippet": "        balance=Decimal(\"0.00\"),",
       "verified": true
     },
     {
       "file": "ledgerlite/schemas.py",
       "line": 64,
       "snippet": "    @field_serializer(\"balance\")",
-      "verified": true
+      "verified": false
     },
     {
       "file": "ledgerlite/schemas.py",
-      "line": 66,
-      "snippet": "        return f\"{v:.2f}\"",
-      "verified": true
+      "line": 80,
+      "snippet": "    @field_serializer(\"amount\")",
+      "verified": false
     }
   ],
   "test_evidence": [
-    {
-      "file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py",
-      "test_name": "test_point_one_plus_point_two_equals_point_three"
-    },
-    {
-      "file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py",
-      "test_name": "test_balance_serialised_as_two_decimal_places"
-    },
     {
       "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
       "test_name": "test_multiple_deposits_accumulate"
@@ -57,5 +49,6 @@
       "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
       "test_name": "test_boundary_50000_accepted"
     }
-  ]
+  ],
+  "suggested_fix": "Add a test that deposits 0.10, then 0.20, and asserts the balance is exactly '0.30' (not '0.30000000000000004'), confirming Decimal arithmetic is used throughout."
 }

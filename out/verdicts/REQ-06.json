@@ -1,37 +1,31 @@
 {
   "id": "REQ-06",
-  "status": "untested",
-  "reason": "Both acceptance criteria are correctly implemented \u2014 _write_audit() is called in deposit(), withdraw(), create_transfer(), and approve_transfer(), and no PATCH/PUT endpoint for audit entries exists \u2014 but no test in the suite asserts either criterion.",
+  "status": "covered",
+  "reason": "_write_audit() is called in deposit() (line 141), withdraw() (line 160), create_transfer() (line 234), and approve_transfer() (line 269). No PATCH/DELETE endpoint for audit entries exists. All five criteria are asserted by named tests in test_spec6_audit_log.py.",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 37,
+      "line": 40,
       "snippet": "def _write_audit(",
-      "verified": false
+      "verified": true
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 139,
+      "line": 141,
       "snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
       "verified": true
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 158,
+      "line": 160,
       "snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)",
       "verified": true
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 198,
+      "line": 234,
       "snippet": "        _write_audit(",
-      "verified": false
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 233,
-      "snippet": "        _write_audit(",
-      "verified": false
+      "verified": true
     },
     {
       "file": "ledgerlite/main.py",
@@ -40,6 +34,26 @@
       "verified": true
     }
   ],
-  "test_evidence": [],
-  "suggested_fix": "Add tests that (1) call GET /audit after each money-movement operation and assert exactly one new entry with correct actor/action/amount fields, and (2) assert that PATCH /audit and PUT /audit/1 return 404 or 405."
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec6_audit_log.py",
+      "test_name": "test_audit_entry_written_on_deposit"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec6_audit_log.py",
+      "test_name": "test_audit_entry_written_on_withdrawal"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec6_audit_log.py",
+      "test_name": "test_audit_entry_written_on_transfer"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec6_audit_log.py",
+      "test_name": "test_no_audit_delete_endpoint"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec6_audit_log.py",
+      "test_name": "test_no_audit_patch_endpoint"
+    }
+  ]
 }

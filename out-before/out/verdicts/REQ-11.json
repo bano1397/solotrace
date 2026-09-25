@@ -1,0 +1,21 @@
+{
+  "id": "REQ-11",
+  "status": "missing",
+  "reason": "No masking logic exists anywhere in the codebase. The statement endpoint returns a full AccountResponse whose account_number field is an unmasked string. No test verifies that account numbers are masked in statement responses.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 56,
+      "snippet": "    email: str",
+      "verified": false
+    },
+    {
+      "file": "ledgerlite/main.py",
+      "line": 49,
+      "snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)",
+      "verified": true
+    }
+  ],
+  "test_evidence": [],
+  "suggested_fix": "Add a masked_account_number computed field to a new StatementAccountResponse schema variant used only for statements that returns '*' * 6 + account_number[-4:]. Use this schema in StatementResponse instead of the full AccountResponse. Add a test that calls GET /accounts/{id}/statement and asserts the account_number field contains only '****' followed by 4 digits and does not contain the full number."
+}

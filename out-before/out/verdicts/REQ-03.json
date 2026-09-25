@@ -1,23 +1,23 @@
 {
   "id": "REQ-03",
   "status": "covered",
-  "reason": "The withdrawal floor is enforced in services.py at lines 156-157: before applying any debit the service checks that the resulting balance would not be less than zero, and raises HTTP 400 with 'Insufficient funds' if it would. Line 159 then performs the actual debit only when that guard passes. Three tests cover the requirement: test_withdrawal_overdraft_rejected confirms a withdrawal of one cent above the balance is rejected with HTTP 400 and the 'Insufficient' message; test_balance_never_goes_negative drains the account to exactly 0.00 and then confirms a further withdrawal is rejected and the balance remains 0.00; test_withdrawal_exact_balance_allowed confirms that withdrawing exactly the full balance succeeds and leaves the balance at 0.00.",
+  "reason": "The withdrawal logic in services.py checks for a negative resulting balance and raises a 400 HTTPException before applying the deduction. Both acceptance criteria are exercised by dedicated tests: overdraft rejection is asserted in test_withdrawal_overdraft_rejected and balance immutability after rejection is confirmed in test_balance_never_goes_negative.",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 156,
+      "line": 154,
       "snippet": "    if account.balance - amount < Decimal(\"0\"):",
       "verified": true
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 157,
+      "line": 155,
       "snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")",
       "verified": true
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 159,
+      "line": 157,
       "snippet": "    account.balance -= amount",
       "verified": true
     }

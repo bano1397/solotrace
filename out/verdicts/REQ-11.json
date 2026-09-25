@@ -1,21 +1,51 @@
 {
   "id": "REQ-11",
-  "status": "missing",
-  "reason": "No masking logic exists anywhere in the codebase. The statement endpoint returns a full AccountResponse whose account_number field is an unmasked string. No test verifies that account numbers are masked in statement responses.",
+  "status": "covered",
+  "reason": "StatementAccountResponse overrides the account_number serializer to emit '******' + last-4 digits. The statement route uses StatementResponse (which embeds StatementAccountResponse) as its response_model, so every GET /accounts/{id}/statement response has a masked account number. The detail endpoint continues to use the unmasked AccountResponse. Three tests cover the requirement: pattern format, last-4 preservation, and detail-endpoint passthrough.",
   "code_evidence": [
     {
       "file": "ledgerlite/schemas.py",
-      "line": 56,
-      "snippet": "    email: str",
-      "verified": false
+      "line": 103,
+      "snippet": "class StatementAccountResponse(AccountResponse):",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 107,
+      "snippet": "    def serialize_account_number(self, v: str) -> str:",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 108,
+      "snippet": "        return \"******\" + v[-4:]",
+      "verified": true
     },
     {
       "file": "ledgerlite/main.py",
       "line": 49,
       "snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)",
       "verified": true
+    },
+    {
+      "file": "ledgerlite/main.py",
+      "line": 60,
+      "snippet": "    return StatementResponse(account=account, transactions=transactions)",
+      "verified": true
     }
   ],
-  "test_evidence": [],
-  "suggested_fix": "Add a masked_account_number computed field to a new StatementAccountResponse schema variant used only for statements that returns '*' * 6 + account_number[-4:]. Use this schema in StatementResponse instead of the full AccountResponse. Add a test that calls GET /accounts/{id}/statement and asserts the account_number field contains only '****' followed by 4 digits and does not contain the full number."
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec11_statement_masking.py",
+      "test_name": "test_statement_masks_account_number"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec11_statement_masking.py",
+      "test_name": "test_statement_mask_preserves_last4"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec11_statement_masking.py",
+      "test_name": "test_account_detail_endpoint_not_masked"
+    }
+  ]
 }

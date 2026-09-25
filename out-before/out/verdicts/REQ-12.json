@@ -1,0 +1,15 @@
+{
+  "id": "REQ-12",
+  "status": "untested",
+  "reason": "No DELETE /audit or DELETE /audit/{id} route exists in the codebase, satisfying criterion 1. Criterion 2 (DELETE returns 405/404) is met implicitly by FastAPI's default method-not-allowed behaviour for the registered GET /audit path. However, no test in any test file sends a DELETE request to /audit and asserts a 405 or 404 response, so neither criterion has an asserting test.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/main.py",
+      "line": 95,
+      "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])",
+      "verified": false
+    }
+  ],
+  "test_evidence": [],
+  "suggested_fix": "Add a test that sends DELETE /audit and asserts the response status is 405 or 404, confirming the retention requirement is enforced by the API."
+}

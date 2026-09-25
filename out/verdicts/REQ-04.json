@@ -1,12 +1,48 @@
 {
   "id": "REQ-04",
   "status": "covered",
-  "reason": "The transfer service wraps the debit and credit in a single database transaction. If any step fails (including the credit), the except block calls db.rollback(), ensuring neither change is persisted. This is directly proven by test_transfer_rolls_back_on_db_error, which injects a RuntimeError after the debit and asserts both balances remain unchanged.",
+  "reason": "The transfer service wraps the balance mutation, Transfer insert, flush, and audit write inside a single try/except block (services.py:220-245). The debit is applied to sender.balance (line 221) and the credit to recipient.balance (line 223) before db.commit() is called (line 242). If any step raises \u2014 including the audit write \u2014 the except clause on line 243 calls db.rollback() (line 244) and re-raises, so neither balance change is ever persisted. test_transfer_rolls_back_on_db_error proves this by patching _write_audit to raise a RuntimeError after the debit and asserting both balances are unchanged after the 500 response. test_successful_transfer_debits_sender_credits_recipient proves the happy path commits both sides atomically.",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 185,
+      "line": 220,
       "snippet": "    try:",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 221,
+      "snippet": "        sender.balance -= amount",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 223,
+      "snippet": "            recipient.balance += amount",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 242,
+      "snippet": "        db.commit()",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 243,
+      "snippet": "    except Exception:",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 244,
+      "snippet": "        db.rollback()",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 245,
+      "snippet": "        raise",
       "verified": true
     }
   ],
@@ -19,6 +55,5 @@
       "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
       "test_name": "test_successful_transfer_debits_sender_credits_recipient"
     }
-  ],
-  "suggested_fix": ""
+  ]
 }

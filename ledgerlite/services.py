@@ -17,8 +17,10 @@ from ledgerlite.models import Account, AuditEntry, Transfer
 from ledgerlite.security import hash_pin, verify_pin
 
 _MAX_DEPOSIT = Decimal("50000.00")
-_LARGE_TRANSFER_THRESHOLD = Decimal("10000.00")
+_LARGE_TRANSFER_THRESHOLD = Decimal("5000.00")
 _MAX_FAILED_PINS = 5
+_DAILY_TRANSFER_CAP = Decimal("20000.00")
+_SANCTIONED_COUNTRIES = {"KP", "IR", "SY", "CU"}
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -174,10 +176,43 @@ def create_transfer(
     _require_kyc(sender)
     _require_kyc(recipient)
 
+    # REQ-10: sanctions check — write audit and reject before any balance change
+    if sender.country_code in _SANCTIONED_COUNTRIES or recipient.country_code in _SANCTIONED_COUNTRIES:
+        _write_audit(
+            db,
+            actor_id=sender_id,
+            action="sanctions_blocked",
+            amount=amount,
+            account_id=sender_id,
+            related_account_id=recipient_id,
+        )
+        db.commit()
+        raise HTTPException(status_code=400, detail="sanctions")
+
     if amount <= Decimal("0"):
         raise HTTPException(status_code=400, detail="Transfer amount must be greater than 0")
     if sender.balance - amount < Decimal("0"):
         raise HTTPException(status_code=400, detail="Insufficient funds")
+
+    # REQ-09: daily outgoing cap — sum completed + pending_approval transfers today (UTC)
+    today_utc = datetime.datetime.now(timezone.utc).date()
+    today_start = datetime.datetime(today_utc.year, today_utc.month, today_utc.day, tzinfo=timezone.utc)
+    from sqlalchemy import func
+    daily_total_row = (
+        db.query(func.coalesce(func.sum(Transfer.amount), Decimal("0")))
+        .filter(
+            Transfer.sender_id == sender_id,
+            Transfer.status.in_(["completed", "pending_approval"]),
+            Transfer.created_at >= today_start,
+        )
+        .one()
+    )
+    daily_total = Decimal(str(daily_total_row[0]))
+    if daily_total + amount > _DAILY_TRANSFER_CAP:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Daily outgoing transfer limit of {_DAILY_TRANSFER_CAP} exceeded",
+        )
 
     large = amount >= _LARGE_TRANSFER_THRESHOLD
     status = "pending_approval" if large else "completed"

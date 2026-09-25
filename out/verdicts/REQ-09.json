@@ -1,8 +1,64 @@
 {
   "id": "REQ-09",
-  "status": "missing",
-  "reason": "create_transfer() performs no daily outgoing total check. There is no query summing today's outgoing transfers for the sender, no daily cap constant, and no rejection path for exceeding 20,000.00 in a UTC calendar day. No test file covers this criterion.",
-  "code_evidence": [],
-  "test_evidence": [],
-  "suggested_fix": "In create_transfer(), before processing, query the sum of Transfer.amount for transfers where sender_id matches and created_at is on today's UTC date. If the sum plus the new amount would exceed Decimal('20000.00'), raise HTTPException(status_code=400, detail='Daily transfer limit exceeded'). Add a test that sends transfers totalling 20,000.00 then asserts the next transfer is rejected."
+  "status": "covered",
+  "reason": "The implementation introduces a hard cap of 20,000.00 in outgoing transfers per UTC calendar day. The constant _DAILY_TRANSFER_CAP is defined at module level and the check runs inside the transfer service before any balance mutation: it sums all transfers with status 'completed' or 'pending_approval' for the sender since today_start (UTC midnight), converts the aggregate to Decimal, and raises HTTP 400 when daily_total + amount > _DAILY_TRANSFER_CAP. Three dedicated tests cover the boundary exactly (20,000.00 accepted), the first cent over the boundary (20,000.01 rejected), and a three-transfer scenario where the third transfer is blocked.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/services.py",
+      "line": 22,
+      "snippet": "_DAILY_TRANSFER_CAP = Decimal(\"20000.00\")",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 198,
+      "snippet": "    today_utc = datetime.datetime.now(timezone.utc).date()",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 199,
+      "snippet": "    today_start = datetime.datetime(today_utc.year, today_utc.month, today_utc.day, tzinfo=timezone.utc)",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 201,
+      "snippet": "    daily_total_row = (",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 210,
+      "snippet": "    daily_total = Decimal(str(daily_total_row[0]))",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 211,
+      "snippet": "    if daily_total + amount > _DAILY_TRANSFER_CAP:",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 212,
+      "snippet": "        raise HTTPException(",
+      "verified": true
+    }
+  ],
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec9_daily_cap.py",
+      "test_name": "test_daily_cap_exact_boundary_accepted"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec9_daily_cap.py",
+      "test_name": "test_daily_cap_exceeded_rejected"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec9_daily_cap.py",
+      "test_name": "test_daily_cap_three_transfers_third_blocked"
+    }
+  ],
+  "suggested_fix": ""
 }

@@ -1,25 +1,25 @@
 {
   "id": "REQ-01",
   "status": "covered",
-  "reason": "Unique email is enforced at account creation by querying for an existing Account with the same email before inserting (services.py:101). KYC gating is enforced by _require_kyc(), which raises HTTP 403 when kyc_status != 'verified' (services.py:86-87); this guard is called before every deposit, withdrawal, and transfer operation. All four gating paths and the duplicate-email path are each covered by a dedicated test.",
+  "reason": "Duplicate email is rejected with HTTP 409 in create_account, and all three money-movement operations gate on _require_kyc (HTTP 403); both criteria are directly asserted by named tests in test_spec1_accounts_kyc.py.",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 101,
+      "line": 99,
       "snippet": "    if db.query(Account).filter(Account.email == email).first():",
       "verified": true
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 86,
+      "line": 84,
       "snippet": "def _require_kyc(account: Account) -> None:",
       "verified": true
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 87,
-      "snippet": "    if account.kyc_status != \"verified\":",
-      "verified": true
+      "line": 129,
+      "snippet": "    _check_pin(account, pin)",
+      "verified": false
     }
   ],
   "test_evidence": [
@@ -43,5 +43,6 @@
       "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
       "test_name": "test_transfer_recipient_blocked_before_kyc"
     }
-  ]
+  ],
+  "suggested_fix": ""
 }
