@@ -2,11 +2,11 @@
   "out_dir": "/Users/sheharbano/Desktop/Shehar/IBM-Bob-2.0 Hackathon/solotrace/out",
   "totals": {
     "checked": 57,
-    "ok": 56,
-    "corrected": 1,
+    "ok": 57,
+    "corrected": 0,
     "replaced": 0,
     "no_file": 0,
-    "tests_removed": 8
+    "tests_removed": 0
   },
   "verdicts": [
     {
@@ -110,8 +110,8 @@
       "id": "REQ-09",
       "code_evidence_count": 7,
       "stats": {
-        "ok": 6,
-        "corrected": 1,
+        "ok": 7,
+        "corrected": 0,
         "replaced": 0,
         "no_file": 0,
         "tests_removed": 0
@@ -126,7 +126,7 @@
         "corrected": 0,
         "replaced": 0,
         "no_file": 0,
-        "tests_removed": 8
+        "tests_removed": 0
       }
     },
     {

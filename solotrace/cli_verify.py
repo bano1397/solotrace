@@ -56,6 +56,20 @@ def _line_contains_core(source_line: str, core: str) -> bool:
     return _normalise(core) in _normalise(source_line)
 
 
+def _strip_parametrize_suffix(test_name: str) -> str:
+    """
+    Strip the pytest parametrize suffix from a test name.
+
+    pytest generates IDs like "test_name[KP]" or "test_name[0-foo]".
+    The AST only defines "test_name", so we must strip everything from
+    the first '[' onward before doing the AST lookup.
+    """
+    bracket = test_name.find("[")
+    if bracket != -1:
+        return test_name[:bracket]
+    return test_name
+
+
 def _collect_test_names(filepath: str) -> set[str] | None:
     """
     Parse *filepath* with ast and return the set of all function/method names
@@ -163,7 +177,9 @@ def _verify_verdict(verdict: dict[str, Any]) -> tuple[dict[str, Any], dict[str, 
             # file missing — remove entry (treat as phantom)
             stats["tests_removed"] += 1
             continue
-        if te["test_name"] not in known:
+        # Strip parametrize suffix (e.g. "test_name[KP]" → "test_name") before AST lookup
+        base_name = _strip_parametrize_suffix(te["test_name"])
+        if base_name not in known:
             stats["tests_removed"] += 1
             continue
         kept_te.append(te)

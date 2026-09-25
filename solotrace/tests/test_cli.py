@@ -18,6 +18,7 @@ from solotrace.cli_verify import (
     _snippet_core,
     _line_contains_core,
     _collect_test_names,
+    _strip_parametrize_suffix,
     _verify_code_evidence,
     _verify_verdict,
     cmd_verify,
@@ -115,6 +116,20 @@ class TestHelpers:
 
     def test_line_contains_core_no_match(self):
         assert not _line_contains_core("    return False", "if x > 0:")
+
+
+class TestStripParametrizeSuffix:
+    def test_strips_single_param(self):
+        assert _strip_parametrize_suffix("test_name[KP]") == "test_name"
+
+    def test_strips_multi_param(self):
+        assert _strip_parametrize_suffix("test_foo[0-bar-baz]") == "test_foo"
+
+    def test_no_suffix_unchanged(self):
+        assert _strip_parametrize_suffix("test_no_params") == "test_no_params"
+
+    def test_empty_brackets(self):
+        assert _strip_parametrize_suffix("test_empty[]") == "test_empty"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -235,6 +250,40 @@ class TestVerifyVerdict:
             "code_evidence": [],
             "test_evidence": [
                 {"file": str(tmp_path / "ghost.py"), "test_name": "test_whatever"},
+            ],
+        }
+        updated, stats = _verify_verdict(verdict)
+        assert updated["test_evidence"] == []
+        assert stats["tests_removed"] == 1
+
+    def test_parametrized_test_id_kept(self, tmp_test_file: Path):
+        """
+        pytest parametrized IDs like "test_alpha[KP]" must match the function
+        "test_alpha" — the [...] suffix must be stripped before the AST lookup.
+        """
+        verdict = {
+            "id": "REQ-01",
+            "status": "covered",
+            "reason": "ok",
+            "code_evidence": [],
+            "test_evidence": [
+                {"file": str(tmp_test_file), "test_name": "test_alpha[KP]"},
+                {"file": str(tmp_test_file), "test_name": "test_beta[0-foo]"},
+            ],
+        }
+        updated, stats = _verify_verdict(verdict)
+        assert len(updated["test_evidence"]) == 2
+        assert stats["tests_removed"] == 0
+
+    def test_parametrized_nonexistent_function_removed(self, tmp_test_file: Path):
+        """test_name[KP] where test_name does not exist is still removed."""
+        verdict = {
+            "id": "REQ-01",
+            "status": "covered",
+            "reason": "ok",
+            "code_evidence": [],
+            "test_evidence": [
+                {"file": str(tmp_test_file), "test_name": "test_ghost[KP]"},
             ],
         }
         updated, stats = _verify_verdict(verdict)
@@ -541,3 +590,111 @@ class TestCmdReport:
         report = (tmp_path / "AUDIT_REPORT.md").read_text()
         assert "Generated" in report
         assert "UTC" in report
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Integration tests: cmd_dashboard
+# ══════════════════════════════════════════════════════════════════════════════
+
+from solotrace.cli_dashboard import cmd_dashboard
+from solotrace.cli_run import cmd_run
+
+
+class TestCmdDashboard:
+
+    def test_dashboard_creates_index_html(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        """cmd_dashboard must produce docs/index.html."""
+        monkeypatch.chdir(tmp_path)
+        before_dir = _make_audit_dir(tmp_path, "before", score_covered=4, total=12)
+        after_dir  = _make_audit_dir(tmp_path, "after",  score_covered=12, total=12)
+        cmd_dashboard(str(before_dir), str(after_dir))
+        assert (tmp_path / "docs" / "index.html").exists()
+
+    def test_dashboard_is_self_contained_html(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        """The generated HTML must not reference external URLs."""
+        monkeypatch.chdir(tmp_path)
+        before_dir = _make_audit_dir(tmp_path, "before", score_covered=2, total=4)
+        after_dir  = _make_audit_dir(tmp_path, "after",  score_covered=4, total=4)
+        cmd_dashboard(str(before_dir), str(after_dir))
+        html = (tmp_path / "docs" / "index.html").read_text(encoding="utf-8")
+        # Must be a valid HTML document
+        assert "<!DOCTYPE html>" in html
+        # Must not load external CSS/JS files
+        assert "https://cdn" not in html
+        assert '<script src="http' not in html
+        assert '<link rel="stylesheet" href="http' not in html
+
+    def test_dashboard_contains_scores(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        """Dashboard must embed the before and after compliance scores."""
+        monkeypatch.chdir(tmp_path)
+        before_dir = _make_audit_dir(tmp_path, "before", score_covered=4, total=12)
+        after_dir  = _make_audit_dir(tmp_path, "after",  score_covered=12, total=12)
+        cmd_dashboard(str(before_dir), str(after_dir))
+        html = (tmp_path / "docs" / "index.html").read_text(encoding="utf-8")
+        assert "33" in html   # before score ≈ 33%
+        assert "100" in html  # after score 100%
+
+    def test_dashboard_contains_matrix_data(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        """Dashboard must embed the traceability matrix JSON."""
+        monkeypatch.chdir(tmp_path)
+        before_dir = _make_audit_dir(tmp_path, "before", score_covered=1, total=2)
+        after_dir  = _make_audit_dir(tmp_path, "after",  score_covered=2, total=2)
+        cmd_dashboard(str(before_dir), str(after_dir))
+        html = (tmp_path / "docs" / "index.html").read_text(encoding="utf-8")
+        assert "REQ-01" in html
+        assert "MATRIX_DATA" in html
+
+    def test_dashboard_ibm_branding(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        """Dashboard must contain IBM Bob branding and the GitHub repo link."""
+        monkeypatch.chdir(tmp_path)
+        before_dir = _make_audit_dir(tmp_path, "before", score_covered=1, total=1)
+        after_dir  = _make_audit_dir(tmp_path, "after",  score_covered=1, total=1)
+        cmd_dashboard(str(before_dir), str(after_dir))
+        html = (tmp_path / "docs" / "index.html").read_text(encoding="utf-8")
+        assert "IBM Bob" in html
+        assert "bano1397/solotrace" in html
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Integration tests: cmd_run
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestCmdRun:
+
+    def _make_run_dirs(self, tmp_path: Path) -> tuple[Path, Path]:
+        """Set up minimal before/after audit dirs suitable for cmd_run."""
+        before_dir = _make_audit_dir(tmp_path, "before", score_covered=1, total=2)
+        after_dir  = _make_audit_dir(tmp_path, "after",  score_covered=2, total=2)
+        return before_dir, after_dir
+
+    def test_run_produces_all_outputs(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        """cmd_run must produce verification.json, matrix.json, AUDIT_REPORT.md, docs/index.html."""
+        monkeypatch.chdir(tmp_path)
+        before_dir, after_dir = self._make_run_dirs(tmp_path)
+        cmd_run(
+            spec="fake-spec.pdf",
+            out=str(after_dir),
+            before=str(before_dir),
+            after=str(after_dir),
+        )
+        assert (after_dir / "verification.json").exists()
+        assert (after_dir / "matrix.json").exists()
+        assert (tmp_path / "AUDIT_REPORT.md").exists()
+        assert (tmp_path / "docs" / "index.html").exists()
+
+    def test_run_updates_timings(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        """cmd_run must write automated stage timings to out/timings.json."""
+        monkeypatch.chdir(tmp_path)
+        before_dir, after_dir = self._make_run_dirs(tmp_path)
+        cmd_run(
+            spec="fake.pdf",
+            out=str(after_dir),
+            before=str(before_dir),
+            after=str(after_dir),
+        )
+        timings = json.loads((after_dir / "timings.json").read_text())
+        stage_names = [s["stage"] for s in timings["stages"]]
+        assert "verify" in stage_names
+        assert "matrix" in stage_names
+        assert "report" in stage_names
+        assert "dashboard" in stage_names

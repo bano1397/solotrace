@@ -45,7 +45,8 @@ class Transfer(Base):
     status: Mapped[str] = mapped_column(String, nullable=False, default="completed")
     approver_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("accounts.id"), nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime, nullable=False, default=datetime.datetime.utcnow
+        DateTime, nullable=False,
+        default=lambda: datetime.datetime.now(datetime.timezone.utc),
     )
 
     sender: Mapped["Account"] = relationship("Account", foreign_keys=[sender_id], back_populates="sent_transfers")
@@ -62,5 +63,6 @@ class AuditEntry(Base):
     account_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("accounts.id"), nullable=True)
     related_account_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("accounts.id"), nullable=True)
     timestamp: Mapped[datetime.datetime] = mapped_column(
-        DateTime, nullable=False, default=datetime.datetime.utcnow
+        DateTime, nullable=False,
+        default=lambda: datetime.datetime.now(datetime.timezone.utc),
     )

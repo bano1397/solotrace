@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoloTrace — Compliance Dashboard</title>
+<style>
+/* ── CSS Custom Properties ─────────────────────────────────────────────────── */
+:root {
+  --bg-page:     #161616;
+  --bg-card:     #1e1e1e;
+  --bg-card2:    #262626;
+  --bg-header:   #0f0f0f;
+  --border:      #393939;
+  --text-main:   #f4f4f4;
+  --text-muted:  #8d8d8d;
+  --text-dim:    #6f6f6f;
+  --ibm-blue:    #4589ff;
+  --ibm-blue-dk: #0043ce;
+  --green:       #42be65;
+  --amber:       #f1c21b;
+  --red:         #fa4d56;
+  --purple:      #be95ff;
+  --radius:      6px;
+  --shadow:      0 2px 8px rgba(0,0,0,.45);
+  --transition:  0.2s ease;
+}
+@media (prefers-color-scheme: light) {
+  html:not([data-theme="dark"]) {
+    --bg-page:   #f4f4f4;
+    --bg-card:   #ffffff;
+    --bg-card2:  #f4f4f4;
+    --bg-header: #ffffff;
+    --border:    #e0e0e0;
+    --text-main: #161616;
+    --text-muted:#525252;
+    --text-dim:  #8d8d8d;
+    --shadow:    0 2px 8px rgba(0,0,0,.12);
+  }
+}
+/* ── Reset & Base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-main);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+a { color: var(--ibm-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+/* ── Layout ───────────────────────────────────────────────────────────────── */
+.page-wrap { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem 3rem; }
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.site-header {
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap;
+}
+.logo { display: flex; align-items: center; gap: 0.75rem; }
+.logo-mark {
+  width: 36px; height: 36px; background: var(--ibm-blue);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.85rem; color: #fff; flex-shrink: 0;
+}
+.logo-text { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; }
+.logo-sub { font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: -2px; }
+.header-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.ibm-badge {
+  background: var(--ibm-blue-dk); color: #fff;
+  padding: 0.3rem 0.85rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+  white-space: nowrap;
+}
+.theme-btn {
+  background: none; border: 1px solid var(--border);
+  color: var(--text-muted); padding: 0.3rem 0.7rem;
+  border-radius: var(--radius); cursor: pointer; font-size: 0.8rem;
+}
+.theme-btn:hover { border-color: var(--ibm-blue); color: var(--ibm-blue); }
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+.hero {
+  padding: 3rem 0 2rem;
+  text-align: center;
+}
+.hero h1 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700; margin-bottom: 0.5rem;
+  letter-spacing: -0.03em;
+}
+.hero h1 span { color: var(--ibm-blue); }
+.hero-sub { color: var(--text-muted); font-size: 1rem; margin-bottom: 2.5rem; }
+.score-compare {
+  display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+  flex-wrap: wrap; margin-bottom: 2rem;
+}
+.score-box {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem 2rem; min-width: 160px;
+  box-shadow: var(--shadow);
+}
+.score-box .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+.score-box .value {
+  font-size: 2.5rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1;
+}
+.score-box.before .value { color: var(--red); }
+.score-box.after  .value { color: var(--green); }
+.score-arrow { font-size: 2rem; color: var(--ibm-blue); }
+.progress-wrap { max-width: 600px; margin: 0 auto; }
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;
+}
+.progress-bar { height: 10px; background: var(--bg-card2); border-radius: 999px; overflow: hidden; }
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--ibm-blue), var(--green));
+  border-radius: 999px; width: 0;
+  transition: width 1.4s cubic-bezier(.22,.68,0,1.2);
+}
+/* ── Stat Cards ───────────────────────────────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem; margin: 2.5rem 0;
+}
+.stat-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow);
+  border-top: 3px solid var(--ibm-blue);
+}
+.stat-card .n {
+  font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+  color: var(--ibm-blue); line-height: 1; margin-bottom: 0.3rem;
+}
+.stat-card .desc { font-size: 0.85rem; color: var(--text-muted); }
+/* ── Section ──────────────────────────────────────────────────────────────── */
+.section { margin: 2.5rem 0; }
+.section-title {
+  font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.section-title::before { content: ''; display: block; width: 4px; height: 1.2em; background: var(--ibm-blue); border-radius: 2px; }
+/* ── Pipeline Strip ───────────────────────────────────────────────────────── */
+.pipeline {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem; overflow-x: auto;
+  box-shadow: var(--shadow);
+}
+.pipeline-steps {
+  display: flex; align-items: center; gap: 0; min-width: max-content;
+}
+.pipeline-step {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; min-width: 110px;
+}
+.step-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; margin-bottom: 0.5rem;
+  border: 2px solid;
+}
+.step-icon.bob    { background: rgba(69,137,255,.15); border-color: var(--ibm-blue); color: var(--ibm-blue); }
+.step-icon.auto   { background: rgba(66,190,101,.15); border-color: var(--green); color: var(--green); }
+.step-icon.human  { background: rgba(241,194,27,.15); border-color: var(--amber); color: var(--amber); }
+.step-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-main); }
+.step-sub   { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; max-width: 100px; }
+.pipeline-arrow {
+  font-size: 1rem; color: var(--text-dim); margin: 0 0.25rem; padding-bottom: 1.5rem; flex-shrink: 0;
+}
+/* ── Matrix Table ─────────────────────────────────────────────────────────── */
+.filter-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.filter-btn {
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-muted); padding: 0.3rem 0.9rem;
+  border-radius: 20px; cursor: pointer; font-size: 0.8rem; transition: var(--transition);
+}
+.filter-btn:hover { border-color: var(--ibm-blue); color: var(--ibm-blue); }
+.filter-btn.active { background: var(--ibm-blue); border-color: var(--ibm-blue); color: #fff; }
+.table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+table {
+  width: 100%; border-collapse: collapse; font-size: 0.82rem;
+  background: var(--bg-card);
+}
+thead { background: var(--bg-card2); position: sticky; top: 60px; z-index: 10; }
+th {
+  padding: 0.7rem 1rem; text-align: left;
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-muted); white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(69,137,255,.04); }
+.badge {
+  display: inline-flex; align-items: center; gap: 0.3em;
+  padding: 0.18em 0.6em; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+}
+.badge-covered    { background: rgba(66,190,101,.15); color: var(--green); border: 1px solid rgba(66,190,101,.3); }
+.badge-untested   { background: rgba(241,194,27,.15); color: var(--amber); border: 1px solid rgba(241,194,27,.3); }
+.badge-contradicts{ background: rgba(250,77,86,.15);  color: var(--red);   border: 1px solid rgba(250,77,86,.3); }
+.badge-missing    { background: rgba(250,77,86,.15);  color: var(--red);   border: 1px solid rgba(250,77,86,.3); }
+.badge-new        { background: rgba(190,149,255,.15); color: var(--purple); border: 1px solid rgba(190,149,255,.3); }
+.badge-changed    { background: rgba(241,194,27,.15); color: var(--amber); border: 1px solid rgba(241,194,27,.3); }
+.badge-none       { background: var(--bg-card2); color: var(--text-dim); border: 1px solid var(--border); }
+.badge-high       { background: rgba(250,77,86,.12); color: var(--red); }
+.badge-medium     { background: rgba(241,194,27,.12); color: var(--amber); }
+.badge-low        { background: rgba(66,190,101,.12); color: var(--green); }
+.evidence-snippet {
+  background: var(--bg-card2); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.4rem 0.6rem;
+  font-family: 'IBM Plex Mono', 'Fira Code', monospace;
+  font-size: 0.72rem; color: var(--text-muted); white-space: pre-wrap;
+  margin-top: 0.3rem; max-height: 120px; overflow-y: auto;
+  display: none;
+}
+.ev-toggle {
+  background: none; border: 1px solid var(--border);
+  color: var(--text-muted); padding: 0.15rem 0.45rem;
+  border-radius: 4px; cursor: pointer; font-size: 0.7rem;
+  transition: var(--transition);
+}
+.ev-toggle:hover { border-color: var(--ibm-blue); color: var(--ibm-blue); }
+.test-list { display: flex; flex-direction: column; gap: 2px; }
+.test-item {
+  font-size: 0.72rem; color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+/* ── Evidence Verifier Panel ─────────────────────────────────────────────── */
+.verifier-panel {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow);
+}
+.verifier-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem; margin-bottom: 1.5rem;
+}
+.verifier-stat {
+  background: var(--bg-card2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1rem;
+}
+.verifier-stat .n { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.03em; }
+.verifier-stat.wrong .n { color: var(--red); }
+.verifier-stat.fixed .n { color: var(--green); }
+.verifier-stat.phantom .n { color: var(--amber); }
+.verifier-stat .d { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
+.verifier-note { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; }
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+.site-footer {
+  border-top: 1px solid var(--border); padding: 1.5rem;
+  text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 3rem;
+}
+.site-footer a { color: var(--ibm-blue); }
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .score-compare { gap: 1rem; }
+  .score-box .value { font-size: 2rem; }
+  th, td { padding: 0.5rem 0.6rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-mark">ST</div>
+      <div>
+        <div class="logo-text">SoloTrace</div>
+        <span class="logo-sub">Requirements Traceability Auditor</span>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="ibm-badge">Built with IBM Bob 2.0</span>
+      <button class="theme-btn" onclick="toggleTheme()">☀ / ☾</button>
+    </div>
+  </div>
+</header>
+
+<!-- ── Hero ───────────────────────────────────────────────────────────────── -->
+<div class="page-wrap">
+<section class="hero">
+  <h1>Every requirement, <span>proven.</span></h1>
+  <p class="hero-sub">Machine-verified traceability from specification to code to test.</p>
+
+  <div class="score-compare">
+    <div class="score-box before">
+      <div class="label">Before (v1.0 audit)</div>
+      <div class="value" id="score-before">33.3%</div>
+    </div>
+    <div class="score-arrow">→</div>
+    <div class="score-box after">
+      <div class="label">After (v2.0 fixed)</div>
+      <div class="value" id="score-after">100%</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Compliance score</span>
+      <span id="pct-label">100%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="prog-fill" data-target="100"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stat Cards ──────────────────────────────────────────────────────────── -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="n">12</div>
+    <div class="desc">Requirements audited</div>
+  </div>
+  <div class="stat-card">
+    <div class="n">8</div>
+    <div class="desc">Gaps found &amp; fixed</div>
+  </div>
+  <div class="stat-card">
+    <div class="n">+36</div>
+    <div class="desc">Test functions added (16 → 52)</div>
+  </div>
+  <div class="stat-card">
+    <div class="n">57</div>
+    <div class="desc">Evidence entries machine-verified</div>
+  </div>
+</div>
+
+<!-- ── Pipeline Strip ─────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="section-title">Audit Pipeline</div>
+  <div class="pipeline">
+    <div class="pipeline-steps">
+      <div class="pipeline-step">
+        <div class="step-icon bob">📄</div>
+        <div class="step-label">READ</div>
+        <div class="step-sub">Document understanding<br><em>IBM Bob</em></div>
+      </div>
+      <div class="pipeline-arrow">›</div>
+      <div class="pipeline-step">
+        <div class="step-icon bob">🔍</div>
+        <div class="step-label">AUDIT</div>
+        <div class="step-sub">12 parallel subagents<br><em>IBM Bob</em></div>
+      </div>
+      <div class="pipeline-arrow">›</div>
+      <div class="pipeline-step">
+        <div class="step-icon human">✋</div>
+        <div class="step-label">HUMAN SIGN-OFF</div>
+        <div class="step-sub">Review verdicts<br>&amp; approve fixes</div>
+      </div>
+      <div class="pipeline-arrow">›</div>
+      <div class="pipeline-step">
+        <div class="step-icon bob">🔧</div>
+        <div class="step-label">FIX</div>
+        <div class="step-sub">Agent mode<br><em>IBM Bob</em></div>
+      </div>
+      <div class="pipeline-arrow">›</div>
+      <div class="pipeline-step">
+        <div class="step-icon auto">✅</div>
+        <div class="step-label">VERIFY</div>
+        <div class="step-sub">Anti-hallucination<br>evidence check</div>
+      </div>
+      <div class="pipeline-arrow">›</div>
+      <div class="pipeline-step">
+        <div class="step-icon auto">📊</div>
+        <div class="step-label">REPORT</div>
+        <div class="step-sub">Matrix + dashboard<br>generated</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Traceability Matrix ─────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="section-title">Traceability Matrix</div>
+  <div class="filter-bar" id="filter-bar">
+    <button class="filter-btn active" data-filter="all" onclick="filterMatrix('all',this)">All (12)</button>
+    <button class="filter-btn" data-filter="covered" onclick="filterMatrix('covered',this)">✅ Covered (12)</button>
+    <button class="filter-btn" data-filter="untested" onclick="filterMatrix('untested',this)">⚠ Untested (0)</button>
+    <button class="filter-btn" data-filter="contradicts" onclick="filterMatrix('contradicts',this)">✗ Contradicts (0)</button>
+    <button class="filter-btn" data-filter="missing" onclick="filterMatrix('missing',this)">● Missing (0)</button>
+  </div>
+  <div class="table-wrap">
+    <table id="matrix-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Requirement</th>
+          <th>Risk</th>
+          <th>Change</th>
+          <th>Before</th>
+          <th>After</th>
+          <th>Code Evidence</th>
+          <th>Tests</th>
+        </tr>
+      </thead>
+      <tbody id="matrix-body">
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── Evidence Verifier Panel ───────────────────────────────────────────── -->
+<section class="section">
+  <div class="section-title">Evidence Verifier</div>
+  <div class="verifier-panel">
+    <div class="verifier-grid">
+      <div class="verifier-stat wrong">
+        <div class="n" id="vstat-wrong">23</div>
+        <div class="d">Wrong line numbers in baseline audit</div>
+      </div>
+      <div class="verifier-stat wrong">
+        <div class="n" id="vstat-paraphrase">11</div>
+        <div class="d">Paraphrased quotes (not real code)</div>
+      </div>
+      <div class="verifier-stat phantom">
+        <div class="n" id="vstat-phantom">4</div>
+        <div class="d">Phantom tests (not found in AST)</div>
+      </div>
+      <div class="verifier-stat fixed">
+        <div class="n" id="vstat-ok">57</div>
+        <div class="d">Evidence entries verified OK (after)</div>
+      </div>
+    </div>
+    <p class="verifier-note">
+      The SoloTrace evidence verifier runs after every audit pass.  It parses each
+      cited source file at the cited line number, checks that the quoted snippet
+      actually appears there (±5 lines), and removes any <code>test_evidence</code>
+      entry whose function name cannot be found in the file's AST.  Numbers above
+      are read from <code>out-before/verification.json</code> vs
+      <code>out/verification.json</code>.
+    </p>
+  </div>
+</section>
+
+</div><!-- .page-wrap -->
+
+<!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+<footer class="site-footer">
+  <a href="https://github.com/bano1397/solotrace" target="_blank" rel="noopener">GitHub: bano1397/solotrace</a>
+  &nbsp;·&nbsp;
+  <a href="AUDIT_REPORT.md" target="_blank">AUDIT_REPORT.md</a>
+  &nbsp;·&nbsp;
+  <span>Generated 2026-09-25 17:16 UTC</span>
+</footer>
+
+<!-- ── Embedded Data ───────────────────────────────────────────────────────── -->
+<script>
+const MATRIX_DATA = {"rows": [{"id": "REQ-01", "title": "Unique email and KYC gating", "risk": "High", "change": "none", "status": "covered", "reason": "Unique email is enforced at account creation by querying for an existing Account with the same email before inserting (services.py:101). KYC gating is enforced by _require_kyc(), which raises HTTP 403 when kyc_status != 'verified' (services.py:86-87); this guard is called before every deposit, withdrawal, and transfer operation. All four gating paths and the duplicate-email path are each covered by a dedicated test.", "evidence": ["ledgerlite/services.py:101      if db.query(Account).filter(Account.email == email).first():", "ledgerlite/services.py:86  def _require_kyc(account: Account) -> None:", "ledgerlite/services.py:87      if account.kyc_status != \"verified\":"], "tests": ["test_duplicate_email_rejected (ledgerlite/tests/test_spec1_accounts_kyc.py)", "test_deposit_blocked_before_kyc (ledgerlite/tests/test_spec1_accounts_kyc.py)", "test_withdraw_blocked_before_kyc (ledgerlite/tests/test_spec1_accounts_kyc.py)", "test_transfer_sender_blocked_before_kyc (ledgerlite/tests/test_spec1_accounts_kyc.py)", "test_transfer_recipient_blocked_before_kyc (ledgerlite/tests/test_spec1_accounts_kyc.py)"]}, {"id": "REQ-02", "title": "Deposit amount limits", "risk": "Medium", "change": "none", "status": "covered", "reason": "Deposit validation enforces a lower bound (amount must be > 0) and an upper bound (amount must not exceed 50 000.00) at the service layer. Six dedicated tests exercise zero, negative, boundary-exact-reject, boundary-exact-accept, a general positive value, and accumulation across multiple deposits.", "evidence": ["ledgerlite/services.py:19  _MAX_DEPOSIT = Decimal(\"50000.00\")", "ledgerlite/services.py:135      if amount <= Decimal(\"0\"):", "ledgerlite/services.py:136          raise HTTPException(status_code=400, detail=\"Deposit amount must be greater than 0\")", "ledgerlite/services.py:137      if amount > _MAX_DEPOSIT:", "ledgerlite/services.py:138          raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {_MAX_DEPOSIT}\")"], "tests": ["test_zero_rejected (ledgerlite/tests/test_spec2_deposit_limits.py)", "test_negative_rejected (ledgerlite/tests/test_spec2_deposit_limits.py)", "test_boundary_50000_01_rejected (ledgerlite/tests/test_spec2_deposit_limits.py)", "test_boundary_50000_accepted (ledgerlite/tests/test_spec2_deposit_limits.py)", "test_positive_amount_accepted (ledgerlite/tests/test_spec2_deposit_limits.py)", "test_multiple_deposits_accumulate (ledgerlite/tests/test_spec2_deposit_limits.py)"]}, {"id": "REQ-03", "title": "Withdrawal floor \u2014 no negative balance", "risk": "High", "change": "none", "status": "covered", "reason": "The withdrawal floor is enforced in services.py at lines 156-157: before applying any debit the service checks that the resulting balance would not be less than zero, and raises HTTP 400 with 'Insufficient funds' if it would. Line 159 then performs the actual debit only when that guard passes. Three tests cover the requirement: test_withdrawal_overdraft_rejected confirms a withdrawal of one cent above the balance is rejected with HTTP 400 and the 'Insufficient' message; test_balance_never_goes_negative drains the account to exactly 0.00 and then confirms a further withdrawal is rejected and the balance remains 0.00; test_withdrawal_exact_balance_allowed confirms that withdrawing exactly the full balance succeeds and leaves the balance at 0.00.", "evidence": ["ledgerlite/services.py:156      if account.balance - amount < Decimal(\"0\"):", "ledgerlite/services.py:157          raise HTTPException(status_code=400, detail=\"Insufficient funds\")", "ledgerlite/services.py:159      account.balance -= amount"], "tests": ["test_withdrawal_overdraft_rejected (ledgerlite/tests/test_spec3_withdrawals.py)", "test_balance_never_goes_negative (ledgerlite/tests/test_spec3_withdrawals.py)", "test_withdrawal_exact_balance_allowed (ledgerlite/tests/test_spec3_withdrawals.py)"]}, {"id": "REQ-04", "title": "Atomic transfers", "risk": "High", "change": "none", "status": "covered", "reason": "The transfer service wraps the balance mutation, Transfer insert, flush, and audit write inside a single try/except block (services.py:220-245). The debit is applied to sender.balance (line 221) and the credit to recipient.balance (line 223) before db.commit() is called (line 242). If any step raises \u2014 including the audit write \u2014 the except clause on line 243 calls db.rollback() (line 244) and re-raises, so neither balance change is ever persisted. test_transfer_rolls_back_on_db_error proves this by patching _write_audit to raise a RuntimeError after the debit and asserting both balances are unchanged after the 500 response. test_successful_transfer_debits_sender_credits_recipient proves the happy path commits both sides atomically.", "evidence": ["ledgerlite/services.py:220      try:", "ledgerlite/services.py:221          sender.balance -= amount", "ledgerlite/services.py:223              recipient.balance += amount", "ledgerlite/services.py:242          db.commit()", "ledgerlite/services.py:243      except Exception:", "ledgerlite/services.py:244          db.rollback()", "ledgerlite/services.py:245          raise"], "tests": ["test_transfer_rolls_back_on_db_error (ledgerlite/tests/test_spec4_transfer_atomicity.py)", "test_successful_transfer_debits_sender_credits_recipient (ledgerlite/tests/test_spec4_transfer_atomicity.py)"]}, {"id": "REQ-05", "title": "Large-transfer pending approval threshold", "risk": "High", "change": "changed", "status": "covered", "reason": "The v2.0 threshold of 5,000.00 is correctly implemented. Transfers >= 5,000.00 are set to pending_approval; transfers below that are completed immediately. This was fixed from the old v1.0 value of 10,000.00. All four boundary tests pass.", "evidence": ["ledgerlite/services.py:20  _LARGE_TRANSFER_THRESHOLD = Decimal(\"5000.00\")", "ledgerlite/services.py:217      large = amount >= _LARGE_TRANSFER_THRESHOLD", "ledgerlite/services.py:218      status = \"pending_approval\" if large else \"completed\""], "tests": ["test_transfer_below_threshold_completed (ledgerlite/tests/test_spec5_large_transfer_threshold.py)", "test_transfer_at_threshold_pending (ledgerlite/tests/test_spec5_large_transfer_threshold.py)", "test_transfer_above_threshold_pending (ledgerlite/tests/test_spec5_large_transfer_threshold.py)", "test_transfer_just_below_threshold_completed (ledgerlite/tests/test_spec5_large_transfer_threshold.py)"]}, {"id": "REQ-06", "title": "Audit log for every money movement", "risk": "High", "change": "none", "status": "covered", "reason": "_write_audit() is called in deposit() (line 141), withdraw() (line 160), create_transfer() (line 234), and approve_transfer() (line 269). No PATCH/DELETE endpoint for audit entries exists. All five criteria are asserted by named tests in test_spec6_audit_log.py.", "evidence": ["ledgerlite/services.py:40  def _write_audit(", "ledgerlite/services.py:141      _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)", "ledgerlite/services.py:160      _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)", "ledgerlite/services.py:234          _write_audit(", "ledgerlite/main.py:95  @app.get(\"/audit\", response_model=list[AuditEntryResponse])"], "tests": ["test_audit_entry_written_on_deposit (ledgerlite/tests/test_spec6_audit_log.py)", "test_audit_entry_written_on_withdrawal (ledgerlite/tests/test_spec6_audit_log.py)", "test_audit_entry_written_on_transfer (ledgerlite/tests/test_spec6_audit_log.py)", "test_no_audit_delete_endpoint (ledgerlite/tests/test_spec6_audit_log.py)", "test_no_audit_patch_endpoint (ledgerlite/tests/test_spec6_audit_log.py)"]}, {"id": "REQ-07", "title": "Account lockout after failed PIN attempts", "risk": "Medium", "change": "none", "status": "covered", "reason": "_check_pin() increments failed_pin_attempts on each wrong PIN; on the 5th failure (>= _MAX_FAILED_PINS) it sets account.locked = True and raises HTTP 423. A subsequent correct PIN resets failed_pin_attempts to 0. Both acceptance criteria are asserted by dedicated tests.", "evidence": ["ledgerlite/services.py:21  _MAX_FAILED_PINS = 5", "ledgerlite/services.py:70      if account.locked:", "ledgerlite/services.py:71          raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")", "ledgerlite/services.py:73      if not verify_pin(pin, account.pin_hash):", "ledgerlite/services.py:74          account.failed_pin_attempts += 1", "ledgerlite/services.py:75          if account.failed_pin_attempts >= _MAX_FAILED_PINS:", "ledgerlite/services.py:76              account.locked = True", "ledgerlite/services.py:83      account.failed_pin_attempts = 0"], "tests": ["test_fifth_wrong_pin_locks_account (ledgerlite/tests/test_spec7_pin_lockout.py)", "test_correct_pin_resets_counter (ledgerlite/tests/test_spec7_pin_lockout.py)"]}, {"id": "REQ-08", "title": "Exact decimal arithmetic", "risk": "Medium", "change": "none", "status": "covered", "reason": "All monetary values are coerced through _to_decimal() (Decimal(str(value))) before arithmetic; the database column is Numeric(12,2); and balance is serialised as a 2dp string via @field_serializer. The critical 0.10+0.20==0.30 criterion is directly asserted by test_point_one_plus_point_two_equals_point_three.", "evidence": ["ledgerlite/models.py:24      balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))", "ledgerlite/services.py:11  from decimal import Decimal, InvalidOperation", "ledgerlite/services.py:91  def _to_decimal(value) -> Decimal:", "ledgerlite/services.py:93          return Decimal(str(value))", "ledgerlite/schemas.py:64      @field_serializer(\"balance\")", "ledgerlite/schemas.py:66          return f\"{v:.2f}\""], "tests": ["test_point_one_plus_point_two_equals_point_three (ledgerlite/tests/test_spec8_decimal_arithmetic.py)", "test_balance_serialised_as_two_decimal_places (ledgerlite/tests/test_spec8_decimal_arithmetic.py)", "test_multiple_deposits_accumulate (ledgerlite/tests/test_spec2_deposit_limits.py)", "test_boundary_50000_accepted (ledgerlite/tests/test_spec2_deposit_limits.py)"]}, {"id": "REQ-09", "title": "Daily outgoing transfer cap", "risk": "High", "change": "new", "status": "covered", "reason": "The implementation introduces a hard cap of 20,000.00 in outgoing transfers per UTC calendar day. The constant _DAILY_TRANSFER_CAP is defined at module level and the check runs inside the transfer service before any balance mutation: it sums all transfers with status 'completed' or 'pending_approval' for the sender since today_start (UTC midnight), converts the aggregate to Decimal, and raises HTTP 400 when daily_total + amount > _DAILY_TRANSFER_CAP. Three dedicated tests cover the boundary exactly (20,000.00 accepted), the first cent over the boundary (20,000.01 rejected), and a three-transfer scenario where the third transfer is blocked.", "evidence": ["ledgerlite/services.py:22  _DAILY_TRANSFER_CAP = Decimal(\"20000.00\")", "ledgerlite/services.py:198      today_utc = datetime.datetime.now(timezone.utc).date()", "ledgerlite/services.py:199      today_start = datetime.datetime(today_utc.year, today_utc.month, today_utc.day, tzinfo=timezone.utc)", "ledgerlite/services.py:201      daily_total_row = (", "ledgerlite/services.py:210      daily_total = Decimal(str(daily_total_row[0]))", "ledgerlite/services.py:211      if daily_total + amount > _DAILY_TRANSFER_CAP:", "ledgerlite/services.py:212          raise HTTPException("], "tests": ["test_daily_cap_exact_boundary_accepted (ledgerlite/tests/test_spec9_daily_cap.py)", "test_daily_cap_exceeded_rejected (ledgerlite/tests/test_spec9_daily_cap.py)", "test_daily_cap_three_transfers_third_blocked (ledgerlite/tests/test_spec9_daily_cap.py)"]}, {"id": "REQ-10", "title": "Sanctions list blocking", "risk": "High", "change": "new", "status": "covered", "reason": "Transfers where the sender or recipient has a country_code in {KP, IR, SY, CU} are rejected with HTTP 400 and detail 'sanctions'. A sanctions_blocked audit entry is written before rejection. All 9 test cases (4 sender-blocked, 4 recipient-blocked, 1 audit-entry) pass.", "evidence": ["ledgerlite/services.py:23  _SANCTIONED_COUNTRIES = {\"KP\", \"IR\", \"SY\", \"CU\"}", "ledgerlite/services.py:180      if sender.country_code in _SANCTIONED_COUNTRIES or recipient.country_code in _SANCTIONED_COUNTRIES:", "ledgerlite/services.py:184              action=\"sanctions_blocked\",", "ledgerlite/services.py:190          raise HTTPException(status_code=400, detail=\"sanctions\")"], "tests": ["test_sanctioned_sender_blocked[KP] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_sender_blocked[IR] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_sender_blocked[SY] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_sender_blocked[CU] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_recipient_blocked[KP] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_recipient_blocked[IR] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_recipient_blocked[SY] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_recipient_blocked[CU] (ledgerlite/tests/test_spec10_sanctions.py)", "test_audit_entry_written_for_sanctions_block (ledgerlite/tests/test_spec10_sanctions.py)"]}, {"id": "REQ-11", "title": "Masked account numbers in statements", "risk": "Medium", "change": "new", "status": "covered", "reason": "StatementAccountResponse overrides the account_number serializer to emit '******' + last-4 digits. The statement route uses StatementResponse (which embeds StatementAccountResponse) as its response_model, so every GET /accounts/{id}/statement response has a masked account number. The detail endpoint continues to use the unmasked AccountResponse. Three tests cover the requirement: pattern format, last-4 preservation, and detail-endpoint passthrough.", "evidence": ["ledgerlite/schemas.py:103  class StatementAccountResponse(AccountResponse):", "ledgerlite/schemas.py:107      def serialize_account_number(self, v: str) -> str:", "ledgerlite/schemas.py:108          return \"******\" + v[-4:]", "ledgerlite/main.py:49  @app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)", "ledgerlite/main.py:60      return StatementResponse(account=account, transactions=transactions)"], "tests": ["test_statement_masks_account_number (ledgerlite/tests/test_spec11_statement_masking.py)", "test_statement_mask_preserves_last4 (ledgerlite/tests/test_spec11_statement_masking.py)", "test_account_detail_endpoint_not_masked (ledgerlite/tests/test_spec11_statement_masking.py)"]}, {"id": "REQ-12", "title": "Audit log retention \u2014 no deletion", "risk": "Medium", "change": "none", "status": "covered", "reason": "No DELETE /audit route is defined in main.py, making audit log deletion impossible at the API level. The GET /audit route at line 95 is the only audit endpoint. Tests confirm that DELETE requests to /audit and /audit/{id} both return 405 Method Not Allowed.", "evidence": ["ledgerlite/main.py:95  @app.get(\"/audit\", response_model=list[AuditEntryResponse])"], "tests": ["test_delete_audit_returns_405 (ledgerlite/tests/test_spec12_audit_retention.py)", "test_delete_audit_entry_returns_405 (ledgerlite/tests/test_spec12_audit_retention.py)"]}], "summary": {"total": 12, "covered": 12, "untested": 0, "contradicts": 0, "missing": 0, "score_percent": 100.0}};
+const BEFORE_MAP  = {"REQ-01": "covered", "REQ-02": "covered", "REQ-03": "covered", "REQ-04": "covered", "REQ-05": "contradicts", "REQ-06": "untested", "REQ-07": "untested", "REQ-08": "untested", "REQ-09": "missing", "REQ-10": "missing", "REQ-11": "missing", "REQ-12": "untested"};
+
+function statusBadge(s) {
+  const m = {
+    covered:    ['badge-covered',    '✅ covered'],
+    untested:   ['badge-untested',   '⚠ untested'],
+    contradicts:['badge-contradicts','✗ contradicts'],
+    missing:    ['badge-missing',    '● missing'],
+  };
+  const [cls, label] = m[s] || ['', s];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+function changeBadge(c) {
+  const m = { new:'badge-new', changed:'badge-changed', none:'badge-none' };
+  return `<span class="badge ${m[c]||'badge-none'}">${c}</span>`;
+}
+function riskBadge(r) {
+  const m = { High:'badge-high', Medium:'badge-medium', Low:'badge-low' };
+  return `<span class="badge ${m[r]||''}">${r}</span>`;
+}
+
+function buildMatrix(filter) {
+  const tbody = document.getElementById('matrix-body');
+  const rows  = MATRIX_DATA.rows;
+  const html  = [];
+  rows.forEach((row, i) => {
+    if (filter !== 'all' && row.status !== filter) return;
+    const beforeStatus = BEFORE_MAP[row.id] || 'missing';
+    const ev = row.evidence || [];
+    const evId = `ev-${i}`;
+    const evHtml = ev.length
+      ? `<button class="ev-toggle" onclick="toggleEvidence('${evId}')">Show ${ev.length}</button>
+         <div class="evidence-snippet" id="${evId}">${ev.map(e=>escHtml(e)).join('\n')}</div>`
+      : '<span style="color:var(--text-dim)">—</span>';
+
+    const tests = row.tests || [];
+    const testHtml = tests.length
+      ? `<div class="test-list">${tests.map(t => `<span class="test-item">${escHtml(t.split(' (')[0])}</span>`).join('')}</div>`
+      : '<span style="color:var(--text-dim)">—</span>';
+
+    html.push(`<tr data-status="${row.status}">
+      <td><strong>${row.id}</strong></td>
+      <td>${escHtml(row.title)}</td>
+      <td>${riskBadge(row.risk)}</td>
+      <td>${changeBadge(row.change)}</td>
+      <td>${statusBadge(beforeStatus)}</td>
+      <td>${statusBadge(row.status)}</td>
+      <td>${evHtml}</td>
+      <td>${testHtml}</td>
+    </tr>`);
+  });
+  tbody.innerHTML = html.join('');
+}
+
+function filterMatrix(filter, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildMatrix(filter);
+}
+
+function toggleEvidence(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+
+// Animate progress bar on load
+window.addEventListener('load', () => {
+  buildMatrix('all');
+  setTimeout(() => {
+    const fill = document.getElementById('prog-fill');
+    if (fill) fill.style.width = fill.dataset.target + '%';
+  }, 300);
+});
+</script>
+</body>
+</html>

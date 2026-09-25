@@ -203,6 +203,14 @@
         "ledgerlite/services.py:190          raise HTTPException(status_code=400, detail=\"sanctions\")"
       ],
       "tests": [
+        "test_sanctioned_sender_blocked[KP] (ledgerlite/tests/test_spec10_sanctions.py)",
+        "test_sanctioned_sender_blocked[IR] (ledgerlite/tests/test_spec10_sanctions.py)",
+        "test_sanctioned_sender_blocked[SY] (ledgerlite/tests/test_spec10_sanctions.py)",
+        "test_sanctioned_sender_blocked[CU] (ledgerlite/tests/test_spec10_sanctions.py)",
+        "test_sanctioned_recipient_blocked[KP] (ledgerlite/tests/test_spec10_sanctions.py)",
+        "test_sanctioned_recipient_blocked[IR] (ledgerlite/tests/test_spec10_sanctions.py)",
+        "test_sanctioned_recipient_blocked[SY] (ledgerlite/tests/test_spec10_sanctions.py)",
+        "test_sanctioned_recipient_blocked[CU] (ledgerlite/tests/test_spec10_sanctions.py)",
         "test_audit_entry_written_for_sanctions_block (ledgerlite/tests/test_spec10_sanctions.py)"
       ]
     },

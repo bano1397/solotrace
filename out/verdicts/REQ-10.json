@@ -31,6 +31,38 @@
   "test_evidence": [
     {
       "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "test_name": "test_sanctioned_sender_blocked[KP]"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "test_name": "test_sanctioned_sender_blocked[IR]"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "test_name": "test_sanctioned_sender_blocked[SY]"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "test_name": "test_sanctioned_sender_blocked[CU]"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "test_name": "test_sanctioned_recipient_blocked[KP]"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "test_name": "test_sanctioned_recipient_blocked[IR]"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "test_name": "test_sanctioned_recipient_blocked[SY]"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "test_name": "test_sanctioned_recipient_blocked[CU]"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
       "test_name": "test_audit_entry_written_for_sanctions_block"
     }
   ]
