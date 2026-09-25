@@ -1,98 +1,118 @@
 """
 Shared pytest fixtures for LedgerLite tests.
 
-Each test gets a fresh in-memory SQLite database backed by a StaticPool so that
-all connections (the session AND any new connections opened by the lifespan) share
-exactly the same in-memory database instance.
+Production-like by design: every test gets its own SQLite *file* database and
+the app uses the real ``get_db`` dependency, so every HTTP request runs in its
+own session, exactly as in production.  (An earlier version shared one session
+across requests, which hid a real PIN-lockout bug.)
 """
-import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
+import os
+from concurrent.futures import ThreadPoolExecutor
 
-import ledgerlite.db as db_module
-import ledgerlite.main as main_module
-from ledgerlite.db import Base, get_db
-from ledgerlite.main import app
+# Fast PIN hashing for tests only (production default is 600,000 iterations).
+os.environ["LEDGERLITE_PIN_ITERATIONS"] = "1000"
+os.environ["LEDGERLITE_ADMIN_TOKEN"] = "test-admin-token"
+os.environ["LEDGERLITE_SQLITE_FAST"] = "1"
 
+import pytest  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
 
-@pytest.fixture()
-def db_engine():
-    """
-    Yield a SQLAlchemy engine backed by a StaticPool in-memory SQLite.
+import ledgerlite.db as db_module  # noqa: E402
+from ledgerlite.main import app  # noqa: E402
 
-    StaticPool ensures every connection() call returns the same underlying
-    connection, so the tables created here are visible to all users of the
-    engine — including the FastAPI lifespan's create_all() call.
-    """
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(bind=engine)
-    yield engine
-    Base.metadata.drop_all(bind=engine)
-    engine.dispose()
+ADMIN = {"X-Admin-Token": "test-admin-token"}
+PIN = "1234"
 
 
 @pytest.fixture()
-def db_session(db_engine):
-    """Yield a session bound to the per-test in-memory engine."""
-    TestingSession = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
-    session = TestingSession()
+def client(tmp_path):
+    db_module.configure(f"sqlite:///{tmp_path / 'ledgerlite-test.db'}")
+    with TestClient(app) as c:
+        yield c
+    db_module.engine.dispose()
+
+
+@pytest.fixture()
+def unsafe_client(client):
+    """Same app and database, but server errors come back as HTTP 500 responses."""
+    with TestClient(app, raise_server_exceptions=False) as c:
+        yield c
+
+
+def db_read(query):
+    """Run *query(session)* in a short-lived session that bypasses the API.
+
+    The session is closed straight away so it never holds SQLite's write lock
+    while the app is serving requests.
+    """
+    session = db_module.SessionLocal()
     try:
-        yield session
+        return query(session)
     finally:
+        session.rollback()
         session.close()
 
 
-@pytest.fixture()
-def client(db_engine, db_session):
-    """
-    Return a TestClient with:
-    - get_db overridden to yield the per-test session
-    - module-level engine attributes patched so the lifespan's create_all
-      hits the same StaticPool engine (tables already exist → no-op).
-    """
-    from unittest.mock import patch
+# ── helpers used across test files ────────────────────────────────────────────
 
-    def override_get_db():
-        try:
-            yield db_session
-        finally:
-            pass
-
-    app.dependency_overrides[get_db] = override_get_db
-
-    with patch.object(db_module, "engine", db_engine), \
-         patch.object(main_module, "engine", db_engine):
-        with TestClient(app, raise_server_exceptions=True) as c:
-            yield c
-
-    app.dependency_overrides.clear()
-
-
-# ── small helpers used in multiple test files ─────────────────────────────────
-
-def make_account(client: TestClient, email: str, pin: str = "1234") -> dict:
-    resp = client.post(
-        "/accounts",
-        json={"email": email, "country_code": "US", "pin": pin},
-    )
+def make_account(client: TestClient, email: str, pin: str = PIN, country: str = "US") -> dict:
+    resp = client.post("/accounts", json={"email": email, "country_code": country, "pin": pin})
     assert resp.status_code == 201, resp.json()
     return resp.json()
 
 
 def verify_account(client: TestClient, account_id: int) -> dict:
-    resp = client.post(f"/accounts/{account_id}/verify-kyc")
+    resp = client.post(f"/accounts/{account_id}/verify-kyc", headers=ADMIN)
     assert resp.status_code == 200, resp.json()
     return resp.json()
 
 
-def deposit(client: TestClient, account_id: int, amount: str, pin: str = "1234"):
+def ready_account(client: TestClient, email: str, balance: str | None = None, country: str = "US") -> dict:
+    """Create + KYC-verify an account, optionally funding it."""
+    acct = make_account(client, email, country=country)
+    verify_account(client, acct["id"])
+    if balance is not None:
+        resp = deposit(client, acct["id"], balance)
+        assert resp.status_code == 200, resp.json()
+    return acct
+
+
+def deposit(client: TestClient, account_id: int, amount, pin: str = PIN):
+    return client.post(f"/accounts/{account_id}/deposit", json={"amount": amount, "pin": pin})
+
+
+def withdraw(client: TestClient, account_id: int, amount, pin: str = PIN):
+    return client.post(f"/accounts/{account_id}/withdraw", json={"amount": amount, "pin": pin})
+
+
+def transfer(client: TestClient, sender_id: int, recipient_id: int, amount, pin: str = PIN):
     return client.post(
-        f"/accounts/{account_id}/deposit",
-        json={"amount": amount, "pin": pin},
+        "/transfers",
+        json={"sender_id": sender_id, "recipient_id": recipient_id, "amount": amount, "pin": pin},
     )
+
+
+def approve(client: TestClient, transfer_id: int, approver_id: int, pin: str = PIN):
+    return client.post(f"/transfers/{transfer_id}/approve", json={"approver_id": approver_id, "pin": pin})
+
+
+def get_account(client: TestClient, account_id: int, pin: str = PIN):
+    return client.get(f"/accounts/{account_id}", headers={"X-PIN": pin})
+
+
+def balance_of(client: TestClient, account_id: int) -> str:
+    resp = get_account(client, account_id)
+    assert resp.status_code == 200, resp.json()
+    return resp.json()["balance"]
+
+
+def audit_log(client: TestClient) -> list[dict]:
+    resp = client.get("/audit", headers=ADMIN)
+    assert resp.status_code == 200, resp.json()
+    return resp.json()
+
+
+def run_concurrently(calls, workers: int = 10) -> list:
+    """Run zero-argument callables at the same time; return their results in order."""
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        return list(pool.map(lambda call: call(), calls))

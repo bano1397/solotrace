@@ -1,7 +1,11 @@
-fastapi
-uvicorn[standard]
-sqlalchemy
-pydantic
-pytest
-httpx
-pypdf
+# LedgerLite (sample API) + SoloTrace (auditor). Versions pinned for reproducible audits.
+fastapi==0.141.1
+starlette==1.7.0
+uvicorn[standard]==0.54.0
+sqlalchemy==2.1.1
+pydantic==2.13.5
+email-validator==2.3.0
+pypdf==6.19.0
+# test tooling
+pytest==9.1.1
+httpx==0.28.1
