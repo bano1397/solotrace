@@ -1,0 +1,23 @@
+# Requirement schema (supporting file for the solotrace-audit skill)
+
+Paste this as a quick-reference when reviewing extracted requirements.
+
+```json
+{
+  "id": "REQ-01",
+  "title": "Short title",
+  "text": "Full requirement text from the specification.",
+  "acceptance_criteria": [
+    "System must reject deposits of 0 or less.",
+    "System must reject deposits greater than 50000.00."
+  ],
+  "risk": "High",
+  "change": "none"
+}
+```
+
+**Rules:**
+- `id` must match `^REQ-\d{2}$`
+- `risk` ∈ `{High, Medium, Low}`
+- `change` ∈ `{none, changed, new}`
+- `acceptance_criteria` must have at least one entry

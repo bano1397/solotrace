@@ -1,0 +1,24 @@
+# Verdict schema (supporting file for the solotrace-audit skill)
+
+Paste this as a quick-reference when writing verdicts.
+
+```json
+{
+  "id": "REQ-01",
+  "status": "covered",
+  "reason": "Deposit limit enforced in services.py; boundary tests cover 0, negative, 50000.00, 50000.01.",
+  "code_evidence": [
+    { "file": "ledgerlite/services.py", "line": 123, "snippet": "if amount > _MAX_DEPOSIT:" }
+  ],
+  "test_evidence": [
+    { "file": "ledgerlite/tests/test_spec2_deposit_limits.py", "test_name": "TestDepositValidation::test_boundary_50000_01_rejected" }
+  ],
+  "suggested_fix": null
+}
+```
+
+**Rules:**
+- `id` must match `^REQ-\d{2}$`
+- `status` ∈ `{covered, untested, contradicts, missing}`
+- `code_evidence[].line` must be an integer ≥ 1
+- `suggested_fix` is optional (omit or set to null for covered verdicts)

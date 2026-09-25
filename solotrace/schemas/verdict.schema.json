@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/solotrace/schemas/verdict.schema.json",
+  "title": "Verdict",
+  "description": "Audit verdict for a single requirement.",
+  "type": "object",
+  "required": ["id", "status", "reason", "code_evidence", "test_evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^REQ-\\d{2}$",
+      "description": "The requirement ID this verdict applies to."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["covered", "untested", "contradicts", "missing"],
+      "description": "Audit outcome for the requirement."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable explanation of the verdict."
+    },
+    "code_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "line", "snippet"],
+        "additionalProperties": false,
+        "properties": {
+          "file": { "type": "string", "minLength": 1 },
+          "line": { "type": "integer", "minimum": 1 },
+          "snippet": { "type": "string", "minLength": 1 }
+        }
+      },
+      "description": "Zero or more code locations that support the verdict."
+    },
+    "test_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "test_name"],
+        "additionalProperties": false,
+        "properties": {
+          "file": { "type": "string", "minLength": 1 },
+          "test_name": { "type": "string", "minLength": 1 }
+        }
+      },
+      "description": "Zero or more test locations that cover the requirement."
+    },
+    "suggested_fix": {
+      "type": "string",
+      "description": "Optional guidance on how to resolve a non-covered verdict."
+    }
+  }
+}
