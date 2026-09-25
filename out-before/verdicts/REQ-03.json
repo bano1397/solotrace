@@ -1,0 +1,36 @@
+{
+  "id": "REQ-03",
+  "status": "covered",
+  "reason": "The withdrawal logic in services.py checks for a negative resulting balance and raises a 400 HTTPException before applying the deduction. Both acceptance criteria are exercised by dedicated tests: overdraft rejection is asserted in test_withdrawal_overdraft_rejected and balance immutability after rejection is confirmed in test_balance_never_goes_negative.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/services.py",
+      "line": 153,
+      "snippet": "if account.balance - amount < Decimal(\"0\"):"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 154,
+      "snippet": "    raise HTTPException(status_code=400, detail=\"Insufficient funds\")"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 156,
+      "snippet": "account.balance -= amount"
+    }
+  ],
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "test_name": "test_withdrawal_overdraft_rejected"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "test_name": "test_balance_never_goes_negative"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "test_name": "test_withdrawal_exact_balance_allowed"
+    }
+  ]
+}

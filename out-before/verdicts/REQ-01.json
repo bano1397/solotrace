@@ -1,0 +1,45 @@
+{
+  "id": "REQ-01",
+  "status": "covered",
+  "reason": "Duplicate email is rejected with HTTP 409 in create_account, and all three money-movement operations gate on _require_kyc (HTTP 403); both criteria are directly asserted by named tests in test_spec1_accounts_kyc.py.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/services.py",
+      "line": 97,
+      "snippet": "if db.query(Account).filter(Account.email == email).first():\n    raise HTTPException(status_code=409, detail=\"Email already registered\")"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 83,
+      "snippet": "def _require_kyc(account: Account) -> None:\n    if account.kyc_status != \"verified\":\n        raise HTTPException(status_code=403, detail=\"Account KYC is not verified\")"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 129,
+      "snippet": "_check_pin(...); _require_kyc(account)  # deposit, withdraw, transfer all call _require_kyc"
+    }
+  ],
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "test_name": "test_duplicate_email_rejected"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "test_name": "test_deposit_blocked_before_kyc"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "test_name": "test_withdraw_blocked_before_kyc"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "test_name": "test_transfer_sender_blocked_before_kyc"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "test_name": "test_transfer_recipient_blocked_before_kyc"
+    }
+  ],
+  "suggested_fix": ""
+}

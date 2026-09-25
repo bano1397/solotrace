@@ -1,0 +1,39 @@
+{
+  "id": "REQ-06",
+  "status": "untested",
+  "reason": "Both acceptance criteria are correctly implemented — _write_audit() is called in deposit(), withdraw(), create_transfer(), and approve_transfer(), and no PATCH/PUT endpoint for audit entries exists — but no test in the suite asserts either criterion.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/services.py",
+      "line": 37,
+      "snippet": "def _write_audit(db, *, actor_id, action, amount, account_id, related_account_id):"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 138,
+      "snippet": "_write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 157,
+      "snippet": "_write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 198,
+      "snippet": "_write_audit(db, actor_id=sender_id, action=\"transfer_initiated\", amount=amount, account_id=sender_id, related_account_id=recipient_id)"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 233,
+      "snippet": "_write_audit(db, actor_id=approver_id, action=\"transfer_approved\", amount=transfer.amount, account_id=transfer.sender_id, related_account_id=transfer.recipient_id)"
+    },
+    {
+      "file": "ledgerlite/main.py",
+      "line": 95,
+      "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])"
+    }
+  ],
+  "test_evidence": [],
+  "suggested_fix": "Add tests that (1) call GET /audit after each money-movement operation and assert exactly one new entry with correct actor/action/amount fields, and (2) assert that PATCH /audit and PUT /audit/1 return 404 or 405."
+}

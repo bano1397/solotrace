@@ -1,0 +1,48 @@
+{
+  "id": "REQ-08",
+  "status": "untested",
+  "reason": "The implementation correctly uses exact decimal arithmetic throughout (Decimal(str(value)) conversions, Numeric(12,2) storage, and 2dp string serialisation via field_serializer), so no contradictions exist. Acceptance criterion 2 (2dp string format) is implicitly covered by multiple tests asserting responses such as '100.00', '300.00', and '50000.00'. However, acceptance criterion 1 (0.10 + 0.20 == 0.30 exactly) has no asserting test, leaving the most critical floating-point correctness claim unverified.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/models.py",
+      "line": 24,
+      "snippet": "balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), ...)"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 10,
+      "snippet": "from decimal import Decimal, InvalidOperation"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 88,
+      "snippet": "_to_decimal() converts all inputs via Decimal(str(value))"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 105,
+      "snippet": "balance=Decimal(\"0.00\"),"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 64,
+      "snippet": "@field_serializer(\"balance\") -> f\"{v:.2f}\"  # returns string with 2dp"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 80,
+      "snippet": "@field_serializer(\"amount\") on TransferResponse -> f\"{v:.2f}\""
+    }
+  ],
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
+      "test_name": "test_multiple_deposits_accumulate"
+    },
+    {
+      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
+      "test_name": "test_boundary_50000_accepted"
+    }
+  ],
+  "suggested_fix": "Add a test that deposits 0.10, then 0.20, and asserts the balance is exactly '0.30' (not '0.30000000000000004'), confirming Decimal arithmetic is used throughout."
+}
