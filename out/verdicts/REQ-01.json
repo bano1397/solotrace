@@ -5,18 +5,21 @@
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 97,
-      "snippet": "if db.query(Account).filter(Account.email == email).first():\n    raise HTTPException(status_code=409, detail=\"Email already registered\")"
+      "line": 99,
+      "snippet": "    if db.query(Account).filter(Account.email == email).first():",
+      "verified": true
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 83,
-      "snippet": "def _require_kyc(account: Account) -> None:\n    if account.kyc_status != \"verified\":\n        raise HTTPException(status_code=403, detail=\"Account KYC is not verified\")"
+      "line": 84,
+      "snippet": "def _require_kyc(account: Account) -> None:",
+      "verified": true
     },
     {
       "file": "ledgerlite/services.py",
       "line": 129,
-      "snippet": "_check_pin(...); _require_kyc(account)  # deposit, withdraw, transfer all call _require_kyc"
+      "snippet": "    _check_pin(account, pin)",
+      "verified": false
     }
   ],
   "test_evidence": [

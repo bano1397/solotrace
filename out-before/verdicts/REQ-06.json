@@ -1,37 +1,43 @@
 {
   "id": "REQ-06",
   "status": "untested",
-  "reason": "Both acceptance criteria are correctly implemented — _write_audit() is called in deposit(), withdraw(), create_transfer(), and approve_transfer(), and no PATCH/PUT endpoint for audit entries exists — but no test in the suite asserts either criterion.",
+  "reason": "Both acceptance criteria are correctly implemented \u2014 _write_audit() is called in deposit(), withdraw(), create_transfer(), and approve_transfer(), and no PATCH/PUT endpoint for audit entries exists \u2014 but no test in the suite asserts either criterion.",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
       "line": 37,
-      "snippet": "def _write_audit(db, *, actor_id, action, amount, account_id, related_account_id):"
+      "snippet": "def _write_audit(",
+      "verified": false
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 138,
-      "snippet": "_write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)"
+      "line": 139,
+      "snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
+      "verified": true
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 157,
-      "snippet": "_write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)"
+      "line": 158,
+      "snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)",
+      "verified": true
     },
     {
       "file": "ledgerlite/services.py",
       "line": 198,
-      "snippet": "_write_audit(db, actor_id=sender_id, action=\"transfer_initiated\", amount=amount, account_id=sender_id, related_account_id=recipient_id)"
+      "snippet": "        _write_audit(",
+      "verified": false
     },
     {
       "file": "ledgerlite/services.py",
       "line": 233,
-      "snippet": "_write_audit(db, actor_id=approver_id, action=\"transfer_approved\", amount=transfer.amount, account_id=transfer.sender_id, related_account_id=transfer.recipient_id)"
+      "snippet": "        _write_audit(",
+      "verified": false
     },
     {
       "file": "ledgerlite/main.py",
       "line": 95,
-      "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])"
+      "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])",
+      "verified": true
     }
   ],
   "test_evidence": [],

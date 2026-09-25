@@ -120,9 +120,11 @@ def validate_verdict(data: Any) -> None:
             raise ValueError(f"{ectx}: 'line' must be an integer")
         if item["line"] < 1:
             raise ValueError(f"{ectx}: 'line' must be >= 1")
-        extra = set(item.keys()) - {"file", "line", "snippet"}
+        extra = set(item.keys()) - {"file", "line", "snippet", "verified"}
         if extra:
             raise ValueError(f"{ectx}: unexpected fields: {sorted(extra)!r}")
+        if "verified" in item and not isinstance(item["verified"], bool):
+            raise ValueError(f"{ectx}: 'verified' must be a boolean if present")
 
     # test_evidence
     te = data["test_evidence"]
@@ -144,6 +146,7 @@ def validate_verdict(data: Any) -> None:
         raise ValueError(f"{ctx}: 'suggested_fix' must be a string if present")
 
     # no extra keys
+    # "verified" is not a top-level field; it lives inside code_evidence items
     allowed = {"id", "status", "reason", "code_evidence", "test_evidence", "suggested_fix"}
     extra = set(data.keys()) - allowed
     if extra:

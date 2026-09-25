@@ -5,8 +5,9 @@
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 184,
-      "snippet": "try:\n    sender.balance -= amount\n    if not large:\n        recipient.balance += amount\n    transfer = Transfer(...)\n    db.add(transfer)\n    db.flush()\n    _write_audit(...)\n    db.commit()\nexcept Exception:\n    db.rollback()\n    raise"
+      "line": 185,
+      "snippet": "    try:",
+      "verified": true
     }
   ],
   "test_evidence": [

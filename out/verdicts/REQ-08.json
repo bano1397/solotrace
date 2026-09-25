@@ -6,32 +6,38 @@
     {
       "file": "ledgerlite/models.py",
       "line": 24,
-      "snippet": "balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), ...)"
+      "snippet": "    balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))",
+      "verified": false
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 10,
-      "snippet": "from decimal import Decimal, InvalidOperation"
+      "line": 11,
+      "snippet": "from decimal import Decimal, InvalidOperation",
+      "verified": true
     },
     {
       "file": "ledgerlite/services.py",
       "line": 88,
-      "snippet": "_to_decimal() converts all inputs via Decimal(str(value))"
+      "snippet": "def _to_decimal(value) -> Decimal:",
+      "verified": false
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 105,
-      "snippet": "balance=Decimal(\"0.00\"),"
+      "line": 106,
+      "snippet": "        balance=Decimal(\"0.00\"),",
+      "verified": true
     },
     {
       "file": "ledgerlite/schemas.py",
       "line": 64,
-      "snippet": "@field_serializer(\"balance\") -> f\"{v:.2f}\"  # returns string with 2dp"
+      "snippet": "    @field_serializer(\"balance\")",
+      "verified": false
     },
     {
       "file": "ledgerlite/schemas.py",
       "line": 80,
-      "snippet": "@field_serializer(\"amount\") on TransferResponse -> f\"{v:.2f}\""
+      "snippet": "    @field_serializer(\"amount\")",
+      "verified": false
     }
   ],
   "test_evidence": [

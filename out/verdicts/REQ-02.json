@@ -5,28 +5,33 @@
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 18,
-      "snippet": "_MAX_DEPOSIT = Decimal(\"50000.00\")"
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 132,
-      "snippet": "if amount <= Decimal(\"0\"):"
+      "line": 19,
+      "snippet": "_MAX_DEPOSIT = Decimal(\"50000.00\")",
+      "verified": true
     },
     {
       "file": "ledgerlite/services.py",
       "line": 133,
-      "snippet": "    raise HTTPException(status_code=400, detail=\"Deposit amount must be greater than 0\")"
+      "snippet": "    if amount <= Decimal(\"0\"):",
+      "verified": true
     },
     {
       "file": "ledgerlite/services.py",
       "line": 134,
-      "snippet": "if amount > _MAX_DEPOSIT:"
+      "snippet": "        raise HTTPException(status_code=400, detail=\"Deposit amount must be greater than 0\")",
+      "verified": true
     },
     {
       "file": "ledgerlite/services.py",
       "line": 135,
-      "snippet": "    raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {_MAX_DEPOSIT}\")"
+      "snippet": "    if amount > _MAX_DEPOSIT:",
+      "verified": true
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 136,
+      "snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {_MAX_DEPOSIT}\")",
+      "verified": true
     }
   ],
   "test_evidence": [

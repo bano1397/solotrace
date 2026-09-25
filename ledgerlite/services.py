@@ -5,6 +5,7 @@ All money arithmetic uses Python Decimal.  Services raise fastapi.HTTPException
 so routes stay thin.
 """
 import datetime
+from datetime import timezone
 import random
 import string
 from decimal import Decimal, InvalidOperation
@@ -49,7 +50,7 @@ def _write_audit(
         amount=amount,
         account_id=account_id,
         related_account_id=related_account_id,
-        timestamp=datetime.datetime.utcnow(),
+        timestamp=datetime.datetime.now(timezone.utc),
     )
     db.add(entry)
     return entry
