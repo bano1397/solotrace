@@ -1,0 +1,134 @@
+[
+  {
+    "id": "REQ-01",
+    "title": "Unique email and KYC gating",
+    "text": "An account can only be created with a unique email address. An account may not send or receive money until its KYC status is verified.",
+    "acceptance_criteria": [
+      "Duplicate email is rejected.",
+      "Any money movement on an unverified account is rejected."
+    ],
+    "risk": "High",
+    "change": "none"
+  },
+  {
+    "id": "REQ-02",
+    "title": "Deposit amount limits",
+    "text": "A deposit amount must be greater than 0 and at most 50,000.00 per transaction.",
+    "acceptance_criteria": [
+      "Deposits of 0 are rejected.",
+      "Negative deposit amounts are rejected.",
+      "A deposit of 50,000.01 is rejected.",
+      "A deposit of 50,000.00 is accepted."
+    ],
+    "risk": "Medium",
+    "change": "none"
+  },
+  {
+    "id": "REQ-03",
+    "title": "Withdrawal floor — no negative balance",
+    "text": "A withdrawal must never make the account balance negative.",
+    "acceptance_criteria": [
+      "Withdrawing more than the balance is rejected.",
+      "The balance is unchanged after a rejected withdrawal."
+    ],
+    "risk": "High",
+    "change": "none"
+  },
+  {
+    "id": "REQ-04",
+    "title": "Atomic transfers",
+    "text": "A transfer between two accounts is atomic: either both the debit and the credit happen, or neither does.",
+    "acceptance_criteria": [
+      "If the credit fails, the debit is rolled back."
+    ],
+    "risk": "High",
+    "change": "none"
+  },
+  {
+    "id": "REQ-05",
+    "title": "Large-transfer pending approval threshold",
+    "text": "A transfer of 5,000.00 or more must be held as pending_approval until a second, different user approves it. (v1.0 threshold was 10,000.00.)",
+    "acceptance_criteria": [
+      "A transfer of 5,000.00 is held as pending_approval, not completed immediately.",
+      "The initiator cannot approve their own transfer."
+    ],
+    "risk": "High",
+    "change": "changed"
+  },
+  {
+    "id": "REQ-06",
+    "title": "Audit log for every money movement",
+    "text": "Every money movement (deposit, withdrawal, transfer, approval) writes an audit log entry containing actor, action, amount, account(s) and UTC timestamp. Audit entries cannot be edited.",
+    "acceptance_criteria": [
+      "Each money-movement operation adds exactly one audit log entry.",
+      "No update endpoint exists for audit entries."
+    ],
+    "risk": "High",
+    "change": "none"
+  },
+  {
+    "id": "REQ-07",
+    "title": "Account lockout after failed PIN attempts",
+    "text": "An account is locked after 5 consecutive failed PIN attempts. A locked account cannot move money.",
+    "acceptance_criteria": [
+      "The 5th wrong PIN locks the account.",
+      "A correct PIN entered before the 5th failure resets the counter."
+    ],
+    "risk": "Medium",
+    "change": "none"
+  },
+  {
+    "id": "REQ-08",
+    "title": "Exact decimal arithmetic",
+    "text": "All monetary values are stored and calculated as exact decimals (never floating point) and returned with exactly 2 decimal places.",
+    "acceptance_criteria": [
+      "0.10 + 0.20 equals 0.30 exactly.",
+      "The API returns monetary values formatted as strings with exactly 2 decimal places (e.g. \"0.30\")."
+    ],
+    "risk": "Medium",
+    "change": "none"
+  },
+  {
+    "id": "REQ-09",
+    "title": "Daily outgoing transfer cap",
+    "text": "Total outgoing transfers per account must not exceed 20,000.00 per UTC calendar day.",
+    "acceptance_criteria": [
+      "A transfer that would take the day's total outgoing above 20,000.00 is rejected."
+    ],
+    "risk": "High",
+    "change": "new"
+  },
+  {
+    "id": "REQ-10",
+    "title": "Sanctions list blocking",
+    "text": "Transfers to an account whose country code is on the sanctions list (KP, IR, SY, CU) are blocked and logged.",
+    "acceptance_criteria": [
+      "A transfer to a sanctioned country is rejected with reason \"sanctions\".",
+      "An audit entry is written for the blocked transfer."
+    ],
+    "risk": "High",
+    "change": "new"
+  },
+  {
+    "id": "REQ-11",
+    "title": "Masked account numbers in statements",
+    "text": "Account statements must mask account numbers, showing only the last 4 digits (e.g. ****1234).",
+    "acceptance_criteria": [
+      "No full account number appears in any statement response.",
+      "Account numbers in statements are masked, showing only the last 4 digits."
+    ],
+    "risk": "Medium",
+    "change": "new"
+  },
+  {
+    "id": "REQ-12",
+    "title": "Audit log retention — no deletion",
+    "text": "Audit log entries must never be deleted through the API (7-year retention).",
+    "acceptance_criteria": [
+      "No delete endpoint exists for audit entries.",
+      "A DELETE request to audit entries returns HTTP 405 or 404."
+    ],
+    "risk": "Medium",
+    "change": "none"
+  }
+]
