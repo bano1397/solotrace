@@ -5,9 +5,14 @@ AC: if the credit fails, the debit is rolled back.
 """
 from unittest.mock import patch
 
+import pytest
+
+import ledgerlite.db as db_module
 from ledgerlite import services as svc
 from ledgerlite.models import Transfer
-from ledgerlite.tests.conftest import approve, audit_log, balance_of, db_read, make_approver, ready_account, transfer
+from ledgerlite.tests.conftest import (
+    PIN, approve, audit_log, balance_of, db_read, make_approver, ready_account, transfer,
+)
 
 
 def _pair(client, sender_balance="500.00"):
@@ -84,5 +89,24 @@ def test_failed_credit_during_approval_rolls_back(client, unsafe_client):
     held = transfer(client, sender["id"], recipient["id"], "5000.00").json()
     with patch.object(svc, "_credit", side_effect=RuntimeError("simulated failure during credit")):
         assert approve(unsafe_client, held["id"], approver["id"]).status_code == 500
+    assert db_read(lambda s: s.get(Transfer, held["id"]).status) == "pending_approval"
+    assert balance_of(client, recipient["id"]) == "0.00"
+
+
+def test_failed_approval_is_undone_by_the_service_itself(client):
+    """Found by IBM Bob's final audit (mutation REQ-04-B1): approve_transfer must roll back a
+    failed approval itself, not rely on the caller closing the session.  A caller that goes
+    on using the same session (say, to record the error) must not commit half an approval."""
+    sender, recipient = _pair(client, "6000.00")
+    approver = make_approver(client, "approver@example.com")
+    held = transfer(client, sender["id"], recipient["id"], "5000.00").json()
+    db = db_module.SessionLocal()
+    try:
+        with patch.object(svc, "_credit", side_effect=RuntimeError("simulated failure during credit")):
+            with pytest.raises(RuntimeError):
+                svc.approve_transfer(db, held["id"], approver_id=approver["id"], pin=PIN)
+        db.commit()
+    finally:
+        db.close()
     assert db_read(lambda s: s.get(Transfer, held["id"]).status) == "pending_approval"
     assert balance_of(client, recipient["id"]) == "0.00"
