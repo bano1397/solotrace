@@ -24,6 +24,7 @@ SCREENSHOTS = {
     "Build the SoloTrace CLI": "solotrace_task02_summary_P5_cli_evidence_verifier.png",
     "Stage 3 — FIX": "solotrace_task03_summary_P6_fix_and_reaudit.png",
     "Polish SoloTrace": "solotrace_task04_summary_P7_dashboard_pages.png",
+    "Final audit": "solotrace_task05_summary_final_audit.png",
 }
 
 
@@ -48,7 +49,7 @@ def main() -> None:
         if parent or ttype != "normal" or not (title or "").strip():
             continue
         cost = json.loads(costs or "{}")
-        if cost.get("cost", 0) < 1:  # skip an aborted 0.09-coin attempt in the wrong folder
+        if cost.get("cost", 0) < 0.2:  # skip an aborted 0.09-coin attempt in the wrong folder
             continue
         number += 1
         subs = children.get(tid, [])
