@@ -1,8 +1,8 @@
 # SoloTrace audit report — LedgerLite Payments API
 
-*Generated 2026-09-26T02:10:27+00:00 by SoloTrace 2.0.0 · verdicts by IBM Bob 2.0 — task 5 (SoloTrace Auditor mode, 12 parallel subagents; 11 finished before the 40-Bobcoin budget ran out, the REQ-12 verdict was reformatted to the schema unchanged, and this pipeline was run locally).*
+*Generated 2026-09-26T10:24:34+00:00 by SoloTrace 2.0.0 · verdicts by IBM Bob 2.0 — task 5 (SoloTrace Auditor mode, 12 parallel subagents; 11 finished before the 40-Bobcoin budget ran out, the REQ-12 verdict was reformatted to the schema unchanged, and this pipeline was run locally).*
 
-> **Result:** 11 of 12 requirements are **proven**: implemented, cited with verified file:line evidence, covered by passing tests, and every deliberate sabotage of them was caught by the tests.
+> **Result:** 12 of 12 requirements are **proven**: implemented, cited with verified file:line evidence, covered by passing tests, and every deliberate sabotage of them was caught by the tests.
 
 ## 1. Scope
 
@@ -10,10 +10,10 @@
 |---|---|
 | Specification | `demo-data/LedgerLite-Requirements-v2.0.pdf` (version 2.0) |
 | Specification SHA-256 | `cf06e0a2c238e7806ae6692702a6d4a713816333b83e22a8b2e7ff14007f9250` |
-| Code audited | commit `08a08b04147ec6935476a4d41752a69cd80887c4` |
-| Test suite | `ledgerlite/tests`: 161 passed, 0 failed, 0 skipped |
+| Code audited | commit `6a75b7d0eb5644579fd0030939816d6d01200f7e` |
+| Test suite | `ledgerlite/tests`: 162 passed, 0 failed, 0 skipped |
 | Evidence verification | 82/85 code citations verified against the audited commit |
-| Mutation testing | 98/99 mutations killed |
+| Mutation testing | 99/99 mutations killed |
 | Auditor | IBM Bob 2.0 — task 5 (SoloTrace Auditor mode, 12 parallel subagents; 11 finished before the 40-Bobcoin budget ran out, the REQ-12 verdict was reformatted to the schema unchanged, and this pipeline was run locally) |
 | Audited at | 2026-09-26T02:07:02+00:00 |
 
@@ -23,7 +23,7 @@
 |---|---|---|---|---|---|---|
 | Baseline (IBM Bob task 1) | `b52c5e4` | 4/12 | 27/36 | 28 passed / 0 failed | — | not tested |
 | Round 1 (after Bob's fixes, task 3) | `149d409` | 12/12 | 55/57 | 58 passed / 0 failed | 23/34 | 6/12 |
-| Round 2 (final) | `08a08b0` | 12/12 | 82/85 | 161 passed / 0 failed | 98/99 | 11/12 |
+| Round 2 (final) | `6a75b7d` | 12/12 | 82/85 | 162 passed / 0 failed | 99/99 | 12/12 |
 
 *Proven* = the AI verdict is `covered`, at least one code citation is verified verbatim, at least one cited test exists and passed, and every mutation of the requirement was killed by the test suite.
 
@@ -34,7 +34,7 @@
 | REQ-01 | Unique email and KYC gating | High | none | ☑️ covered | ✅ proven | ✅ proven | 6/6 | 6/6 | 8/8 |
 | REQ-02 | Deposit amount limits | Medium | none | ☑️ covered | ✅ proven | ✅ proven | 6/6 | 5/5 | 8/8 |
 | REQ-03 | Withdrawal floor — no negative balance | High | none | ☑️ covered | ✅ proven | ✅ proven | 5/5 | 6/6 | 7/7 |
-| REQ-04 | Atomic transfers | High | none | ⚠️ unverified | 🟠 weak | 🟠 weak | 9/11 | 4/4 | 6/7 |
+| REQ-04 | Atomic transfers | High | none | ⚠️ unverified | 🟠 weak | ✅ proven | 9/11 | 4/4 | 7/7 |
 | REQ-05 | Large-transfer pending approval threshold | High | changed | ❌ contradicts | 🟠 weak | ✅ proven | 5/5 | 2/2 | 11/11 |
 | REQ-06 | Audit log for every money movement | High | none | ⚠️ untested | 🟠 weak | ✅ proven | 10/10 | 10/10 | 11/11 |
 | REQ-07 | Account lockout after failed PIN attempts | Medium | none | ⚠️ untested | ✅ proven | ✅ proven | 9/9 | 7/7 | 9/9 |
@@ -161,7 +161,7 @@ Mutations (deliberate sabotage — each must make a test fail):
 
 ### REQ-04 — Atomic transfers
 
-**Risk:** High · **Change in v2.0:** none · **Final status:** 🟠 weak
+**Risk:** High · **Change in v2.0:** none · **Final status:** ✅ proven
 
 > A transfer between two accounts is atomic: either both the debit and the credit happen, or neither does.
 
@@ -196,7 +196,7 @@ Mutations (deliberate sabotage — each must make a test fail):
 - REQ-04-X2: [independent QA R2-04b] approval commits 'completed' BEFORE crediting (credit failure on approval = debit without credit) — **killed** by `test_failed_credit_during_approval_rolls_back`
 - REQ-04-X3: [independent QA R2-04c] create_transfer commits (not rolls back) on unexpected errors — **killed** by `test_failed_credit_rolls_back_the_debit`
 - REQ-04-X4: [independent QA R2-04d] transfer row + balances committed before the audit write — **killed** by `test_failed_audit_write_rolls_back_everything`
-- REQ-04-B1: Remove db.rollback() from approve_transfer's exception handler so a credit failure during approval leaves the balance change uncommitted but not rolled back, violating atomicity on the approval path. — **survived**
+- REQ-04-B1: Remove db.rollback() from approve_transfer's exception handler so a credit failure during approval leaves the balance change uncommitted but not rolled back, violating atomicity on the approval path. — **killed** by `test_failed_approval_is_undone_by_the_service_itself`
 
 ### REQ-05 — Large-transfer pending approval threshold
 
@@ -404,7 +404,7 @@ Mutations (deliberate sabotage — each must make a test fail):
 - REQ-09-M1: raise the daily cap by one cent — **killed** by `test_one_cent_over_the_cap_rejected`
 - REQ-09-M2: pending transfers no longer count toward the cap — **killed** by `test_one_cent_over_the_cap_rejected`
 - REQ-09-M3: count yesterday's transfers too — **killed** by `test_yesterdays_transfers_do_not_count`
-- REQ-09-M4: stop serialising transactions (concurrent transfers race the cap) — **killed** by `test_concurrent_duplicate_signups_give_one_account`
+- REQ-09-M4: stop serialising transactions (concurrent transfers race the cap) — **killed** by `test_concurrent_withdrawals_cannot_overdraw`
 - REQ-09-M5: drop the UTC-day window (cap becomes all-time) — **killed** by `test_yesterdays_transfers_do_not_count`
 - REQ-09-X1: [independent QA R2-09a] UTC day start keeps the current microseconds (transfers in the first instant after midnight not counted) — **killed** by `test_transfer_just_after_midnight_counts_for_the_whole_day`
 - REQ-09-X2: [independent QA R2-09b] day boundary uses the server-local date (UTC+5: cap disabled 19:00-24:00 UTC) — **killed** by `test_the_day_is_the_utc_day_not_the_server_local_day`

@@ -6,7 +6,7 @@
   "bob_task": "task05",
   "audited_at": "2026-09-26T02:07:02+00:00",
   "verdicts_sha256": "cad9137afb84d9f6b83f5cd297009050541f47d1536fff3d0334b589e675a581",
-  "code_commit": "08a08b04147ec6935476a4d41752a69cd80887c4",
+  "code_commit": "6a75b7d0eb5644579fd0030939816d6d01200f7e",
   "dirty": false,
   "spec": {
     "path": "demo-data/LedgerLite-Requirements-v2.0.pdf",

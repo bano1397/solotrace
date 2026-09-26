@@ -9,7 +9,7 @@
     "bob_task": "task05",
     "audited_at": "2026-09-26T02:07:02+00:00",
     "verdicts_sha256": "cad9137afb84d9f6b83f5cd297009050541f47d1536fff3d0334b589e675a581",
-    "code_commit": "08a08b04147ec6935476a4d41752a69cd80887c4",
+    "code_commit": "6a75b7d0eb5644579fd0030939816d6d01200f7e",
     "dirty": false,
     "spec": {
       "path": "demo-data/LedgerLite-Requirements-v2.0.pdf",
@@ -32,27 +32,27 @@
       "score_percent": 100.0
     },
     "statuses": {
-      "proven": 11,
+      "proven": 12,
       "covered": 0,
-      "weak": 1,
+      "weak": 0,
       "unverified": 0,
       "untested": 0,
       "contradicts": 0,
       "missing": 0
     },
-    "evidence_score_percent": 91.7,
-    "proven_percent": 91.7,
+    "evidence_score_percent": 100.0,
+    "proven_percent": 100.0,
     "citations_verified": 82,
     "citations_total": 85,
     "mutation_testing": true,
-    "mutations_killed": 98,
+    "mutations_killed": 99,
     "mutations_total": 99,
     "tests_run": {
-      "total": 161,
-      "passed": 161,
+      "total": 162,
+      "passed": 162,
       "failed": 0,
       "skipped": 0,
-      "commit": "08a08b04147ec6935476a4d41752a69cd80887c4"
+      "commit": "6a75b7d0eb5644579fd0030939816d6d01200f7e"
     }
   },
   "rows": [
@@ -416,7 +416,7 @@
       "risk": "High",
       "change": "none",
       "ai_status": "covered",
-      "status": "weak",
+      "status": "proven",
       "reason": "The create_transfer function in services.py (lines 310-341) wraps all mutations — debit, credit, Transfer row insert, flush, and audit write — inside a single try/except block. db.commit() is called only after every step succeeds (line 336). If any step raises (including a credit failure), the except Exception handler at line 339 calls db.rollback() (line 340) and re-raises, guaranteeing no partial state is persisted. The approve_transfer function (lines 368-394) applies the same pattern for the large-transfer approval path: the status update, credit, and audit write are all covered by the same rollback-on-exception guard (lines 392-394). Four dedicated test functions in test_req04_transfer_atomicity.py exercise both the happy path and every failure mode: credit failure rolls back the debit (test_failed_credit_rolls_back_the_debit), audit-write failure rolls back both balance changes (test_failed_audit_write_rolls_back_everything), and approval-time credit failure leaves the transfer in pending_approval state (test_failed_credit_during_approval_rolls_back).",
       "suggested_fix": "",
       "evidence": [
@@ -553,9 +553,9 @@
         "tests_cited": 4,
         "mutations": {
           "tried": 7,
-          "killed": 6,
-          "survived": 1,
-          "proven": false
+          "killed": 7,
+          "survived": 0,
+          "proven": true
         }
       }
     },
