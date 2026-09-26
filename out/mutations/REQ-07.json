@@ -56,6 +56,13 @@
       "find": "    account = get_account_or_404(db, account_id)\n    _check_pin(db, account, pin_ok)\n    db.commit()\n",
       "replace": "    account = get_account_or_404(db, account_id)\n    if account.locked:\n        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")\n    if not pin_ok:\n        raise HTTPException(status_code=403, detail=\"Invalid PIN\")\n    db.commit()\n",
       "description": "[independent QA R2-07c] GET /accounts/{id} and /statement check the PIN without counting failures"
+    },
+    {
+      "id": "REQ-07-B1",
+      "file": "ledgerlite/services.py",
+      "find": "    account.failed_pin_attempts += 1",
+      "replace": "    account.failed_pin_attempts += 0",
+      "description": "counter never increments — lockout can never be reached"
     }
   ]
 }

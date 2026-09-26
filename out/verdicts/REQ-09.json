@@ -1,88 +1,135 @@
 {
   "id": "REQ-09",
   "status": "covered",
-  "reason": "The implementation introduces a hard cap of 20,000.00 in outgoing transfers per UTC calendar day. The constant _DAILY_TRANSFER_CAP is defined at module level and the check runs inside the transfer service before any balance mutation: it sums all transfers with status 'completed' or 'pending_approval' for the sender since today_start (UTC midnight), converts the aggregate to Decimal, and raises HTTP 400 when daily_total + amount > _DAILY_TRANSFER_CAP. Three dedicated tests cover the boundary exactly (20,000.00 accepted), the first cent over the boundary (20,000.01 rejected), and a three-transfer scenario where the third transfer is blocked.",
+  "reason": "The implementation enforces a hard daily outgoing transfer cap of 20,000.00 per UTC calendar day. DAILY_TRANSFER_CAP is defined as Decimal('20000.00') at module level (services.py:31). The helper outgoing_total_today() (services.py:152-161) sums all transfers by the sender with status 'completed' or 'pending_approval' (the _COUNTED_STATUSES tuple at line 34) since the UTC midnight boundary computed by _utc_day_start() (services.py:147-149). In the transfer service (services.py:301), the guard raises HTTP 400 before any balance mutation when outgoing_total_today + amount > DAILY_TRANSFER_CAP. Nine dedicated tests in test_req09_daily_cap.py exercise: exact boundary acceptance (20,000.00), one-cent overage rejection, three-transfer block, per-sender isolation, rejected transfers not counting, yesterday's transfers not counting, midnight boundary precision, UTC day (not server-local day), and concurrent transfer serialisation.",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 22,
-      "snippet": "_DAILY_TRANSFER_CAP = Decimal(\"20000.00\")",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 31,
+      "snippet": "DAILY_TRANSFER_CAP = Decimal(\"20000.00\")          # REQ-09",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 31,
+      "actual_snippet": "DAILY_TRANSFER_CAP = Decimal(\"20000.00\")          # REQ-09"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 198,
-      "snippet": "    today_utc = datetime.datetime.now(timezone.utc).date()",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 34,
+      "snippet": "_COUNTED_STATUSES = (\"completed\", \"pending_approval\")",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 34,
+      "actual_snippet": "_COUNTED_STATUSES = (\"completed\", \"pending_approval\")"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 199,
-      "snippet": "    today_start = datetime.datetime(today_utc.year, today_utc.month, today_utc.day, tzinfo=timezone.utc)",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 147,
+      "snippet": "def _utc_day_start(moment: datetime.datetime) -> datetime.datetime:",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 147,
+      "actual_snippet": "def _utc_day_start(moment: datetime.datetime) -> datetime.datetime:"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 201,
-      "snippet": "    daily_total_row = (",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 148,
+      "snippet": "    day = moment.astimezone(datetime.timezone.utc).date()",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 148,
+      "actual_snippet": "    day = moment.astimezone(datetime.timezone.utc).date()"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 210,
-      "snippet": "    daily_total = Decimal(str(daily_total_row[0]))",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 149,
+      "snippet": "    return datetime.datetime(day.year, day.month, day.day, tzinfo=datetime.timezone.utc)",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 149,
+      "actual_snippet": "    return datetime.datetime(day.year, day.month, day.day, tzinfo=datetime.timezone.utc)"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 211,
-      "snippet": "    if daily_total + amount > _DAILY_TRANSFER_CAP:",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 152,
+      "snippet": "def outgoing_total_today(db: Session, sender_id: int, now: datetime.datetime) -> Decimal:",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 152,
+      "actual_snippet": "def outgoing_total_today(db: Session, sender_id: int, now: datetime.datetime) -> Decimal:"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 212,
-      "snippet": "        raise HTTPException(",
-      "verified": false,
-      "match": "ambiguous",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 157,
+      "snippet": "            Transfer.status.in_(_COUNTED_STATUSES),",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 157,
+      "actual_snippet": "            Transfer.status.in_(_COUNTED_STATUSES),"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 158,
+      "snippet": "            Transfer.created_at >= _utc_day_start(now),",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 158,
+      "actual_snippet": "            Transfer.created_at >= _utc_day_start(now),"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 301,
+      "snippet": "    if outgoing_total_today(db, sender_id, now) + amount > DAILY_TRANSFER_CAP:",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 301,
+      "actual_snippet": "    if outgoing_total_today(db, sender_id, now) + amount > DAILY_TRANSFER_CAP:"
     }
   ],
   "test_evidence": [
     {
-      "file": "ledgerlite/tests/test_spec9_daily_cap.py",
-      "test_name": "test_daily_cap_exact_boundary_accepted",
-      "exists": false
+      "file": "ledgerlite/tests/test_req09_daily_cap.py",
+      "test_name": "test_exactly_20000_accepted",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec9_daily_cap.py",
-      "test_name": "test_daily_cap_exceeded_rejected",
-      "exists": false
+      "file": "ledgerlite/tests/test_req09_daily_cap.py",
+      "test_name": "test_one_cent_over_the_cap_rejected",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec9_daily_cap.py",
-      "test_name": "test_daily_cap_three_transfers_third_blocked",
-      "exists": false
+      "file": "ledgerlite/tests/test_req09_daily_cap.py",
+      "test_name": "test_third_of_three_7000_transfers_blocked",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req09_daily_cap.py",
+      "test_name": "test_cap_is_per_sender",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req09_daily_cap.py",
+      "test_name": "test_rejected_transfers_do_not_count",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req09_daily_cap.py",
+      "test_name": "test_yesterdays_transfers_do_not_count",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req09_daily_cap.py",
+      "test_name": "test_concurrent_transfers_cannot_exceed_the_cap",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req09_daily_cap.py",
+      "test_name": "test_transfer_just_after_midnight_counts_for_the_whole_day",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req09_daily_cap.py",
+      "test_name": "test_the_day_is_the_utc_day_not_the_server_local_day",
+      "exists": true
     }
-  ],
-  "suggested_fix": ""
+  ]
 }

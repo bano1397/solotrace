@@ -1,28 +1,58 @@
 {
   "id": "REQ-12",
   "status": "covered",
-  "reason": "No DELETE /audit route is defined in main.py, making audit log deletion impossible at the API level. The GET /audit route at line 95 is the only audit endpoint. Tests confirm that DELETE requests to /audit and /audit/{id} both return 405 Method Not Allowed.",
+  "reason": "No DELETE route exists for audit entries anywhere in the API. ledgerlite/main.py line 147 explicitly documents this design intent ('read-only by design: no update or delete route exists — REQ-06, REQ-12'), and the only audit endpoint defined is GET /audit (line 149). Six tests in test_req12_audit_retention.py collectively verify: (1) DELETE /audit returns 405, (2) DELETE /audit/{id} returns 404 or 405, (3) no DELETE route is registered on any audit path, (4) the full route inventory matches the approved read-only-audit set exactly, (5) deleting an account cannot remove its audit trail, and (6) known purge paths (/admin/audit/purge, /audit/purge) return 404 or 405. All acceptance criteria are satisfied.",
   "code_evidence": [
     {
       "file": "ledgerlite/main.py",
-      "line": 95,
-      "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])",
+      "line": 147,
+      "snippet": "# ── audit (read-only by design: no update or delete route exists — REQ-06, REQ-12) ──",
       "verified": false,
-      "match": "not_found",
+      "match": "too_short",
       "actual_line": null,
       "actual_snippet": null
+    },
+    {
+      "file": "ledgerlite/main.py",
+      "line": 149,
+      "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 149,
+      "actual_snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])"
     }
   ],
   "test_evidence": [
     {
-      "file": "ledgerlite/tests/test_spec12_audit_retention.py",
-      "test_name": "test_delete_audit_returns_405",
-      "exists": false
+      "file": "ledgerlite/tests/test_req12_audit_retention.py",
+      "test_name": "test_delete_audit_collection_returns_405",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec12_audit_retention.py",
-      "test_name": "test_delete_audit_entry_returns_405",
-      "exists": false
+      "file": "ledgerlite/tests/test_req12_audit_retention.py",
+      "test_name": "test_delete_existing_audit_entry_is_refused_and_entry_survives",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req12_audit_retention.py",
+      "test_name": "test_no_delete_route_exists_for_audit_entries",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req12_audit_retention.py",
+      "test_name": "test_route_inventory_is_exactly_the_reviewed_set",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req12_audit_retention.py",
+      "test_name": "test_deleting_an_account_cannot_remove_its_audit_trail",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req12_audit_retention.py",
+      "test_name": "test_no_purge_action_removes_audit_entries",
+      "exists": true
     }
-  ]
+  ],
+  "suggested_fix": ""
 }

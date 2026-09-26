@@ -1,83 +1,117 @@
 {
   "id": "REQ-08",
   "status": "covered",
-  "reason": "All monetary values are coerced through _to_decimal() (Decimal(str(value))) before arithmetic; the database column is Numeric(12,2); and balance is serialised as a 2dp string via @field_serializer. The critical 0.10+0.20==0.30 criterion is directly asserted by test_point_one_plus_point_two_equals_point_three.",
+  "reason": "Exact decimal arithmetic is enforced end-to-end by three interlocking mechanisms. (1) Storage: the custom Money TypeDecorator (models.py:13-34) stores every monetary value as an INTEGER count of cents (impl = Integer), converting on write via Decimal * 100 and on read via Decimal(int(value)) / 100 with an explicit .quantize(CENT) — floating-point representation is structurally impossible at the DB layer. (2) Input validation: _validate_amount (schemas.py:29-37) rejects any Decimal whose precision exceeds 2 places with a ValueError rather than silently rounding, and the Amount annotated type gates every API amount field. (3) Serialisation: _money_str (schemas.py:55-56) formats every outgoing monetary Decimal with f'{value:.2f}', and AccountResponse, TransferResponse and AuditEntryResponse each apply it via @field_serializer. The canonical AC (0.10 + 0.20 = 0.30) is directly asserted by test_point_one_plus_point_two_equals_point_three; 2-decimal string output is asserted by test_amounts_are_returned_with_exactly_two_decimals and test_transfer_amount_is_returned_as_a_two_decimal_string; integer-only DB storage is verified by test_money_is_stored_as_integer_cents_not_real; and ORM round-trip exactness is confirmed by test_values_read_back_from_the_database_are_exact_decimals.",
   "code_evidence": [
     {
       "file": "ledgerlite/models.py",
-      "line": 24,
-      "snippet": "    balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 13,
+      "snippet": "class Money(TypeDecorator):  # impl = Integer — stored as integer cents, never REAL",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 13,
+      "actual_snippet": "class Money(TypeDecorator):"
     },
     {
-      "file": "ledgerlite/services.py",
-      "line": 11,
-      "snippet": "from decimal import Decimal, InvalidOperation",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "file": "ledgerlite/models.py",
+      "line": 29,
+      "snippet": "        return int((value * 100).to_integral_value(rounding=ROUND_HALF_EVEN))",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 29,
+      "actual_snippet": "        return int((value * 100).to_integral_value(rounding=ROUND_HALF_EVEN))"
     },
     {
-      "file": "ledgerlite/services.py",
-      "line": 91,
-      "snippet": "def _to_decimal(value) -> Decimal:",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 93,
-      "snippet": "        return Decimal(str(value))",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "file": "ledgerlite/models.py",
+      "line": 34,
+      "snippet": "        return (Decimal(int(value)) / 100).quantize(CENT)",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 34,
+      "actual_snippet": "        return (Decimal(int(value)) / 100).quantize(CENT)"
     },
     {
       "file": "ledgerlite/schemas.py",
-      "line": 64,
-      "snippet": "    @field_serializer(\"balance\")",
+      "line": 9,
+      "snippet": "CENT = Decimal(\"0.01\")",
       "verified": true,
-      "match": "relocated",
+      "match": "exact",
+      "actual_line": 9,
+      "actual_snippet": "CENT = Decimal(\"0.01\")"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 35,
+      "snippet": "    if value != value.quantize(CENT):\n        raise ValueError(\"amount must have at most 2 decimal places\")",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 35,
+      "actual_snippet": "    if value != value.quantize(CENT):"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 55,
+      "snippet": "def _money_str(value: Decimal | None) -> str | None:\n    return None if value is None else f\"{value:.2f}\"",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 55,
+      "actual_snippet": "def _money_str(value: Decimal | None) -> str | None:"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 122,
+      "snippet": "    @field_serializer(\"balance\")\n    def serialize_balance(self, v: Decimal) -> str:\n        return _money_str(v)",
+      "verified": true,
+      "match": "exact",
       "actual_line": 122,
       "actual_snippet": "    @field_serializer(\"balance\")"
-    },
-    {
-      "file": "ledgerlite/schemas.py",
-      "line": 66,
-      "snippet": "        return f\"{v:.2f}\"",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
     }
   ],
   "test_evidence": [
     {
-      "file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py",
+      "file": "ledgerlite/tests/test_req08_exact_decimals.py",
       "test_name": "test_point_one_plus_point_two_equals_point_three",
-      "exists": false
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py",
-      "test_name": "test_balance_serialised_as_two_decimal_places",
-      "exists": false
+      "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+      "test_name": "test_amounts_are_returned_with_exactly_two_decimals",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_multiple_deposits_accumulate",
-      "exists": false
+      "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+      "test_name": "test_money_is_stored_as_integer_cents_not_real",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_boundary_50000_accepted",
-      "exists": false
+      "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+      "test_name": "test_more_than_two_decimals_is_rejected_not_rounded",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+      "test_name": "test_classic_float_traps_are_exact",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+      "test_name": "test_many_small_amounts_add_up_exactly",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+      "test_name": "test_transfer_amount_is_returned_as_a_two_decimal_string",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+      "test_name": "test_values_read_back_from_the_database_are_exact_decimals",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+      "test_name": "test_daily_total_arithmetic_is_exact",
+      "exists": true
     }
   ]
 }

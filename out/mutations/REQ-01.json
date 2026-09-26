@@ -49,6 +49,13 @@
       "find": "    _check_pin(db, account, pin_ok)\n    _require_kyc(account)\n\n    _require_positive(amount, \"Deposit\")",
       "replace": "    _check_pin(db, account, pin_ok)\n    if amount > Decimal(\"1000.00\"):  # KYC only for larger deposits\n        _require_kyc(account)\n\n    _require_positive(amount, \"Deposit\")",
       "description": "[independent QA R2-01b] KYC only enforced for deposits above 1,000.00 (AML-style threshold)"
+    },
+    {
+      "id": "REQ-01-B1",
+      "file": "ledgerlite/services.py",
+      "find": "    _require_kyc(sender, \"Sender\")",
+      "replace": "    pass  # _require_kyc(sender, \"Sender\")",
+      "description": "sender KYC check is disabled; an unverified sender can initiate transfers"
     }
   ]
 }

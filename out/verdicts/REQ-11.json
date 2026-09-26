@@ -1,47 +1,83 @@
 {
   "id": "REQ-11",
   "status": "covered",
-  "reason": "StatementAccountResponse overrides the account_number serializer to emit '******' + last-4 digits. The statement route uses StatementResponse (which embeds StatementAccountResponse) as its response_model, so every GET /accounts/{id}/statement response has a masked account number. The detail endpoint continues to use the unmasked AccountResponse. Three tests cover the requirement: pattern format, last-4 preservation, and detail-endpoint passthrough.",
+  "reason": "The implementation provides a dedicated mask_account_number helper (schemas.py:66-68) that replaces all but the last 4 digits with '****'. A specialised StatementAccountResponse subclass (schemas.py:170-175) overrides the account_number field serialiser to call that helper, ensuring every statement response automatically masks the number. The /accounts/{id}/statement endpoint (main.py:111-114) is bound exclusively to StatementResponse, which requires a StatementAccountResponse for its account field (schemas.py:178-180), so the masking is structural and cannot be bypassed. Five dedicated tests confirm: (1) the masked value matches ****DDDD and preserves the last 4 digits; (2) no full account number (including counterparty numbers) appears anywhere in the statement body; (3) no full account number appears in response headers; (4) the non-statement owner endpoint still returns the full number; and (5) the endpoint requires a valid PIN. All acceptance criteria are satisfied.",
   "code_evidence": [
     {
       "file": "ledgerlite/schemas.py",
-      "line": 103,
+      "line": 66,
+      "snippet": "def mask_account_number(number: str) -> str:",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 66,
+      "actual_snippet": "def mask_account_number(number: str) -> str:"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 68,
+      "snippet": "    return \"****\" + number[-4:]",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 68,
+      "actual_snippet": "    return \"****\" + number[-4:]"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 170,
       "snippet": "class StatementAccountResponse(AccountResponse):",
       "verified": true,
-      "match": "relocated",
+      "match": "exact",
       "actual_line": 170,
       "actual_snippet": "class StatementAccountResponse(AccountResponse):"
     },
     {
       "file": "ledgerlite/schemas.py",
-      "line": 107,
-      "snippet": "    def serialize_account_number(self, v: str) -> str:",
+      "line": 173,
+      "snippet": "    @field_serializer(\"account_number\")",
       "verified": true,
-      "match": "relocated",
-      "actual_line": 174,
-      "actual_snippet": "    def serialize_account_number(self, v: str) -> str:"
+      "match": "exact",
+      "actual_line": 173,
+      "actual_snippet": "    @field_serializer(\"account_number\")"
     },
     {
       "file": "ledgerlite/schemas.py",
-      "line": 108,
-      "snippet": "        return \"******\" + v[-4:]",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 175,
+      "snippet": "        return mask_account_number(v)",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 175,
+      "actual_snippet": "        return mask_account_number(v)"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 178,
+      "snippet": "class StatementResponse(BaseModel):",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 178,
+      "actual_snippet": "class StatementResponse(BaseModel):"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 179,
+      "snippet": "    account: StatementAccountResponse",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 179,
+      "actual_snippet": "    account: StatementAccountResponse"
     },
     {
       "file": "ledgerlite/main.py",
-      "line": 49,
+      "line": 111,
       "snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)",
       "verified": true,
-      "match": "relocated",
+      "match": "exact",
       "actual_line": 111,
       "actual_snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)"
     },
     {
       "file": "ledgerlite/main.py",
-      "line": 60,
+      "line": 113,
       "snippet": "    return StatementResponse(account=account, transactions=transactions)",
       "verified": true,
       "match": "relocated",
@@ -51,19 +87,29 @@
   ],
   "test_evidence": [
     {
-      "file": "ledgerlite/tests/test_spec11_statement_masking.py",
-      "test_name": "test_statement_masks_account_number",
-      "exists": false
+      "file": "ledgerlite/tests/test_req11_statement_masking.py",
+      "test_name": "test_statement_masks_account_number_like_the_spec_example",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec11_statement_masking.py",
-      "test_name": "test_statement_mask_preserves_last4",
-      "exists": false
+      "file": "ledgerlite/tests/test_req11_statement_masking.py",
+      "test_name": "test_no_full_account_number_anywhere_in_a_statement",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec11_statement_masking.py",
-      "test_name": "test_account_detail_endpoint_not_masked",
-      "exists": false
+      "file": "ledgerlite/tests/test_req11_statement_masking.py",
+      "test_name": "test_no_full_account_number_in_statement_headers_either",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req11_statement_masking.py",
+      "test_name": "test_owner_account_view_is_not_a_statement",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req11_statement_masking.py",
+      "test_name": "test_statement_requires_the_account_pin",
+      "exists": true
     }
   ]
 }

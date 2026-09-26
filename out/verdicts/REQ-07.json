@@ -1,91 +1,125 @@
 {
   "id": "REQ-07",
   "status": "covered",
-  "reason": "_check_pin() increments failed_pin_attempts on each wrong PIN; on the 5th failure (>= _MAX_FAILED_PINS) it sets account.locked = True and raises HTTP 423. A subsequent correct PIN resets failed_pin_attempts to 0. Both acceptance criteria are asserted by dedicated tests.",
+  "reason": "The implementation in _check_pin() (services.py:95-114) enforces all acceptance criteria. On each failed PIN attempt the counter is incremented and committed immediately (lines 106, 111); on the 5th failure (>= MAX_FAILED_PINS=5, line 107) account.locked is set to True and HTTP 423 is raised (lines 108-113). A correct PIN resets failed_pin_attempts to 0 and commits (lines 101-103). Every call site routes through _check_pin so a locked account always receives HTTP 423 before any money movement occurs. The test suite covers AC1 (test_fifth_wrong_pin_locks_account), AC2 (test_correct_pin_resets_counter), persistence across requests, brute-force stopping, and all four PIN-protected endpoints.",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 21,
-      "snippet": "_MAX_FAILED_PINS = 5",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 30,
+      "snippet": "MAX_FAILED_PINS = 5                               # REQ-07",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 30,
+      "actual_snippet": "MAX_FAILED_PINS = 5                               # REQ-07"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 70,
+      "line": 97,
       "snippet": "    if account.locked:",
       "verified": true,
-      "match": "relocated",
+      "match": "exact",
       "actual_line": 97,
       "actual_snippet": "    if account.locked:"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 71,
+      "line": 98,
       "snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")",
       "verified": true,
-      "match": "relocated",
+      "match": "exact",
       "actual_line": 98,
       "actual_snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 73,
-      "snippet": "    if not verify_pin(pin, account.pin_hash):",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 74,
-      "snippet": "        account.failed_pin_attempts += 1",
-      "verified": false,
-      "match": "ambiguous",
-      "actual_line": null,
-      "actual_snippet": null
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 75,
-      "snippet": "        if account.failed_pin_attempts >= _MAX_FAILED_PINS:",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 76,
-      "snippet": "            account.locked = True",
+      "line": 102,
+      "snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter",
       "verified": true,
-      "match": "relocated",
+      "match": "exact",
+      "actual_line": 102,
+      "actual_snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 106,
+      "snippet": "    account.failed_pin_attempts += 1",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 106,
+      "actual_snippet": "    account.failed_pin_attempts += 1"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 107,
+      "snippet": "    locked_now = account.failed_pin_attempts >= MAX_FAILED_PINS",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 107,
+      "actual_snippet": "    locked_now = account.failed_pin_attempts >= MAX_FAILED_PINS"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 109,
+      "snippet": "        account.locked = True",
+      "verified": true,
+      "match": "exact",
       "actual_line": 109,
       "actual_snippet": "        account.locked = True"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 83,
-      "snippet": "    account.failed_pin_attempts = 0",
+      "line": 111,
+      "snippet": "    db.commit()  # persist the counter / lock even though the request fails",
       "verified": true,
-      "match": "relocated",
-      "actual_line": 102,
-      "actual_snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter"
+      "match": "exact",
+      "actual_line": 111,
+      "actual_snippet": "    db.commit()  # persist the counter / lock even though the request fails"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 113,
+      "snippet": "        raise HTTPException(status_code=423, detail=\"Account locked after too many failed PIN attempts\")",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 113,
+      "actual_snippet": "        raise HTTPException(status_code=423, detail=\"Account locked after too many failed PIN attempts\")"
     }
   ],
   "test_evidence": [
     {
-      "file": "ledgerlite/tests/test_spec7_pin_lockout.py",
-      "test_name": "test_fifth_wrong_pin_locks_account",
-      "exists": false
+      "file": "ledgerlite/tests/test_req07_pin_lockout.py",
+      "test_name": "test_failed_attempts_are_persisted_between_requests",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec7_pin_lockout.py",
+      "file": "ledgerlite/tests/test_req07_pin_lockout.py",
+      "test_name": "test_fifth_wrong_pin_locks_account",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req07_pin_lockout.py",
+      "test_name": "test_locked_account_cannot_move_money_anywhere",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req07_pin_lockout.py",
       "test_name": "test_correct_pin_resets_counter",
-      "exists": false
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req07_pin_lockout.py",
+      "test_name": "test_brute_force_is_stopped",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req07_pin_lockout.py",
+      "test_name": "test_fifth_wrong_pin_locks_on_every_endpoint",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req07_pin_lockout.py",
+      "test_name": "test_correct_pin_on_every_endpoint_resets_the_counter",
+      "exists": true
     }
   ]
 }

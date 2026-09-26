@@ -49,6 +49,13 @@
       "find": "    _require_positive(amount, \"Deposit\")",
       "replace": "    if amount < 0:\n        raise HTTPException(status_code=400, detail=\"Deposit amount must be greater than 0\")",
       "description": "[independent QA R2-02d] lower bound off-by-one on the deposit path only: 0.00 accepted"
+    },
+    {
+      "id": "REQ-02-B1",
+      "file": "ledgerlite/services.py",
+      "find": "    if amount <= Decimal(\"0\"):",
+      "replace": "    if amount < Decimal(\"0\"):",
+      "description": "changes <= to <, so a zero deposit passes the positive check and is accepted instead of rejected"
     }
   ]
 }

@@ -42,6 +42,13 @@
       "find": "    return Decimal(total or 0)",
       "replace": "    return Decimal(float(total or 0))",
       "description": "[independent QA R2-08c] daily outgoing total converted through float"
+    },
+    {
+      "id": "REQ-08-B1",
+      "file": "ledgerlite/schemas.py",
+      "find": "    def serialize_balance(self, v: Decimal) -> str:\n        return _money_str(v)",
+      "replace": "    def serialize_balance(self, v: Decimal) -> float:\n        return float(v)",
+      "description": "AccountResponse.balance serialised as a JSON float instead of a 2-decimal string"
     }
   ]
 }

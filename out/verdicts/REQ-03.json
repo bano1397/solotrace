@@ -1,51 +1,84 @@
 {
   "id": "REQ-03",
   "status": "covered",
-  "reason": "The withdrawal floor is enforced in services.py at lines 156-157: before applying any debit the service checks that the resulting balance would not be less than zero, and raises HTTP 400 with 'Insufficient funds' if it would. Line 159 then performs the actual debit only when that guard passes. Three tests cover the requirement: test_withdrawal_overdraft_rejected confirms a withdrawal of one cent above the balance is rejected with HTTP 400 and the 'Insufficient' message; test_balance_never_goes_negative drains the account to exactly 0.00 and then confirms a further withdrawal is rejected and the balance remains 0.00; test_withdrawal_exact_balance_allowed confirms that withdrawing exactly the full balance succeeds and leaves the balance at 0.00.",
+  "reason": "The withdrawal floor is enforced atomically in _debit() (services.py:131) via a SQL WHERE clause that requires Account.balance >= amount before subtracting; if the row does not match (balance too low) rowcount is 0 and the function returns False (line 135). The withdraw() caller at line 259 treats a False return as an error: it rolls back the transaction and raises HTTP 400 'Insufficient funds' (lines 260-261), leaving the balance unchanged. Both acceptance criteria are exercised: test_overdraft_rejected_and_balance_unchanged confirms a withdrawal above the balance is rejected with 400 and the balance is unchanged; test_balance_never_goes_negative confirms the balance cannot go below zero; test_withdrawal_exact_balance_allowed confirms equality is permitted; and test_concurrent_withdrawals_cannot_overdraw proves the atomic WHERE guard holds under concurrency.",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 156,
-      "snippet": "    if account.balance - amount < Decimal(\"0\"):",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 131,
+      "snippet": "        .where(Account.id == account_id, Account.balance >= amount)",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 131,
+      "actual_snippet": "        .where(Account.id == account_id, Account.balance >= amount)"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 157,
+      "line": 135,
+      "snippet": "    return result.rowcount == 1",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 135,
+      "actual_snippet": "    return result.rowcount == 1"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 259,
+      "snippet": "    if not _debit(db, account_id, amount):  # REQ-03: never below zero, even under concurrency",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 259,
+      "actual_snippet": "    if not _debit(db, account_id, amount):  # REQ-03: never below zero, even under concurrency"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 260,
+      "snippet": "        db.rollback()",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 260,
+      "actual_snippet": "        db.rollback()"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 261,
       "snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")",
-      "verified": false,
-      "match": "ambiguous",
-      "actual_line": null,
-      "actual_snippet": null
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 159,
-      "snippet": "    account.balance -= amount",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "verified": true,
+      "match": "exact",
+      "actual_line": 261,
+      "actual_snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")"
     }
   ],
   "test_evidence": [
     {
-      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
-      "test_name": "test_withdrawal_overdraft_rejected",
-      "exists": false
+      "file": "ledgerlite/tests/test_req03_withdrawals.py",
+      "test_name": "test_overdraft_rejected_and_balance_unchanged",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "file": "ledgerlite/tests/test_req03_withdrawals.py",
       "test_name": "test_balance_never_goes_negative",
-      "exists": false
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "file": "ledgerlite/tests/test_req03_withdrawals.py",
       "test_name": "test_withdrawal_exact_balance_allowed",
-      "exists": false
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req03_withdrawals.py",
+      "test_name": "test_concurrent_withdrawals_cannot_overdraw",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req03_withdrawals.py",
+      "test_name": "test_withdrawal_reduces_balance",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req03_withdrawals.py",
+      "test_name": "test_zero_and_negative_withdrawals_rejected",
+      "exists": true
     }
   ]
 }

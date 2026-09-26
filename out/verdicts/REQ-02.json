@@ -1,84 +1,88 @@
 {
   "id": "REQ-02",
   "status": "covered",
-  "reason": "Deposit validation enforces a lower bound (amount must be > 0) and an upper bound (amount must not exceed 50 000.00) at the service layer. Six dedicated tests exercise zero, negative, boundary-exact-reject, boundary-exact-accept, a general positive value, and accumulation across multiple deposits.",
+  "reason": "All four acceptance criteria are exercised by dedicated tests. (1) Deposits of 0 are rejected: test_zero_and_negative_rejected is parametrized over '0' and '0.00', asserting HTTP 400 with 'greater than 0'. (2) Negative deposits are rejected: same parametrized test covers '-0.00' and '-1.00'. (3) A deposit of 50,000.01 is rejected: test_boundary_50000_01_rejected asserts HTTP 400 and balance unchanged. (4) A deposit of 50,000.00 is accepted: test_boundary_50000_accepted asserts HTTP 200 and correct balance. Enforcement is backed by _require_positive (lines 122-124) checking amount <= 0, and the MAX_DEPOSIT guard (lines 242-243) checking amount > MAX_DEPOSIT where MAX_DEPOSIT = Decimal('50000.00') (line 28).",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 19,
-      "snippet": "_MAX_DEPOSIT = Decimal(\"50000.00\")",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 28,
+      "snippet": "MAX_DEPOSIT = Decimal(\"50000.00\")                 # REQ-02",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 28,
+      "actual_snippet": "MAX_DEPOSIT = Decimal(\"50000.00\")                 # REQ-02"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 135,
+      "line": 122,
+      "snippet": "def _require_positive(amount: Decimal, what: str) -> None:",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 122,
+      "actual_snippet": "def _require_positive(amount: Decimal, what: str) -> None:"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 123,
       "snippet": "    if amount <= Decimal(\"0\"):",
       "verified": true,
-      "match": "relocated",
+      "match": "exact",
       "actual_line": 123,
       "actual_snippet": "    if amount <= Decimal(\"0\"):"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 136,
-      "snippet": "        raise HTTPException(status_code=400, detail=\"Deposit amount must be greater than 0\")",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 241,
+      "snippet": "    _require_positive(amount, \"Deposit\")",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 241,
+      "actual_snippet": "    _require_positive(amount, \"Deposit\")"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 137,
-      "snippet": "    if amount > _MAX_DEPOSIT:",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 242,
+      "snippet": "    if amount > MAX_DEPOSIT:",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 242,
+      "actual_snippet": "    if amount > MAX_DEPOSIT:"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 138,
-      "snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {_MAX_DEPOSIT}\")",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 243,
+      "snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {MAX_DEPOSIT}\")",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 243,
+      "actual_snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {MAX_DEPOSIT}\")"
     }
   ],
   "test_evidence": [
     {
-      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_zero_rejected",
-      "exists": false
-    },
-    {
-      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_negative_rejected",
-      "exists": false
-    },
-    {
-      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_boundary_50000_01_rejected",
-      "exists": false
-    },
-    {
-      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_boundary_50000_accepted",
-      "exists": false
-    },
-    {
-      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
+      "file": "ledgerlite/tests/test_req02_deposit_limits.py",
       "test_name": "test_positive_amount_accepted",
-      "exists": false
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_multiple_deposits_accumulate",
-      "exists": false
+      "file": "ledgerlite/tests/test_req02_deposit_limits.py",
+      "test_name": "test_zero_and_negative_rejected",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req02_deposit_limits.py",
+      "test_name": "test_boundary_50000_accepted",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req02_deposit_limits.py",
+      "test_name": "test_boundary_50000_01_rejected",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req02_deposit_limits.py",
+      "test_name": "test_limit_is_per_transaction_not_per_balance",
+      "exists": true
     }
   ]
 }

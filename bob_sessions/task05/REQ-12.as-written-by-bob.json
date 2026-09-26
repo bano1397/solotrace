@@ -1,0 +1,49 @@
+{
+  "requirement_id": "REQ-12",
+  "verdict": "covered",
+  "rationale": "No DELETE route exists for audit entries anywhere in the API. ledgerlite/main.py line 147 explicitly documents this design intent ('read-only by design: no update or delete route exists — REQ-06, REQ-12'), and the only audit endpoint defined is GET /audit (line 149). Six tests in test_req12_audit_retention.py collectively verify: (1) DELETE /audit returns 405, (2) DELETE /audit/{id} returns 404 or 405, (3) no DELETE route is registered on any audit path, (4) the full route inventory matches the approved read-only-audit set exactly, (5) deleting an account cannot remove its audit trail, and (6) known purge paths (/admin/audit/purge, /audit/purge) return 404 or 405. All acceptance criteria are satisfied.",
+  "code_citations": [
+    {
+      "file": "ledgerlite/main.py",
+      "line": 147,
+      "snippet": "# ── audit (read-only by design: no update or delete route exists — REQ-06, REQ-12) ──"
+    },
+    {
+      "file": "ledgerlite/main.py",
+      "line": 149,
+      "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])"
+    }
+  ],
+  "test_citations": [
+    {
+      "file": "ledgerlite/tests/test_req12_audit_retention.py",
+      "line": 12,
+      "test": "test_delete_audit_collection_returns_405"
+    },
+    {
+      "file": "ledgerlite/tests/test_req12_audit_retention.py",
+      "line": 18,
+      "test": "test_delete_existing_audit_entry_is_refused_and_entry_survives"
+    },
+    {
+      "file": "ledgerlite/tests/test_req12_audit_retention.py",
+      "line": 26,
+      "test": "test_no_delete_route_exists_for_audit_entries"
+    },
+    {
+      "file": "ledgerlite/tests/test_req12_audit_retention.py",
+      "line": 34,
+      "test": "test_route_inventory_is_exactly_the_reviewed_set"
+    },
+    {
+      "file": "ledgerlite/tests/test_req12_audit_retention.py",
+      "line": 46,
+      "test": "test_deleting_an_account_cannot_remove_its_audit_trail"
+    },
+    {
+      "file": "ledgerlite/tests/test_req12_audit_retention.py",
+      "line": 53,
+      "test": "test_no_purge_action_removes_audit_entries"
+    }
+  ]
+}

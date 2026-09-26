@@ -1,11 +1,11 @@
 {
   "id": "REQ-04",
   "status": "covered",
-  "reason": "The transfer service wraps the balance mutation, Transfer insert, flush, and audit write inside a single try/except block (services.py:220-245). The debit is applied to sender.balance (line 221) and the credit to recipient.balance (line 223) before db.commit() is called (line 242). If any step raises — including the audit write — the except clause on line 243 calls db.rollback() (line 244) and re-raises, so neither balance change is ever persisted. test_transfer_rolls_back_on_db_error proves this by patching _write_audit to raise a RuntimeError after the debit and asserting both balances are unchanged after the 500 response. test_successful_transfer_debits_sender_credits_recipient proves the happy path commits both sides atomically.",
+  "reason": "The create_transfer function in services.py (lines 310-341) wraps all mutations — debit, credit, Transfer row insert, flush, and audit write — inside a single try/except block. db.commit() is called only after every step succeeds (line 336). If any step raises (including a credit failure), the except Exception handler at line 339 calls db.rollback() (line 340) and re-raises, guaranteeing no partial state is persisted. The approve_transfer function (lines 368-394) applies the same pattern for the large-transfer approval path: the status update, credit, and audit write are all covered by the same rollback-on-exception guard (lines 392-394). Four dedicated test functions in test_req04_transfer_atomicity.py exercise both the happy path and every failure mode: credit failure rolls back the debit (test_failed_credit_rolls_back_the_debit), audit-write failure rolls back both balance changes (test_failed_audit_write_rolls_back_everything), and approval-time credit failure leaves the transfer in pending_approval state (test_failed_credit_during_approval_rolls_back).",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 220,
+      "line": 310,
       "snippet": "    try:",
       "verified": false,
       "match": "too_short",
@@ -14,69 +14,115 @@
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 221,
-      "snippet": "        sender.balance -= amount",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 223,
-      "snippet": "            recipient.balance += amount",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 242,
-      "snippet": "        db.commit()",
-      "verified": true,
-      "match": "relocated",
-      "actual_line": 247,
-      "actual_snippet": "    db.commit()"
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 243,
-      "snippet": "    except Exception:",
-      "verified": false,
-      "match": "ambiguous",
-      "actual_line": null,
-      "actual_snippet": null
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 244,
-      "snippet": "        db.rollback()",
-      "verified": false,
-      "match": "ambiguous",
-      "actual_line": null,
-      "actual_snippet": null
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 245,
-      "snippet": "        raise",
+      "line": 311,
+      "snippet": "        # REQ-04: debit, credit, transfer row and audit entry commit together or not at all.",
       "verified": false,
       "match": "too_short",
       "actual_line": null,
       "actual_snippet": null
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 312,
+      "snippet": "        if not _debit(db, sender_id, amount):",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 312,
+      "actual_snippet": "        if not _debit(db, sender_id, amount):"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 313,
+      "snippet": "            db.rollback()",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 313,
+      "actual_snippet": "            db.rollback()"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 316,
+      "snippet": "            _credit(db, recipient_id, amount)",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 316,
+      "actual_snippet": "            _credit(db, recipient_id, amount)"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 336,
+      "snippet": "        db.commit()",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 336,
+      "actual_snippet": "        db.commit()"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 339,
+      "snippet": "    except Exception:",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 339,
+      "actual_snippet": "    except Exception:"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 340,
+      "snippet": "        db.rollback()",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 340,
+      "actual_snippet": "        db.rollback()"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 379,
+      "snippet": "        _credit(db, transfer.recipient_id, transfer.amount)",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 379,
+      "actual_snippet": "        _credit(db, transfer.recipient_id, transfer.amount)"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 389,
+      "snippet": "        db.commit()",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 389,
+      "actual_snippet": "        db.commit()"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 393,
+      "snippet": "        db.rollback()",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 393,
+      "actual_snippet": "        db.rollback()"
     }
   ],
   "test_evidence": [
     {
-      "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
-      "test_name": "test_transfer_rolls_back_on_db_error",
-      "exists": false
+      "file": "ledgerlite/tests/test_req04_transfer_atomicity.py",
+      "test_name": "test_successful_transfer_debits_sender_and_credits_recipient",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
-      "test_name": "test_successful_transfer_debits_sender_credits_recipient",
-      "exists": false
+      "file": "ledgerlite/tests/test_req04_transfer_atomicity.py",
+      "test_name": "test_failed_credit_rolls_back_the_debit",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req04_transfer_atomicity.py",
+      "test_name": "test_failed_audit_write_rolls_back_everything",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req04_transfer_atomicity.py",
+      "test_name": "test_failed_credit_during_approval_rolls_back",
+      "exists": true
     }
   ]
 }

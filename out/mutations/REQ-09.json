@@ -63,6 +63,13 @@
       "find": "    if outgoing_total_today(db, sender_id, now) + amount > DAILY_TRANSFER_CAP:",
       "replace": "    if outgoing_total_today(db, sender_id, now) >= DAILY_TRANSFER_CAP:",
       "description": "[independent QA R2-09d] cap check ignores the new transfer's own amount"
+    },
+    {
+      "id": "REQ-09-B1",
+      "file": "ledgerlite/services.py",
+      "find": "    return Decimal(total or 0)",
+      "replace": "    return Decimal(0)",
+      "description": "outgoing_total_today always returns zero so the cap check never accumulates and every transfer is allowed regardless of the day's running total"
     }
   ]
 }

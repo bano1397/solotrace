@@ -42,6 +42,13 @@
       "find": "        db.add(transfer)\n        db.flush()",
       "replace": "        db.add(transfer)\n        db.commit()",
       "description": "[independent QA R2-04d] transfer row + balances committed before the audit write"
+    },
+    {
+      "id": "REQ-04-B1",
+      "file": "ledgerlite/services.py",
+      "find": "    except Exception:\n        db.rollback()\n        raise\n\n    db.refresh(transfer)\n    return transfer\n\n\ndef admin_token",
+      "replace": "    except Exception:\n        raise\n\n    db.refresh(transfer)\n    return transfer\n\n\ndef admin_token",
+      "description": "Remove db.rollback() from approve_transfer's exception handler so a credit failure during approval leaves the balance change uncommitted but not rolled back, violating atomicity on the approval path."
     }
   ]
 }

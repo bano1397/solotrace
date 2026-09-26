@@ -42,6 +42,13 @@
       "find": "    if not _debit(db, account_id, amount):  # REQ-03: never below zero, even under concurrency\n        db.rollback()\n",
       "replace": "    if not _debit(db, account_id, amount):  # REQ-03: never below zero, even under concurrency\n        _debit(db, account_id, account.balance)  # pay out what is available\n        db.commit()\n",
       "description": "[independent QA R2-03d] rejected withdrawal still pays out what is available (balance changes on rejection)"
+    },
+    {
+      "id": "REQ-03-B1",
+      "file": "ledgerlite/services.py",
+      "find": "    return result.rowcount == 1",
+      "replace": "    return True",
+      "description": "always report the debit as successful regardless of whether the balance guard matched, allowing overdrafts to proceed"
     }
   ]
 }

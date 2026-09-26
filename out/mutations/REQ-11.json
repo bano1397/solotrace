@@ -42,6 +42,13 @@
       "find": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)\ndef get_statement(account_id: AccountId, pin: PinHeader, session: Session = Depends(db.get_db)):\n    account, transactions = svc.statement(session, account_id, pin)\n",
       "replace": "from fastapi import Response  # noqa: E402\n\n\n@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)\ndef get_statement(account_id: AccountId, pin: PinHeader, response: Response, session: Session = Depends(db.get_db)):\n    account, transactions = svc.statement(session, account_id, pin)\n    response.headers[\"Content-Disposition\"] = f'attachment; filename=\"statement-{account.account_number}.json\"'\n",
       "description": "[independent QA R2-11c] statement response carries the full account number in a Content-Disposition filename"
+    },
+    {
+      "id": "REQ-11-B1",
+      "file": "ledgerlite/schemas.py",
+      "find": "        return mask_account_number(v)",
+      "replace": "        return v",
+      "description": "bypass masking entirely — serialize_account_number returns the raw account number"
     }
   ]
 }

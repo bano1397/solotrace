@@ -1,61 +1,93 @@
 {
   "id": "REQ-01",
   "status": "covered",
-  "reason": "Unique email is enforced at account creation by querying for an existing Account with the same email before inserting (services.py:101). KYC gating is enforced by _require_kyc(), which raises HTTP 403 when kyc_status != 'verified' (services.py:86-87); this guard is called before every deposit, withdrawal, and transfer operation. All four gating paths and the duplicate-email path are each covered by a dedicated test.",
+  "reason": "Both acceptance criteria are fully guarded by production code and exercised by dedicated tests. AC1 (duplicate email rejected): services.py normalises the email to lowercase (line 167) then queries for an existing account with that email (line 168) and raises HTTP 409 if found (line 169); tests assert the 409 for an exact-duplicate and for a case-variant. AC2 (money movement blocked until KYC verified): _require_kyc (lines 118-119) raises HTTP 403 for any account whose kyc_status is not 'verified'; it is called before every deposit (lines 238-239), withdrawal (line 256), and on both sender and recipient for transfers (lines 297-298); tests cover deposit, withdrawal, sender-unverified transfer, recipient-unverified transfer, and the held-transfer path.",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 101,
-      "snippet": "    if db.query(Account).filter(Account.email == email).first():",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 167,
+      "snippet": "    email = email.strip().lower()",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 167,
+      "actual_snippet": "    email = email.strip().lower()"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 86,
-      "snippet": "def _require_kyc(account: Account) -> None:",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 168,
+      "snippet": "    if db.scalar(select(Account.id).where(Account.email == email)) is not None:",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 168,
+      "actual_snippet": "    if db.scalar(select(Account.id).where(Account.email == email)) is not None:"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 87,
+      "line": 169,
+      "snippet": "        raise HTTPException(status_code=409, detail=\"Email already registered\")",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 169,
+      "actual_snippet": "        raise HTTPException(status_code=409, detail=\"Email already registered\")"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 118,
       "snippet": "    if account.kyc_status != \"verified\":",
       "verified": true,
-      "match": "relocated",
+      "match": "exact",
       "actual_line": 118,
       "actual_snippet": "    if account.kyc_status != \"verified\":"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 119,
+      "snippet": "        raise HTTPException(status_code=403, detail=f\"{role} KYC is not verified\")",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 119,
+      "actual_snippet": "        raise HTTPException(status_code=403, detail=f\"{role} KYC is not verified\")"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 297,
+      "snippet": "    _require_kyc(sender, \"Sender\")",
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 296,
+      "actual_snippet": "    _require_kyc(sender, \"Sender\")"
     }
   ],
   "test_evidence": [
     {
-      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "file": "ledgerlite/tests/test_req01_accounts_kyc.py",
       "test_name": "test_duplicate_email_rejected",
-      "exists": false
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "file": "ledgerlite/tests/test_req01_accounts_kyc.py",
+      "test_name": "test_duplicate_email_is_case_insensitive",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req01_accounts_kyc.py",
       "test_name": "test_deposit_blocked_before_kyc",
-      "exists": false
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "file": "ledgerlite/tests/test_req01_accounts_kyc.py",
       "test_name": "test_withdraw_blocked_before_kyc",
-      "exists": false
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "file": "ledgerlite/tests/test_req01_accounts_kyc.py",
       "test_name": "test_transfer_sender_blocked_before_kyc",
-      "exists": false
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "file": "ledgerlite/tests/test_req01_accounts_kyc.py",
       "test_name": "test_transfer_recipient_blocked_before_kyc",
-      "exists": false
+      "exists": true
     }
   ]
 }

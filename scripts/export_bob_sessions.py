@@ -20,12 +20,21 @@ PKT = dt.timezone(dt.timedelta(hours=5), "PKT")
 
 # Screenshot evidence captured for each top-level task (see bob_sessions/).
 SCREENSHOTS = {
-    "Create a new Python project": "solotrace_task01_summary_P0-P4_setup_app_mode_read_audit.png",
-    "Build the SoloTrace CLI": "solotrace_task02_summary_P5_cli_evidence_verifier.png",
-    "Stage 3 — FIX": "solotrace_task03_summary_P6_fix_and_reaudit.png",
-    "Polish SoloTrace": "solotrace_task04_summary_P7_dashboard_pages.png",
-    "Final audit": "solotrace_task05_summary_final_audit.png",
+    "Create a new Python project": ("solotrace_task01_summary_P0-P4_setup_app_mode_read_audit.png",),
+    "Build the SoloTrace CLI": ("solotrace_task02_summary_P5_cli_evidence_verifier.png",),
+    "Stage 3 — FIX": ("solotrace_task03_summary_P6_fix_and_reaudit.png",),
+    "Polish SoloTrace": ("solotrace_task04_summary_P7_dashboard_pages.png",),
+    "Final audit": ("solotrace_task05_summary_final_audit.png",
+                    "solotrace_task05_session_final_audit_12_subagents.png"),
 }
+
+
+def _screenshot(first_line: str) -> str | None:
+    """The first screenshot of this task that exists in bob_sessions/."""
+    for prefix, names in SCREENSHOTS.items():
+        if first_line.startswith(prefix):
+            return next((n for n in names if (OUT.parent / n).exists()), None)
+    return None
 
 
 def _iso(ms: int) -> str:
@@ -72,7 +81,7 @@ def main() -> None:
                 "bobcoins": round(sum(json.loads(s[6] or "{}").get("cost", 0) for s in subs), 2),
                 "started_at": _iso(sub_start) if subs else None,
             },
-            "screenshot": next((v for k, v in SCREENSHOTS.items() if first_line.startswith(k)), None),
+            "screenshot": _screenshot(first_line),
         })
     # Human compliance sign-offs typed into Bob (only the approval line and its time).
     signoffs = []

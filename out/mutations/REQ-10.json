@@ -56,6 +56,13 @@
       "find": "            actor_id=sender_id,\n            action=\"sanctions_blocked\",",
       "replace": "            actor_id=recipient_id,\n            action=\"sanctions_blocked\",",
       "description": "[independent QA R2-10c] sanctions audit entry names the recipient as actor"
+    },
+    {
+      "id": "REQ-10-B1",
+      "file": "ledgerlite/services.py",
+      "find": "        raise HTTPException(status_code=400, detail=\"sanctions\")",
+      "replace": "        raise HTTPException(status_code=400, detail=\"blocked\")",
+      "description": "change rejection detail from 'sanctions' to 'blocked' so callers cannot distinguish a sanctions block from a generic block"
     }
   ]
 }

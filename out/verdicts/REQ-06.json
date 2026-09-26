@@ -1,79 +1,149 @@
 {
   "id": "REQ-06",
   "status": "covered",
-  "reason": "_write_audit() is called in deposit() (line 141), withdraw() (line 160), create_transfer() (line 234), and approve_transfer() (line 269). No PATCH/DELETE endpoint for audit entries exists. All five criteria are asserted by named tests in test_spec6_audit_log.py.",
+  "reason": "Every money-movement operation calls _write_audit (services.py:52-73) which appends exactly one AuditEntry carrying actor_id, action, amount, account_id/related_account_id and a UTC timestamp from _now(). Deposit calls it at line 246, withdrawal at line 263, create_transfer at lines 327-335 (action=transfer_initiated), and approve_transfer at lines 380-388 (action=transfer_approved). The only audit HTTP route is GET /audit (main.py:149); no PUT/PATCH/POST/DELETE route exists, asserted directly by test_no_route_can_change_audit_entries. Both acceptance criteria are guarded by dedicated tests.",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 40,
+      "line": 52,
       "snippet": "def _write_audit(",
       "verified": true,
-      "match": "relocated",
+      "match": "exact",
       "actual_line": 52,
       "actual_snippet": "def _write_audit("
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 141,
-      "snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
+      "line": 62,
+      "snippet": "    \"\"\"Append one audit entry (REQ-06). Entries are never updated or deleted.\"\"\"",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 62,
+      "actual_snippet": "    \"\"\"Append one audit entry (REQ-06). Entries are never updated or deleted.\"\"\""
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 37,
+      "snippet": "    return datetime.datetime.now(datetime.timezone.utc)",
       "verified": true,
       "match": "relocated",
+      "actual_line": 39,
+      "actual_snippet": "    return datetime.datetime.now(datetime.timezone.utc)"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 246,
+      "snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
+      "verified": true,
+      "match": "exact",
       "actual_line": 246,
       "actual_snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 160,
+      "line": 263,
       "snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)",
       "verified": true,
-      "match": "relocated",
+      "match": "exact",
       "actual_line": 263,
       "actual_snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 234,
+      "line": 327,
       "snippet": "        _write_audit(",
-      "verified": false,
-      "match": "ambiguous",
-      "actual_line": null,
-      "actual_snippet": null
+      "verified": true,
+      "match": "exact",
+      "actual_line": 327,
+      "actual_snippet": "        _write_audit("
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 330,
+      "snippet": "            action=\"transfer_initiated\",",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 330,
+      "actual_snippet": "            action=\"transfer_initiated\","
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 380,
+      "snippet": "        _write_audit(",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 380,
+      "actual_snippet": "        _write_audit("
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 383,
+      "snippet": "            action=\"transfer_approved\",",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 383,
+      "actual_snippet": "            action=\"transfer_approved\","
     },
     {
       "file": "ledgerlite/main.py",
-      "line": 95,
-      "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 149,
+      "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 149,
+      "actual_snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])"
     }
   ],
   "test_evidence": [
     {
-      "file": "ledgerlite/tests/test_spec6_audit_log.py",
-      "test_name": "test_audit_entry_written_on_deposit",
-      "exists": false
+      "file": "ledgerlite/tests/test_req06_audit_log.py",
+      "test_name": "test_deposit_writes_exactly_one_entry",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec6_audit_log.py",
-      "test_name": "test_audit_entry_written_on_withdrawal",
-      "exists": false
+      "file": "ledgerlite/tests/test_req06_audit_log.py",
+      "test_name": "test_withdrawal_writes_exactly_one_entry",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec6_audit_log.py",
-      "test_name": "test_audit_entry_written_on_transfer",
-      "exists": false
+      "file": "ledgerlite/tests/test_req06_audit_log.py",
+      "test_name": "test_transfer_writes_exactly_one_entry",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec6_audit_log.py",
-      "test_name": "test_no_audit_delete_endpoint",
-      "exists": false
+      "file": "ledgerlite/tests/test_req06_audit_log.py",
+      "test_name": "test_approval_writes_exactly_one_entry",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec6_audit_log.py",
-      "test_name": "test_no_audit_patch_endpoint",
-      "exists": false
+      "file": "ledgerlite/tests/test_req06_audit_log.py",
+      "test_name": "test_held_transfer_writes_exactly_one_entry",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req06_audit_log.py",
+      "test_name": "test_audit_collection_cannot_be_modified",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req06_audit_log.py",
+      "test_name": "test_existing_entry_cannot_be_modified",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req06_audit_log.py",
+      "test_name": "test_no_route_can_change_audit_entries",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req06_audit_log.py",
+      "test_name": "test_audit_timestamps_are_real_utc_even_on_a_non_utc_server",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req06_audit_log.py",
+      "test_name": "test_rejected_operations_write_no_money_movement_entry",
+      "exists": true
     }
   ]
 }

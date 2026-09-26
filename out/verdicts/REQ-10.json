@@ -1,90 +1,133 @@
 {
   "id": "REQ-10",
   "status": "covered",
-  "reason": "Transfers where the sender or recipient has a country_code in {KP, IR, SY, CU} are rejected with HTTP 400 and detail 'sanctions'. A sanctions_blocked audit entry is written before rejection. All 9 test cases (4 sender-blocked, 4 recipient-blocked, 1 audit-entry) pass.",
+  "reason": "The implementation at services.py:279-294 performs sanctions screening before any other business logic (KYC, daily cap). It checks both sender and recipient country codes against SANCTIONED_COUNTRIES = frozenset({\"KP\", \"IR\", \"SY\", \"CU\"}) defined at line 32. On a hit it writes a `sanctions_blocked` audit entry recording actor_id (sender), amount, account_id, related_account_id, and the matching country code(s) in detail, then commits and raises HTTPException(400, detail=\"sanctions\"). AC1 (rejected with reason \"sanctions\") is satisfied by line 294; AC2 (audit entry written for blocked transfer) is satisfied by lines 284-293. The test suite covers all four sanctioned codes for both sender-side and recipient-side screening, lower-case normalization, screening before KYC, screening before daily cap, that large transfers are blocked not held, that the sender is the recorded actor, and that clean countries are not blocked.",
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 23,
-      "snippet": "_SANCTIONED_COUNTRIES = {\"KP\", \"IR\", \"SY\", \"CU\"}",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 32,
+      "snippet": "SANCTIONED_COUNTRIES = frozenset({\"KP\", \"IR\", \"SY\", \"CU\"})  # REQ-10",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 32,
+      "actual_snippet": "SANCTIONED_COUNTRIES = frozenset({\"KP\", \"IR\", \"SY\", \"CU\"})  # REQ-10"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 180,
-      "snippet": "    if sender.country_code in _SANCTIONED_COUNTRIES or recipient.country_code in _SANCTIONED_COUNTRIES:",
-      "verified": false,
-      "match": "not_found",
-      "actual_line": null,
-      "actual_snippet": null
+      "line": 280,
+      "snippet": "    blocked = sorted(",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 280,
+      "actual_snippet": "    blocked = sorted("
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 184,
+      "line": 281,
+      "snippet": "        {c for c in (sender.country_code, recipient.country_code) if c in SANCTIONED_COUNTRIES}",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 281,
+      "actual_snippet": "        {c for c in (sender.country_code, recipient.country_code) if c in SANCTIONED_COUNTRIES}"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 284,
+      "snippet": "        _write_audit(",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 284,
+      "actual_snippet": "        _write_audit("
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 287,
       "snippet": "            action=\"sanctions_blocked\",",
       "verified": true,
-      "match": "relocated",
+      "match": "exact",
       "actual_line": 287,
       "actual_snippet": "            action=\"sanctions_blocked\","
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 190,
+      "line": 294,
       "snippet": "        raise HTTPException(status_code=400, detail=\"sanctions\")",
       "verified": true,
-      "match": "relocated",
+      "match": "exact",
       "actual_line": 294,
       "actual_snippet": "        raise HTTPException(status_code=400, detail=\"sanctions\")"
     }
   ],
   "test_evidence": [
     {
-      "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_sender_blocked[KP]",
-      "exists": false
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_transfer_to_sanctioned_recipient_blocked_and_logged[KP]",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_sender_blocked[IR]",
-      "exists": false
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_transfer_to_sanctioned_recipient_blocked_and_logged[IR]",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_sender_blocked[SY]",
-      "exists": false
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_transfer_to_sanctioned_recipient_blocked_and_logged[SY]",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_sender_blocked[CU]",
-      "exists": false
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_transfer_to_sanctioned_recipient_blocked_and_logged[CU]",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_recipient_blocked[KP]",
-      "exists": false
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_transfer_from_sanctioned_sender_blocked_and_logged[KP]",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_recipient_blocked[IR]",
-      "exists": false
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_transfer_from_sanctioned_sender_blocked_and_logged[IR]",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_recipient_blocked[SY]",
-      "exists": false
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_transfer_from_sanctioned_sender_blocked_and_logged[SY]",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_recipient_blocked[CU]",
-      "exists": false
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_transfer_from_sanctioned_sender_blocked_and_logged[CU]",
+      "exists": true
     },
     {
-      "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_audit_entry_written_for_sanctions_block",
-      "exists": false
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_lower_case_country_code_is_still_screened",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_sanctions_hit_is_logged_even_before_kyc",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_clean_countries_are_not_blocked",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_large_transfer_to_sanctioned_country_is_blocked_not_held",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_sanctions_entry_records_the_sender_as_actor",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_req10_sanctions.py",
+      "test_name": "test_screening_happens_before_the_daily_cap",
+      "exists": true
     }
   ]
 }

@@ -70,6 +70,13 @@
       "find": "            .values(status=\"completed\", approver_id=approver_id)",
       "replace": "            .values(status=\"completed\", approver_id=transfer.sender_id)",
       "description": "[independent QA R2-05c] approval records the initiator as approver"
+    },
+    {
+      "id": "REQ-05-B1",
+      "file": "ledgerlite/services.py",
+      "find": "    status = \"pending_approval\" if large else \"completed\"",
+      "replace": "    status = \"completed\" if large else \"completed\"",
+      "description": "large transfers are marked completed immediately instead of pending_approval"
     }
   ]
 }

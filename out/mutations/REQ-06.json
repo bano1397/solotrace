@@ -70,6 +70,13 @@
       "find": "            detail=f\"transfer {transfer.id}: {status}\",\n        )\n",
       "replace": "            detail=f\"transfer {transfer.id}: {status}\",\n        )\n        if large:\n            _write_audit(db, actor_id=sender_id, action=\"transfer_held\", amount=amount, account_id=sender_id, related_account_id=recipient_id)\n",
       "description": "[independent QA R2-06c] held (>=5,000) transfers write TWO audit entries"
+    },
+    {
+      "id": "REQ-06-B1",
+      "file": "ledgerlite/services.py",
+      "find": "            action=\"transfer_initiated\",",
+      "replace": "            action=\"transfer_completed\",",
+      "description": "transfer audit entry records wrong action name; test_transfer_writes_exactly_one_entry asserts action == 'transfer_initiated'"
     }
   ]
 }
