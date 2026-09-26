@@ -6,11 +6,15 @@ Authentication model (deliberately simple for a demo):
 * compliance-officer endpoints (KYC verification, audit log) require the
   ``X-Admin-Token`` header matching the ``LEDGERLITE_ADMIN_TOKEN`` env variable.
 """
+import math
 import secrets
 from contextlib import asynccontextmanager
-from typing import Annotated
+from typing import Annotated, Any
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Path
+from fastapi import Depends, FastAPI, Header, HTTPException, Path, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 import ledgerlite.db as db
@@ -44,6 +48,22 @@ app = FastAPI(
     description="Sample payments API implementing the LedgerLite requirements spec v2.0.",
     lifespan=lifespan,
 )
+
+
+def _json_safe(value: Any) -> Any:
+    """Validation errors echo the bad input; NaN/Infinity must become text to stay valid JSON."""
+    if isinstance(value, float) and not math.isfinite(value):
+        return str(value)
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    return value
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+    return JSONResponse(status_code=422, content={"detail": _json_safe(jsonable_encoder(exc.errors()))})
 
 
 def require_admin(x_admin_token: Annotated[str | None, Header()] = None) -> None:

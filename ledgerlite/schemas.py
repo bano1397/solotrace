@@ -3,7 +3,7 @@ import re
 from decimal import Decimal
 from typing import Annotated, Optional
 
-from pydantic import AfterValidator, BaseModel, EmailStr, field_serializer, field_validator
+from pydantic import AfterValidator, BaseModel, EmailStr, Field, field_serializer, field_validator
 
 CENT = Decimal("0.01")
 MAX_AMOUNT = Decimal("9999999999.99")
@@ -46,6 +46,9 @@ def _validate_pin(value: str) -> str:
 
 
 Pin = Annotated[str, AfterValidator(_validate_pin)]
+
+# Database ids are 64-bit signed integers; anything else is a validation error, not a 500.
+AccountRef = Annotated[int, Field(ge=1, le=2**63 - 1)]
 
 
 def _money_str(value: Decimal | None) -> str | None:
@@ -91,14 +94,14 @@ class WithdrawRequest(BaseModel):
 
 
 class TransferCreate(BaseModel):
-    sender_id: int
-    recipient_id: int
+    sender_id: AccountRef
+    recipient_id: AccountRef
     amount: Amount
     pin: str
 
 
 class ApproveRequest(BaseModel):
-    approver_id: int
+    approver_id: AccountRef
     pin: str
 
 
