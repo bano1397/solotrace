@@ -1,7 +1,7 @@
 {
   "tool": "solotrace verify",
   "version": "2.0.0",
-  "generated_at": "2026-09-26T00:44:40+00:00",
+  "generated_at": "2026-09-26T00:54:49+00:00",
   "source": {
     "kind": "commit",
     "commit": "149d4098a3665e9f81f62d2c2d2ae0bcf0418ff2"
@@ -12,12 +12,15 @@
     "exact": 55,
     "relocated": 0,
     "not_found": 0,
+    "ambiguous": 0,
     "too_short": 2,
     "invalid_path": 0,
     "missing_file": 0,
     "tests_checked": 40,
-    "tests_missing": 0
+    "tests_missing": 0,
+    "covered_without_evidence": 0
   },
+  "covered_without_evidence": [],
   "verdicts": [
     {
       "id": "REQ-01",

@@ -7,6 +7,7 @@ own session, exactly as in production.  (An earlier version shared one session
 across requests, which hid a real PIN-lockout bug.)
 """
 import os
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 # Fast PIN hashing for tests only (production default is 600,000 iterations).
@@ -30,6 +31,16 @@ def client(tmp_path):
     with TestClient(app) as c:
         yield c
     db_module.engine.dispose()
+
+
+@pytest.fixture()
+def karachi_tz(monkeypatch):
+    """Make the server's local time differ from UTC (UTC+5), whatever the host is set to."""
+    monkeypatch.setenv("TZ", "Asia/Karachi")
+    time.tzset()
+    yield
+    monkeypatch.undo()
+    time.tzset()
 
 
 @pytest.fixture()

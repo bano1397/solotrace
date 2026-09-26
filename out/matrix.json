@@ -9,7 +9,7 @@
     "bob_task": null,
     "audited_at": "2026-09-26T00:45:31+00:00",
     "verdicts_sha256": "e917b534533da700005e6d7fc8f391813fe7b808638b528e897590221e488c27",
-    "code_commit": "cad816684d7f1f8af758e0962416aec1dc2c975f",
+    "code_commit": "faf3ba60141d1b4533df05185d901b1b626f7922",
     "dirty": true,
     "spec": {
       "path": "demo-data/LedgerLite-Requirements-v2.0.pdf",
@@ -35,24 +35,24 @@
       "proven": 0,
       "covered": 0,
       "weak": 0,
-      "unverified": 1,
-      "untested": 11,
+      "unverified": 3,
+      "untested": 9,
       "contradicts": 0,
       "missing": 0
     },
     "evidence_score_percent": 0.0,
     "proven_percent": 0.0,
-    "citations_verified": 24,
+    "citations_verified": 18,
     "citations_total": 57,
     "mutation_testing": true,
-    "mutations_killed": 45,
-    "mutations_total": 45,
+    "mutations_killed": 88,
+    "mutations_total": 88,
     "tests_run": {
-      "total": 135,
-      "passed": 135,
+      "total": 161,
+      "passed": 161,
       "failed": 0,
       "skipped": 0,
-      "commit": "cad816684d7f1f8af758e0962416aec1dc2c975f"
+      "commit": "faf3ba60141d1b4533df05185d901b1b626f7922"
     }
   },
   "rows": [
@@ -137,8 +137,8 @@
         "tests_passing": 0,
         "tests_cited": 5,
         "mutations": {
-          "tried": 3,
-          "killed": 3,
+          "tried": 7,
+          "killed": 7,
           "survived": 0,
           "proven": true
         }
@@ -251,8 +251,8 @@
         "tests_passing": 0,
         "tests_cited": 6,
         "mutations": {
-          "tried": 3,
-          "killed": 3,
+          "tried": 7,
+          "killed": 7,
           "survived": 0,
           "proven": true
         }
@@ -269,7 +269,7 @@
       "risk": "High",
       "change": "none",
       "ai_status": "covered",
-      "status": "untested",
+      "status": "unverified",
       "reason": "The withdrawal floor is enforced in services.py at lines 156-157: before applying any debit the service checks that the resulting balance would not be less than zero, and raises HTTP 400 with 'Insufficient funds' if it would. Line 159 then performs the actual debit only when that guard passes. Three tests cover the requirement: test_withdrawal_overdraft_rejected confirms a withdrawal of one cent above the balance is rejected with HTTP 400 and the 'Insufficient' message; test_balance_never_goes_negative drains the account to exactly 0.00 and then confirms a further withdrawal is rejected and the balance remains 0.00; test_withdrawal_exact_balance_allowed confirms that withdrawing exactly the full balance succeeds and leaves the balance at 0.00.",
       "suggested_fix": "",
       "evidence": [
@@ -284,12 +284,12 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 261,
+          "line": 157,
           "claimed_line": 157,
           "snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")",
           "claimed_snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")",
-          "verified": true,
-          "match": "relocated"
+          "verified": false,
+          "match": "ambiguous"
         },
         {
           "file": "ledgerlite/services.py",
@@ -322,13 +322,13 @@
         }
       ],
       "checks": {
-        "citations_verified": 1,
+        "citations_verified": 0,
         "citations_total": 3,
         "tests_passing": 0,
         "tests_cited": 3,
         "mutations": {
-          "tried": 2,
-          "killed": 2,
+          "tried": 6,
+          "killed": 6,
           "survived": 0,
           "proven": true
         }
@@ -386,21 +386,21 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 339,
+          "line": 243,
           "claimed_line": 243,
           "snippet": "    except Exception:",
           "claimed_snippet": "    except Exception:",
-          "verified": true,
-          "match": "relocated"
+          "verified": false,
+          "match": "ambiguous"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 260,
+          "line": 244,
           "claimed_line": 244,
           "snippet": "        db.rollback()",
           "claimed_snippet": "        db.rollback()",
-          "verified": true,
-          "match": "relocated"
+          "verified": false,
+          "match": "ambiguous"
         },
         {
           "file": "ledgerlite/services.py",
@@ -427,13 +427,13 @@
         }
       ],
       "checks": {
-        "citations_verified": 3,
+        "citations_verified": 1,
         "citations_total": 7,
         "tests_passing": 0,
         "tests_cited": 2,
         "mutations": {
-          "tried": 2,
-          "killed": 2,
+          "tried": 6,
+          "killed": 6,
           "survived": 0,
           "proven": true
         }
@@ -514,8 +514,8 @@
         "tests_passing": 0,
         "tests_cited": 4,
         "mutations": {
-          "tried": 7,
-          "killed": 7,
+          "tried": 10,
+          "killed": 10,
           "survived": 0,
           "proven": true
         }
@@ -565,12 +565,12 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 284,
+          "line": 234,
           "claimed_line": 234,
           "snippet": "        _write_audit(",
           "claimed_snippet": "        _write_audit(",
-          "verified": true,
-          "match": "relocated"
+          "verified": false,
+          "match": "ambiguous"
         },
         {
           "file": "ledgerlite/main.py",
@@ -615,13 +615,13 @@
         }
       ],
       "checks": {
-        "citations_verified": 4,
+        "citations_verified": 3,
         "citations_total": 5,
         "tests_passing": 0,
         "tests_cited": 5,
         "mutations": {
-          "tried": 6,
-          "killed": 6,
+          "tried": 10,
+          "killed": 10,
           "survived": 0,
           "proven": true
         }
@@ -680,12 +680,12 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 102,
+          "line": 74,
           "claimed_line": 74,
-          "snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter",
+          "snippet": "        account.failed_pin_attempts += 1",
           "claimed_snippet": "        account.failed_pin_attempts += 1",
-          "verified": true,
-          "match": "relocated"
+          "verified": false,
+          "match": "ambiguous"
         },
         {
           "file": "ledgerlite/services.py",
@@ -730,13 +730,13 @@
         }
       ],
       "checks": {
-        "citations_verified": 5,
+        "citations_verified": 4,
         "citations_total": 8,
         "tests_passing": 0,
         "tests_cited": 2,
         "mutations": {
-          "tried": 5,
-          "killed": 5,
+          "tried": 8,
+          "killed": 8,
           "survived": 0,
           "proven": true
         }
@@ -844,8 +844,8 @@
         "tests_passing": 0,
         "tests_cited": 4,
         "mutations": {
-          "tried": 3,
-          "killed": 3,
+          "tried": 6,
+          "killed": 6,
           "survived": 0,
           "proven": true
         }
@@ -861,7 +861,7 @@
       "risk": "High",
       "change": "new",
       "ai_status": "covered",
-      "status": "untested",
+      "status": "unverified",
       "reason": "The implementation introduces a hard cap of 20,000.00 in outgoing transfers per UTC calendar day. The constant _DAILY_TRANSFER_CAP is defined at module level and the check runs inside the transfer service before any balance mutation: it sums all transfers with status 'completed' or 'pending_approval' for the sender since today_start (UTC midnight), converts the aggregate to Decimal, and raises HTTP 400 when daily_total + amount > _DAILY_TRANSFER_CAP. Three dedicated tests cover the boundary exactly (20,000.00 accepted), the first cent over the boundary (20,000.01 rejected), and a three-transfer scenario where the third transfer is blocked.",
       "suggested_fix": "",
       "evidence": [
@@ -921,12 +921,12 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 186,
+          "line": 212,
           "claimed_line": 212,
-          "snippet": "        raise HTTPException(status_code=409, detail=\"Email already registered\")",
+          "snippet": "        raise HTTPException(",
           "claimed_snippet": "        raise HTTPException(",
-          "verified": true,
-          "match": "relocated"
+          "verified": false,
+          "match": "ambiguous"
         }
       ],
       "tests": [
@@ -950,13 +950,13 @@
         }
       ],
       "checks": {
-        "citations_verified": 1,
+        "citations_verified": 0,
         "citations_total": 7,
         "tests_passing": 0,
         "tests_cited": 3,
         "mutations": {
-          "tried": 5,
-          "killed": 5,
+          "tried": 9,
+          "killed": 9,
           "survived": 0,
           "proven": true
         }
@@ -1076,8 +1076,8 @@
         "tests_passing": 0,
         "tests_cited": 9,
         "mutations": {
-          "tried": 4,
-          "killed": 4,
+          "tried": 8,
+          "killed": 8,
           "survived": 0,
           "proven": true
         }
@@ -1170,8 +1170,8 @@
         "tests_passing": 0,
         "tests_cited": 3,
         "mutations": {
-          "tried": 3,
-          "killed": 3,
+          "tried": 6,
+          "killed": 6,
           "survived": 0,
           "proven": true
         }
@@ -1222,8 +1222,8 @@
         "tests_passing": 0,
         "tests_cited": 2,
         "mutations": {
-          "tried": 2,
-          "killed": 2,
+          "tried": 5,
+          "killed": 5,
           "survived": 0,
           "proven": true
         }

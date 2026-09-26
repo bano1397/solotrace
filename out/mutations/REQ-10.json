@@ -28,6 +28,34 @@
       "find": "        db.commit()\n        raise HTTPException(status_code=400, detail=\"sanctions\")",
       "replace": "        raise HTTPException(status_code=400, detail=\"sanctions\")",
       "description": "block the transfer but lose the audit entry"
+    },
+    {
+      "id": "REQ-10-X1",
+      "file": "ledgerlite/services.py",
+      "find": "    if blocked:",
+      "replace": "    if blocked and amount < LARGE_TRANSFER_THRESHOLD:",
+      "description": "[independent QA R2-10a] held (>=5,000) transfers skip sanctions screening (approval never re-screens)"
+    },
+    {
+      "id": "REQ-10-X2",
+      "file": "ledgerlite/services.py",
+      "find": "    # REQ-10: sanctions screening happens before any other business check and is always logged.",
+      "replace": "    if sender.balance < amount:  # fail fast before screening\n        raise HTTPException(status_code=400, detail=\"Insufficient funds\")\n    # REQ-10: sanctions screening happens before any other business check and is always logged.",
+      "description": "[independent QA R2-10b] insufficient-funds pre-check before screening: unfunded attempts to KP/IR/SY/CU are not logged"
+    },
+    {
+      "id": "REQ-10-X3",
+      "file": "ledgerlite/services.py",
+      "find": "    # REQ-10: sanctions screening happens before any other business check and is always logged.",
+      "replace": "    if outgoing_total_today(db, sender_id, _now()) + amount > DAILY_TRANSFER_CAP:  # cheap velocity check first\n        raise HTTPException(status_code=400, detail=f\"Daily outgoing transfer limit of {DAILY_TRANSFER_CAP} exceeded\")\n    # REQ-10: sanctions screening happens before any other business check and is always logged.",
+      "description": "[independent QA R2-10d] daily-cap (velocity) check moved before screening: capped senders' KP/IR/SY/CU attempts are not logged"
+    },
+    {
+      "id": "REQ-10-X4",
+      "file": "ledgerlite/services.py",
+      "find": "            actor_id=sender_id,\n            action=\"sanctions_blocked\",",
+      "replace": "            actor_id=recipient_id,\n            action=\"sanctions_blocked\",",
+      "description": "[independent QA R2-10c] sanctions audit entry names the recipient as actor"
     }
   ]
 }

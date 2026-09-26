@@ -1,24 +1,26 @@
 {
   "tool": "solotrace prove",
-  "commit": "cad816684d7f1f8af758e0962416aec1dc2c975f",
+  "commit": "faf3ba60141d1b4533df05185d901b1b626f7922",
   "dirty": true,
   "tests": "ledgerlite/tests",
   "workers": 6,
-  "generated_at": "2026-09-26T00:46:06+00:00",
+  "generated_at": "2026-09-26T01:18:08+00:00",
   "totals": {
-    "mutations": 45,
-    "killed": 45,
+    "mutations": 88,
+    "killed": 88,
     "survived": 0,
     "invalid": 0,
+    "timeouts": 0,
     "requirements_proven": 12,
     "requirements": 12
   },
   "requirements": {
     "REQ-01": {
-      "tried": 3,
-      "killed": 3,
+      "tried": 7,
+      "killed": 7,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -28,7 +30,7 @@
           "line": 118,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestKYCGating::test_deposit_blocked_before_kyc",
-          "duration_s": 1.85
+          "duration_s": 20.72
         },
         {
           "id": "REQ-01-M2",
@@ -37,7 +39,7 @@
           "line": 297,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestKYCGating::test_transfer_recipient_blocked_before_kyc",
-          "duration_s": 2.11
+          "duration_s": 22.18
         },
         {
           "id": "REQ-01-M3",
@@ -46,15 +48,52 @@
           "line": 167,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestUniqueEmail::test_duplicate_email_is_case_insensitive",
-          "duration_s": 1.65
+          "duration_s": 18.93
+        },
+        {
+          "id": "REQ-01-X1",
+          "description": "[independent QA R2-01a] recipient KYC skipped for held (>=5,000) transfers; approval later credits an unverified account",
+          "file": "ledgerlite/services.py",
+          "line": 297,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::test_held_transfer_to_unverified_recipient_is_rejected",
+          "duration_s": 20.8
+        },
+        {
+          "id": "REQ-01-X2",
+          "description": "[independent QA R2-01c] new accounts are born KYC-verified",
+          "file": "ledgerlite/services.py",
+          "line": 176,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestUniqueEmail::test_create_account_success",
+          "duration_s": 19.09
+        },
+        {
+          "id": "REQ-01-X3",
+          "description": "[independent QA R2-01d] verify-kyc endpoint no longer requires the admin token (self-verification)",
+          "file": "ledgerlite/main.py",
+          "line": 95,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestKYCGating::test_kyc_verification_requires_admin_token",
+          "duration_s": 21.39
+        },
+        {
+          "id": "REQ-01-X4",
+          "description": "[independent QA R2-01b] KYC only enforced for deposits above 1,000.00 (AML-style threshold)",
+          "file": "ledgerlite/services.py",
+          "line": 238,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestKYCGating::test_deposit_blocked_before_kyc",
+          "duration_s": 12.53
         }
       ]
     },
     "REQ-02": {
-      "tried": 3,
-      "killed": 3,
+      "tried": 7,
+      "killed": 7,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -64,7 +103,7 @@
           "line": 28,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req02_deposit_limits.py::test_boundary_50000_accepted",
-          "duration_s": 2.26
+          "duration_s": 12.68
         },
         {
           "id": "REQ-02-M2",
@@ -73,7 +112,7 @@
           "line": 242,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req02_deposit_limits.py::test_boundary_50000_01_rejected",
-          "duration_s": 2.33
+          "duration_s": 11.66
         },
         {
           "id": "REQ-02-M3",
@@ -82,15 +121,52 @@
           "line": 241,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req02_deposit_limits.py::test_zero_and_negative_rejected[0]",
-          "duration_s": 2.14
+          "duration_s": 11.7
+        },
+        {
+          "id": "REQ-02-X1",
+          "description": "[independent QA R2-02a] upper bound off-by-one: 50,000.00 rejected (>=)",
+          "file": "ledgerlite/services.py",
+          "line": 242,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req02_deposit_limits.py::test_boundary_50000_accepted",
+          "duration_s": 11.52
+        },
+        {
+          "id": "REQ-02-X2",
+          "description": "[independent QA R2-02b] per-transaction limit misread as a balance cap (balance + amount > 50,000.00)",
+          "file": "ledgerlite/services.py",
+          "line": 242,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req02_deposit_limits.py::test_limit_is_per_transaction_not_per_balance",
+          "duration_s": 12.0
+        },
+        {
+          "id": "REQ-02-X3",
+          "description": "[independent QA R2-02c] limit compares only whole dollars (int(amount))",
+          "file": "ledgerlite/services.py",
+          "line": 242,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req02_deposit_limits.py::test_boundary_50000_01_rejected",
+          "duration_s": 13.1
+        },
+        {
+          "id": "REQ-02-X4",
+          "description": "[independent QA R2-02d] lower bound off-by-one on the deposit path only: 0.00 accepted",
+          "file": "ledgerlite/services.py",
+          "line": 241,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req02_deposit_limits.py::test_zero_and_negative_rejected[0]",
+          "duration_s": 13.24
         }
       ]
     },
     "REQ-03": {
-      "tried": 2,
-      "killed": 2,
+      "tried": 6,
+      "killed": 6,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -100,7 +176,7 @@
           "line": 131,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req03_withdrawals.py::test_overdraft_rejected_and_balance_unchanged",
-          "duration_s": 2.44
+          "duration_s": 13.59
         },
         {
           "id": "REQ-03-M2",
@@ -109,15 +185,52 @@
           "line": 257,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req03_withdrawals.py::test_zero_and_negative_withdrawals_rejected",
-          "duration_s": 2.34
+          "duration_s": 13.53
+        },
+        {
+          "id": "REQ-03-X1",
+          "description": "[independent QA R2-03a] debit guard off-by-one: withdrawing the exact balance rejected",
+          "file": "ledgerlite/services.py",
+          "line": 131,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req03_withdrawals.py::test_withdrawal_exact_balance_allowed",
+          "duration_s": 13.8
+        },
+        {
+          "id": "REQ-03-X2",
+          "description": "[independent QA R2-03b] 1-cent overdraft tolerance in the debit guard",
+          "file": "ledgerlite/services.py",
+          "line": 131,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req03_withdrawals.py::test_overdraft_rejected_and_balance_unchanged",
+          "duration_s": 12.67
+        },
+        {
+          "id": "REQ-03-X3",
+          "description": "[independent QA R2-03c] transfer path debits without the balance guard (sender can go negative)",
+          "file": "ledgerlite/services.py",
+          "line": 312,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req04_transfer_atomicity.py::test_insufficient_funds_rejected_without_side_effects",
+          "duration_s": 9.07
+        },
+        {
+          "id": "REQ-03-X4",
+          "description": "[independent QA R2-03d] rejected withdrawal still pays out what is available (balance changes on rejection)",
+          "file": "ledgerlite/services.py",
+          "line": 259,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req03_withdrawals.py::test_overdraft_rejected_and_balance_unchanged",
+          "duration_s": 8.49
         }
       ]
     },
     "REQ-04": {
-      "tried": 2,
-      "killed": 2,
+      "tried": 6,
+      "killed": 6,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -127,7 +240,7 @@
           "line": 315,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req04_transfer_atomicity.py::test_failed_credit_rolls_back_the_debit",
-          "duration_s": 2.47
+          "duration_s": 8.11
         },
         {
           "id": "REQ-04-M2",
@@ -136,15 +249,52 @@
           "line": 312,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req04_transfer_atomicity.py::test_insufficient_funds_rejected_without_side_effects",
-          "duration_s": 2.38
+          "duration_s": 7.92
+        },
+        {
+          "id": "REQ-04-X1",
+          "description": "[independent QA R2-04a] credit errors swallowed (debit kept, transfer 'completed')",
+          "file": "ledgerlite/services.py",
+          "line": 315,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req04_transfer_atomicity.py::test_failed_credit_rolls_back_the_debit",
+          "duration_s": 8.26
+        },
+        {
+          "id": "REQ-04-X2",
+          "description": "[independent QA R2-04b] approval commits 'completed' BEFORE crediting (credit failure on approval = debit without credit)",
+          "file": "ledgerlite/services.py",
+          "line": 379,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req04_transfer_atomicity.py::test_failed_credit_during_approval_rolls_back",
+          "duration_s": 8.36
+        },
+        {
+          "id": "REQ-04-X3",
+          "description": "[independent QA R2-04c] create_transfer commits (not rolls back) on unexpected errors",
+          "file": "ledgerlite/services.py",
+          "line": 339,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req04_transfer_atomicity.py::test_failed_credit_rolls_back_the_debit",
+          "duration_s": 21.41
+        },
+        {
+          "id": "REQ-04-X4",
+          "description": "[independent QA R2-04d] transfer row + balances committed before the audit write",
+          "file": "ledgerlite/services.py",
+          "line": 325,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req04_transfer_atomicity.py::test_failed_audit_write_rolls_back_everything",
+          "duration_s": 22.72
         }
       ]
     },
     "REQ-05": {
-      "tried": 7,
-      "killed": 7,
+      "tried": 10,
+      "killed": 10,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -153,8 +303,8 @@
           "file": "ledgerlite/services.py",
           "line": 29,
           "outcome": "killed",
-          "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_at_or_above_threshold_is_held[5000.00]",
-          "duration_s": 2.69
+          "killed_by": "ledgerlite/tests/test_req04_transfer_atomicity.py::test_failed_credit_during_approval_rolls_back",
+          "duration_s": 25.46
         },
         {
           "id": "REQ-05-M2",
@@ -162,8 +312,8 @@
           "file": "ledgerlite/services.py",
           "line": 307,
           "outcome": "killed",
-          "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_at_or_above_threshold_is_held[5000.00]",
-          "duration_s": 2.6
+          "killed_by": "ledgerlite/tests/test_req04_transfer_atomicity.py::test_failed_credit_during_approval_rolls_back",
+          "duration_s": 25.64
         },
         {
           "id": "REQ-05-M3",
@@ -172,7 +322,7 @@
           "line": 355,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_initiator_cannot_approve_own_transfer",
-          "duration_s": 2.98
+          "duration_s": 26.73
         },
         {
           "id": "REQ-05-M4",
@@ -181,7 +331,7 @@
           "line": 357,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_recipient_cannot_approve",
-          "duration_s": 2.95
+          "duration_s": 27.31
         },
         {
           "id": "REQ-05-M5",
@@ -190,7 +340,7 @@
           "line": 361,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_approver_needs_correct_pin",
-          "duration_s": 3.09
+          "duration_s": 32.61
         },
         {
           "id": "REQ-05-M6",
@@ -199,7 +349,7 @@
           "line": 353,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_double_approval_rejected_and_credits_once",
-          "duration_s": 3.21
+          "duration_s": 36.83
         },
         {
           "id": "REQ-05-M7",
@@ -208,15 +358,43 @@
           "line": 363,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_customer_without_approver_role_cannot_approve",
-          "duration_s": 3.5
+          "duration_s": 37.7
+        },
+        {
+          "id": "REQ-05-X1",
+          "description": "[independent QA R2-05a] approval authorised with the INITIATOR's PIN (initiator can self-approve by naming any approver_id)",
+          "file": "ledgerlite/services.py",
+          "line": 349,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_approval_needs_the_approvers_own_pin",
+          "duration_s": 41.04
+        },
+        {
+          "id": "REQ-05-X2",
+          "description": "[independent QA R2-05b] held transfers still credit the recipient at creation",
+          "file": "ledgerlite/services.py",
+          "line": 315,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req04_transfer_atomicity.py::test_failed_credit_during_approval_rolls_back",
+          "duration_s": 31.77
+        },
+        {
+          "id": "REQ-05-X3",
+          "description": "[independent QA R2-05c] approval records the initiator as approver",
+          "file": "ledgerlite/services.py",
+          "line": 373,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_second_user_approval_completes_and_credits_once",
+          "duration_s": 34.19
         }
       ]
     },
     "REQ-06": {
-      "tried": 6,
-      "killed": 6,
+      "tried": 10,
+      "killed": 10,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -226,7 +404,7 @@
           "line": 246,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_deposit_writes_exactly_one_entry",
-          "duration_s": 3.58
+          "duration_s": 39.16
         },
         {
           "id": "REQ-06-M2",
@@ -235,7 +413,7 @@
           "line": 263,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_withdrawal_writes_exactly_one_entry",
-          "duration_s": 3.62
+          "duration_s": 47.21
         },
         {
           "id": "REQ-06-M3",
@@ -244,7 +422,7 @@
           "line": 382,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_approval_writes_exactly_one_entry",
-          "duration_s": 3.69
+          "duration_s": 49.37
         },
         {
           "id": "REQ-06-M4",
@@ -253,7 +431,7 @@
           "line": 63,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_deposit_writes_exactly_one_entry",
-          "duration_s": 3.75
+          "duration_s": 51.14
         },
         {
           "id": "REQ-06-M5",
@@ -262,7 +440,7 @@
           "line": 149,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_existing_entry_cannot_be_modified[PATCH]",
-          "duration_s": 4.2
+          "duration_s": 54.36
         },
         {
           "id": "REQ-06-M6",
@@ -271,15 +449,52 @@
           "line": 246,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestKYCGating::test_deposit_allowed_after_kyc",
-          "duration_s": 3.63
+          "duration_s": 32.71
+        },
+        {
+          "id": "REQ-06-M7",
+          "description": "approvals are not audited",
+          "file": "ledgerlite/services.py",
+          "line": 380,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_approval_writes_exactly_one_entry",
+          "duration_s": 75.69
+        },
+        {
+          "id": "REQ-06-X1",
+          "description": "[independent QA R2-06a] audit timestamp is naive server-local time, serialised with a 'Z' (UTC+5 here -> 5h wrong)",
+          "file": "ledgerlite/services.py",
+          "line": 70,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_audit_timestamps_are_real_utc_even_on_a_non_utc_server",
+          "duration_s": 76.17
+        },
+        {
+          "id": "REQ-06-X2",
+          "description": "[independent QA R2-06b] PATCH /admin/audit/{id} lets compliance edit an audit entry",
+          "file": "ledgerlite/main.py",
+          "line": 149,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req12_audit_retention.py::test_route_inventory_is_exactly_the_reviewed_set",
+          "duration_s": 125.74
+        },
+        {
+          "id": "REQ-06-X3",
+          "description": "[independent QA R2-06c] held (>=5,000) transfers write TWO audit entries",
+          "file": "ledgerlite/services.py",
+          "line": 334,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_held_transfer_writes_exactly_one_entry",
+          "duration_s": 76.73
         }
       ]
     },
     "REQ-07": {
-      "tried": 5,
-      "killed": 5,
+      "tried": 8,
+      "killed": 8,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -289,7 +504,7 @@
           "line": 30,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req07_pin_lockout.py::test_fifth_wrong_pin_locks_account",
-          "duration_s": 5.44
+          "duration_s": 71.97
         },
         {
           "id": "REQ-07-M2",
@@ -298,7 +513,7 @@
           "line": 111,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req07_pin_lockout.py::test_failed_attempts_are_persisted_between_requests",
-          "duration_s": 4.42
+          "duration_s": 76.74
         },
         {
           "id": "REQ-07-M3",
@@ -307,7 +522,7 @@
           "line": 102,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req07_pin_lockout.py::test_correct_pin_resets_counter",
-          "duration_s": 4.71
+          "duration_s": 68.21
         },
         {
           "id": "REQ-07-M4",
@@ -316,7 +531,7 @@
           "line": 97,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req07_pin_lockout.py::test_fifth_wrong_pin_locks_account",
-          "duration_s": 4.52
+          "duration_s": 61.06
         },
         {
           "id": "REQ-07-M5",
@@ -325,15 +540,43 @@
           "line": 88,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_approver_needs_correct_pin",
-          "duration_s": 3.58
+          "duration_s": 50.75
+        },
+        {
+          "id": "REQ-07-X1",
+          "description": "[independent QA R2-07a] POST /transfers checks the PIN without counting failures",
+          "file": "ledgerlite/services.py",
+          "line": 277,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req07_pin_lockout.py::test_fifth_wrong_pin_locks_on_every_endpoint[transfer]",
+          "duration_s": 65.17
+        },
+        {
+          "id": "REQ-07-X2",
+          "description": "[independent QA R2-07b] withdraw checks the PIN without counting failures",
+          "file": "ledgerlite/services.py",
+          "line": 255,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req07_pin_lockout.py::test_fifth_wrong_pin_locks_on_every_endpoint[withdraw]",
+          "duration_s": 75.81
+        },
+        {
+          "id": "REQ-07-X3",
+          "description": "[independent QA R2-07c] GET /accounts/{id} and /statement check the PIN without counting failures",
+          "file": "ledgerlite/services.py",
+          "line": 212,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req07_pin_lockout.py::test_fifth_wrong_pin_locks_on_every_endpoint[read]",
+          "duration_s": 55.35
         }
       ]
     },
     "REQ-08": {
-      "tried": 3,
-      "killed": 3,
+      "tried": 6,
+      "killed": 6,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -343,7 +586,7 @@
           "line": 20,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req08_exact_decimals.py::test_money_is_stored_as_integer_cents_not_real",
-          "duration_s": 5.04
+          "duration_s": 53.99
         },
         {
           "id": "REQ-08-M2",
@@ -352,7 +595,7 @@
           "line": 29,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req08_exact_decimals.py::test_classic_float_traps_are_exact",
-          "duration_s": 4.72
+          "duration_s": 54.38
         },
         {
           "id": "REQ-08-M3",
@@ -361,15 +604,43 @@
           "line": 35,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_sub_cent_amount_cannot_dodge_the_threshold",
-          "duration_s": 3.39
+          "duration_s": 44.28
+        },
+        {
+          "id": "REQ-08-X1",
+          "description": "[independent QA R2-08a] TransferResponse.amount returned as a JSON float (100.0)",
+          "file": "ledgerlite/schemas.py",
+          "line": 139,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req08_exact_decimals.py::test_transfer_amount_is_returned_as_a_two_decimal_string",
+          "duration_s": 48.77
+        },
+        {
+          "id": "REQ-08-X2",
+          "description": "[independent QA R2-08b] money read back from the DB through float division (cents / 100)",
+          "file": "ledgerlite/models.py",
+          "line": 34,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req08_exact_decimals.py::test_values_read_back_from_the_database_are_exact_decimals",
+          "duration_s": 34.23
+        },
+        {
+          "id": "REQ-08-X3",
+          "description": "[independent QA R2-08c] daily outgoing total converted through float",
+          "file": "ledgerlite/services.py",
+          "line": 161,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req08_exact_decimals.py::test_daily_total_arithmetic_is_exact",
+          "duration_s": 30.22
         }
       ]
     },
     "REQ-09": {
-      "tried": 5,
-      "killed": 5,
+      "tried": 9,
+      "killed": 9,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -379,7 +650,7 @@
           "line": 31,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req09_daily_cap.py::test_one_cent_over_the_cap_rejected",
-          "duration_s": 4.8
+          "duration_s": 29.91
         },
         {
           "id": "REQ-09-M2",
@@ -388,7 +659,7 @@
           "line": 34,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req09_daily_cap.py::test_one_cent_over_the_cap_rejected",
-          "duration_s": 4.81
+          "duration_s": 33.23
         },
         {
           "id": "REQ-09-M3",
@@ -397,7 +668,7 @@
           "line": 158,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req09_daily_cap.py::test_yesterdays_transfers_do_not_count",
-          "duration_s": 5.03
+          "duration_s": 32.7
         },
         {
           "id": "REQ-09-M4",
@@ -405,8 +676,8 @@
           "file": "ledgerlite/db.py",
           "line": 51,
           "outcome": "killed",
-          "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestUniqueEmail::test_concurrent_duplicate_signups_give_one_account",
-          "duration_s": 2.44
+          "killed_by": "ledgerlite/tests/test_req03_withdrawals.py::test_concurrent_withdrawals_cannot_overdraw",
+          "duration_s": 23.93
         },
         {
           "id": "REQ-09-M5",
@@ -415,15 +686,52 @@
           "line": 158,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req09_daily_cap.py::test_yesterdays_transfers_do_not_count",
-          "duration_s": 4.96
+          "duration_s": 36.09
+        },
+        {
+          "id": "REQ-09-X1",
+          "description": "[independent QA R2-09a] UTC day start keeps the current microseconds (transfers in the first instant after midnight not counted)",
+          "file": "ledgerlite/services.py",
+          "line": 148,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req09_daily_cap.py::test_transfer_just_after_midnight_counts_for_the_whole_day",
+          "duration_s": 39.47
+        },
+        {
+          "id": "REQ-09-X2",
+          "description": "[independent QA R2-09b] day boundary uses the server-local date (UTC+5: cap disabled 19:00-24:00 UTC)",
+          "file": "ledgerlite/services.py",
+          "line": 148,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req09_daily_cap.py::test_the_day_is_the_utc_day_not_the_server_local_day",
+          "duration_s": 37.76
+        },
+        {
+          "id": "REQ-09-X3",
+          "description": "[independent QA R2-09c] held (>=5,000) transfers exempt from the daily cap",
+          "file": "ledgerlite/services.py",
+          "line": 301,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req09_daily_cap.py::test_third_of_three_7000_transfers_blocked",
+          "duration_s": 34.65
+        },
+        {
+          "id": "REQ-09-X4",
+          "description": "[independent QA R2-09d] cap check ignores the new transfer's own amount",
+          "file": "ledgerlite/services.py",
+          "line": 301,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req09_daily_cap.py::test_third_of_three_7000_transfers_blocked",
+          "duration_s": 34.37
         }
       ]
     },
     "REQ-10": {
-      "tried": 4,
-      "killed": 4,
+      "tried": 8,
+      "killed": 8,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -433,7 +741,7 @@
           "line": 32,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req10_sanctions.py::test_transfer_to_sanctioned_recipient_blocked_and_logged[CU]",
-          "duration_s": 5.28
+          "duration_s": 37.22
         },
         {
           "id": "REQ-10-M2",
@@ -442,7 +750,7 @@
           "line": 281,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req10_sanctions.py::test_transfer_to_sanctioned_recipient_blocked_and_logged[KP]",
-          "duration_s": 5.1
+          "duration_s": 38.5
         },
         {
           "id": "REQ-10-M3",
@@ -451,7 +759,7 @@
           "line": 287,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req10_sanctions.py::test_transfer_to_sanctioned_recipient_blocked_and_logged[KP]",
-          "duration_s": 5.1
+          "duration_s": 33.07
         },
         {
           "id": "REQ-10-M4",
@@ -460,15 +768,52 @@
           "line": 293,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req10_sanctions.py::test_transfer_to_sanctioned_recipient_blocked_and_logged[KP]",
-          "duration_s": 5.12
+          "duration_s": 29.87
+        },
+        {
+          "id": "REQ-10-X1",
+          "description": "[independent QA R2-10a] held (>=5,000) transfers skip sanctions screening (approval never re-screens)",
+          "file": "ledgerlite/services.py",
+          "line": 283,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req10_sanctions.py::test_large_transfer_to_sanctioned_country_is_blocked_not_held",
+          "duration_s": 29.26
+        },
+        {
+          "id": "REQ-10-X2",
+          "description": "[independent QA R2-10b] insufficient-funds pre-check before screening: unfunded attempts to KP/IR/SY/CU are not logged",
+          "file": "ledgerlite/services.py",
+          "line": 279,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestKYCGating::test_transfer_sender_blocked_before_kyc",
+          "duration_s": 19.1
+        },
+        {
+          "id": "REQ-10-X3",
+          "description": "[independent QA R2-10d] daily-cap (velocity) check moved before screening: capped senders' KP/IR/SY/CU attempts are not logged",
+          "file": "ledgerlite/services.py",
+          "line": 279,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req10_sanctions.py::test_screening_happens_before_the_daily_cap",
+          "duration_s": 26.89
+        },
+        {
+          "id": "REQ-10-X4",
+          "description": "[independent QA R2-10c] sanctions audit entry names the recipient as actor",
+          "file": "ledgerlite/services.py",
+          "line": 286,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req10_sanctions.py::test_sanctions_entry_records_the_sender_as_actor",
+          "duration_s": 18.52
         }
       ]
     },
     "REQ-11": {
-      "tried": 3,
-      "killed": 3,
+      "tried": 6,
+      "killed": 6,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -478,7 +823,7 @@
           "line": 68,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req11_statement_masking.py::test_statement_masks_account_number_like_the_spec_example",
-          "duration_s": 5.49
+          "duration_s": 17.3
         },
         {
           "id": "REQ-11-M2",
@@ -487,7 +832,7 @@
           "line": 179,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req11_statement_masking.py::test_statement_masks_account_number_like_the_spec_example",
-          "duration_s": 5.29
+          "duration_s": 15.59
         },
         {
           "id": "REQ-11-M3",
@@ -496,15 +841,43 @@
           "line": 68,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req11_statement_masking.py::test_statement_masks_account_number_like_the_spec_example",
-          "duration_s": 5.31
+          "duration_s": 15.35
+        },
+        {
+          "id": "REQ-11-X1",
+          "description": "[independent QA R2-11a] mask shows the FIRST 4 digits",
+          "file": "ledgerlite/schemas.py",
+          "line": 68,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req11_statement_masking.py::test_statement_masks_account_number_like_the_spec_example",
+          "duration_s": 15.04
+        },
+        {
+          "id": "REQ-11-X2",
+          "description": "[independent QA R2-11b] statement lines embed the counterparty's full account record",
+          "file": "ledgerlite/schemas.py",
+          "line": 135,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req11_statement_masking.py::test_no_full_account_number_anywhere_in_a_statement",
+          "duration_s": 15.51
+        },
+        {
+          "id": "REQ-11-X3",
+          "description": "[independent QA R2-11c] statement response carries the full account number in a Content-Disposition filename",
+          "file": "ledgerlite/main.py",
+          "line": 111,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req11_statement_masking.py::test_no_full_account_number_in_statement_headers_either",
+          "duration_s": 13.64
         }
       ]
     },
     "REQ-12": {
-      "tried": 2,
-      "killed": 2,
+      "tried": 5,
+      "killed": 5,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -514,7 +887,7 @@
           "line": 149,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_existing_entry_cannot_be_modified[DELETE]",
-          "duration_s": 3.9
+          "duration_s": 9.42
         },
         {
           "id": "REQ-12-M2",
@@ -523,7 +896,34 @@
           "line": 149,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_audit_collection_cannot_be_modified[DELETE]",
-          "duration_s": 3.53
+          "duration_s": 9.49
+        },
+        {
+          "id": "REQ-12-X1",
+          "description": "[independent QA R2-12a] DELETE /accounts/{id} (account closure) deletes that account's audit entries",
+          "file": "ledgerlite/main.py",
+          "line": 149,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req12_audit_retention.py::test_route_inventory_is_exactly_the_reviewed_set",
+          "duration_s": 13.41
+        },
+        {
+          "id": "REQ-12-X2",
+          "description": "[independent QA R2-12b] POST /admin/audit/purge?older_than_days=N deletes audit entries",
+          "file": "ledgerlite/main.py",
+          "line": 149,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req12_audit_retention.py::test_route_inventory_is_exactly_the_reviewed_set",
+          "duration_s": 14.6
+        },
+        {
+          "id": "REQ-12-X3",
+          "description": "[independent QA R2-12c] DELETE /admin/audit/{id}",
+          "file": "ledgerlite/main.py",
+          "line": 149,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_req12_audit_retention.py::test_no_delete_route_exists_for_audit_entries",
+          "duration_s": 14.59
         }
       ]
     }

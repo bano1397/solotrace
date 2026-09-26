@@ -65,6 +65,7 @@
               "exact",
               "relocated",
               "not_found",
+              "ambiguous",
               "too_short",
               "invalid_path",
               "missing_file"

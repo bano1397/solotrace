@@ -15,7 +15,7 @@ from typing import Any
 
 from solotrace import __version__
 
-ICON = {
+ICON: dict[Any, str] = {
     "proven": "✅ proven",
     "covered": "☑️ covered",
     "weak": "🟠 weak",
@@ -31,13 +31,18 @@ def _load(path: Path) -> Any | None:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
-def _md(text: str) -> str:
-    return str(text).replace("|", "\\|").replace("\n", " ")
+def _md(text: Any) -> str:
+    """Untrusted text (written by an AI auditor) made inert: one line, no HTML, no table breaks."""
+    text = " ".join(str(text).split())
+    text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    return text.replace("|", "\\|").replace("`", "'")
 
 
-def _code(text: str) -> str:
-    text = str(text).strip().replace("`", "'")
-    return f"`{text}`"
+def _code(text: Any) -> str:
+    """Inline code span that cannot be broken out of (code spans render HTML literally)."""
+    text = " ".join(str(text).split())
+    fence = "``" if "`" in text else "`"
+    return f"{fence} {text} {fence}" if fence == "``" else f"`{text}`"
 
 
 def _pct(n: int, d: int) -> str:
@@ -120,23 +125,23 @@ def build_report(before: dict | None, round1: dict | None, after: dict, extras: 
         mut_txt = "{}/{}".format(mut["killed"], mut["tried"]) if mut else "—"
         base_status = by_id["b"].get(r["id"], {}).get("status")
         round1_status = by_id["r"].get(r["id"], {}).get("status")
-        add(f"| {r['id']} | {_md(r['title'])} | {r['risk']} | {r['change']} "
-            f"| {ICON[base_status]} | {ICON[round1_status]} | {ICON[r['status']]} "
+        add(f"| {_md(r['id'])} | {_md(r['title'])} | {_md(r['risk'])} | {_md(r['change'])} "
+            f"| {ICON.get(base_status, '—')} | {ICON.get(round1_status, '—')} | {ICON.get(r['status'], _md(r['status']))} "
             f"| {c['citations_verified']}/{c['citations_total']} | {c['tests_passing']}/{c['tests_cited']} | {mut_txt} |")
     add("")
 
     add("## 4. Requirement detail")
     add("")
     for r in after["rows"]:
-        add(f"### {r['id']} — {r['title']}")
+        add(f"### {_md(r['id'])} — {_md(r['title'])}")
         add("")
-        add(f"**Risk:** {r['risk']} · **Change in v2.0:** {r['change']} · **Final status:** {ICON[r['status']]}")
+        add(f"**Risk:** {_md(r['risk'])} · **Change in v2.0:** {_md(r['change'])} · **Final status:** {ICON.get(r['status'], _md(r['status']))}")
         add("")
-        add(f"> {r['text']}")
+        add(f"> {_md(r['text'])}")
         add("")
         add("Acceptance criteria:")
         for ac in r["acceptance_criteria"]:
-            add(f"- {ac}")
+            add(f"- {_md(ac)}")
         add("")
         add(f"Auditor's reasoning: {_md(r['reason'])}")
         add("")
@@ -144,20 +149,20 @@ def build_report(before: dict | None, round1: dict | None, after: dict, extras: 
             add("Code evidence:")
             for e in r["evidence"]:
                 mark = "✔ verified" if e["verified"] else f"✘ {e['match'] or 'unverified'}"
-                add(f"- `{e['file']}:{e['line']}` {_code(e['snippet'])} — {mark}")
+                add(f"- {_code(str(e['file']) + ':' + str(e['line']))} {_code(e['snippet'])} — {mark}")
             add("")
         if r["tests"]:
             add("Tests:")
             for t in r["tests"]:
                 state = "✔ passed" if t["passed"] else ("✘ not found" if t["exists"] is False else "✘ failed or not run")
-                add(f"- `{t['file']}` · `{t['test_name']}` — {state}")
+                add(f"- {_code(t['file'])} · {_code(t['test_name'])} — {state}")
             add("")
         muts = extras.get("prove", {}).get("requirements", {}).get(r["id"], {}).get("mutations", [])
         if muts:
             add("Mutations (deliberate sabotage — each must make a test fail):")
             for m in muts:
-                killer = f" by `{m['killed_by'].split('::')[-1]}`" if m.get("killed_by") else ""
-                add(f"- {m['id']}: {m['description']} — **{m['outcome']}**{killer}")
+                killer = f" by {_code(m['killed_by'].split('::')[-1])}" if m.get("killed_by") else ""
+                add(f"- {_md(m['id'])}: {_md(m['description'])} — **{_md(m['outcome'])}**{killer}")
             add("")
 
     signoffs = extras.get("signoffs") or []

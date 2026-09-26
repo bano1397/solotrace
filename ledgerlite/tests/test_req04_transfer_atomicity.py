@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from ledgerlite import services as svc
 from ledgerlite.models import Transfer
-from ledgerlite.tests.conftest import audit_log, balance_of, db_read, ready_account, transfer
+from ledgerlite.tests.conftest import approve, audit_log, balance_of, db_read, make_approver, ready_account, transfer
 
 
 def _pair(client, sender_balance="500.00"):
@@ -75,3 +75,14 @@ def test_failed_audit_write_rolls_back_everything(client, unsafe_client):
     assert balance_of(client, sender["id"]) == "500.00"
     assert balance_of(client, recipient["id"]) == "0.00"
     assert db_read(lambda s: s.query(Transfer).count()) == 0
+
+
+def test_failed_credit_during_approval_rolls_back(client, unsafe_client):
+    """The approval step is atomic too: if crediting fails, the transfer stays held."""
+    sender, recipient = _pair(client, "6000.00")
+    approver = make_approver(client, "approver@example.com")
+    held = transfer(client, sender["id"], recipient["id"], "5000.00").json()
+    with patch.object(svc, "_credit", side_effect=RuntimeError("simulated failure during credit")):
+        assert approve(unsafe_client, held["id"], approver["id"]).status_code == 500
+    assert db_read(lambda s: s.get(Transfer, held["id"]).status) == "pending_approval"
+    assert balance_of(client, recipient["id"]) == "0.00"

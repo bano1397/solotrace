@@ -47,3 +47,10 @@ def test_owner_account_view_is_not_a_statement(client):
     resp = get_account(client, acct["id"])
     assert resp.status_code == 200
     assert resp.json()["account_number"] == acct["account_number"]
+
+
+def test_no_full_account_number_in_statement_headers_either(client):
+    acct = ready_account(client, "hdr@example.com", "100.00")
+    resp = _statement(client, acct["id"])
+    everything = resp.text + "\n".join(f"{k}: {v}" for k, v in resp.headers.items())
+    assert acct["account_number"] not in everything

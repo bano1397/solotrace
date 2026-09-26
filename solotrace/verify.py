@@ -6,7 +6,8 @@ This command checks every citation against the real source:
 
 * ``exact``        the snippet is at the cited line
 * ``relocated``    the snippet exists in the file, but at another line (stale line number)
-* ``not_found``    the snippet does not exist in the file (paraphrase or invention)
+* ``not_found``    the snippet does not exist in the file (paraphrase, invention, or the code moved on)
+* ``ambiguous``    a generic snippet (``db.commit()``) found several times, none near the cited line
 * ``too_short``    the snippet is too short to prove anything (e.g. ``"("``)
 * ``invalid_path`` the path is absolute, contains ``..`` or escapes the repository
 * ``missing_file`` the file does not exist
@@ -141,15 +142,27 @@ def match_at(source: list[str], start: int, quoted: list[str]) -> bool:
     return True
 
 
-def locate(source: list[str], cited_line: int, quoted: list[str]) -> int | None:
-    """0-based index where the quote starts, preferring the cited line, else the nearest."""
+RELOCATE_NEAR = 10   # a quote that occurs several times may only move this many lines
+
+
+def locate(source: list[str], cited_line: int, quoted: list[str]) -> tuple[int | None, str]:
+    """Find the quote. Returns (0-based index or None, match kind).
+
+    exact      the quote is at the cited line
+    relocated  it is elsewhere, and either unique in the file or within RELOCATE_NEAR lines
+    ambiguous  a generic quote (e.g. ``db.commit()``) that occurs several times, none near the cited line
+    not_found  it is not in the file
+    """
     cited = cited_line - 1
     if 0 <= cited < len(source) and match_at(source, cited, quoted):
-        return cited
+        return cited, "exact"
     hits = [i for i in range(len(source)) if _is_code(source[i]) and match_at(source, i, quoted)]
     if not hits:
-        return None
-    return min(hits, key=lambda i: (abs(i - cited), i))
+        return None, "not_found"
+    nearest = min(hits, key=lambda i: (abs(i - cited), i))
+    if len(hits) == 1 or abs(nearest - cited) <= RELOCATE_NEAR:
+        return nearest, "relocated"
+    return None, "ambiguous"
 
 
 def verify_code_evidence(entry: dict[str, Any], reader: SourceReader) -> dict[str, Any]:
@@ -167,16 +180,10 @@ def verify_code_evidence(entry: dict[str, Any], reader: SourceReader) -> dict[st
     if not is_meaningful(quoted):
         return {**result, "verified": False, "match": "too_short", "actual_line": None, "actual_snippet": None}
 
-    index = locate(source, entry["line"], quoted)
+    index, kind = locate(source, entry["line"], quoted)
     if index is None:
-        return {**result, "verified": False, "match": "not_found", "actual_line": None, "actual_snippet": None}
-    return {
-        **result,
-        "verified": True,
-        "match": "exact" if index == entry["line"] - 1 else "relocated",
-        "actual_line": index + 1,
-        "actual_snippet": source[index],
-    }
+        return {**result, "verified": False, "match": kind, "actual_line": None, "actual_snippet": None}
+    return {**result, "verified": True, "match": kind, "actual_line": index + 1, "actual_snippet": source[index]}
 
 
 # ── test citations ───────────────────────────────────────────────────────────
@@ -262,12 +269,17 @@ def verify_dir(out_dir: Path, reader: SourceReader, write: bool = True) -> dict[
     totals: Counter = Counter()
     per_verdict = []
     updated_files = []
+    unsupported: list[str] = []
     for path, verdict in loaded:
         code = [verify_code_evidence(e, reader) for e in verdict["code_evidence"]]
         tests = [verify_test_evidence(e, reader) for e in verdict["test_evidence"]]
         stats = Counter(e["match"] for e in code)
         stats["tests_checked"] = len(tests)
         stats["tests_missing"] = sum(1 for t in tests if not t["exists"])
+        if verdict["status"] == "covered" and (
+            not any(e["verified"] for e in code) or not any(t["exists"] for t in tests)
+        ):
+            unsupported.append(verdict["id"])
         totals.update(stats)
         totals["checked"] += len(code)
         per_verdict.append({"id": verdict["id"], "code_evidence": len(code), "stats": dict(sorted(stats.items()))})
@@ -286,12 +298,15 @@ def verify_dir(out_dir: Path, reader: SourceReader, write: bool = True) -> dict[
             "exact": totals["exact"],
             "relocated": totals["relocated"],
             "not_found": totals["not_found"],
+            "ambiguous": totals["ambiguous"],
             "too_short": totals["too_short"],
             "invalid_path": totals["invalid_path"],
             "missing_file": totals["missing_file"],
             "tests_checked": totals["tests_checked"],
             "tests_missing": totals["tests_missing"],
+            "covered_without_evidence": len(unsupported),
         },
+        "covered_without_evidence": unsupported,
         "verdicts": per_verdict,
     }
     if write:
@@ -317,11 +332,14 @@ def cmd_verify(out: str, source_commit: str | None = None, check: bool = False) 
     print(f"Evidence verification of {relative_display(out_dir, root)}/verdicts against the {where}")
     print(f"  Code citations checked : {t['checked']}")
     print(f"  Verified               : {t['verified']}  (exact {t['exact']}, relocated {t['relocated']})")
-    print(f"  Not found (paraphrase) : {t['not_found']}")
+    print(f"  Not found in the code  : {t['not_found']}")
+    print(f"  Ambiguous (generic)    : {t['ambiguous']}")
     print(f"  Too short to prove     : {t['too_short']}")
     print(f"  Unsafe or missing path : {t['invalid_path'] + t['missing_file']}")
     print(f"  Test citations         : {t['tests_checked']}  ({t['tests_missing']} do not exist)")
+    if t["covered_without_evidence"]:
+        print(f"  'covered' but no verified code or existing test: {', '.join(report['covered_without_evidence'])}")
     if check:
         unverified = t["checked"] - t["verified"]
-        return 1 if unverified or t["tests_missing"] else 0
+        return 1 if unverified or t["tests_missing"] or t["covered_without_evidence"] else 0
     return 0

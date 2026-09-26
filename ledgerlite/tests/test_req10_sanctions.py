@@ -65,3 +65,29 @@ def test_clean_countries_are_not_blocked(client):
     recipient = ready_account(client, "pk@example.com", country="PK")
     assert transfer(client, sender["id"], recipient["id"], "10.00").status_code == 201
     assert _sanctions_entries(client) == []
+
+
+def test_large_transfer_to_sanctioned_country_is_blocked_not_held(client):
+    sender = ready_account(client, "big@example.com", "6000.00")
+    recipient = ready_account(client, "big_kp@example.com", country="KP")
+    resp = transfer(client, sender["id"], recipient["id"], "5000.00")
+    assert resp.status_code == 400 and resp.json()["detail"] == "sanctions"
+    assert len(_sanctions_entries(client)) == 1
+
+
+def test_sanctions_entry_records_the_sender_as_actor(client):
+    sender = ready_account(client, "actor@example.com", "1000.00")
+    recipient = ready_account(client, "actor_ir@example.com", country="IR")
+    transfer(client, sender["id"], recipient["id"], "10.00")
+    assert _sanctions_entries(client)[0]["actor_id"] == sender["id"]
+
+
+def test_screening_happens_before_the_daily_cap(client):
+    """A sender who already hit the cap still gets a logged sanctions block, not a cap error."""
+    sender = ready_account(client, "capped@example.com", "30000.00")
+    clean = ready_account(client, "clean_us@example.com")
+    cuba = ready_account(client, "cu@example.com", country="CU")
+    assert transfer(client, sender["id"], clean["id"], "20000.00").status_code == 201
+    resp = transfer(client, sender["id"], cuba["id"], "100.00")
+    assert resp.json()["detail"] == "sanctions"
+    assert len(_sanctions_entries(client)) == 1

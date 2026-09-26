@@ -99,7 +99,7 @@ def rebuild(key: str) -> None:
 
             prove_path = stage_dir / "prove.json"
             if cfg["prove"]:
-                mutations, errors = load_mutations(stage_dir / "mutations", SourceReader(worktree))
+                mutations, errors = load_mutations(stage_dir / "mutations", SourceReader(worktree), "ledgerlite/tests")
                 if errors:
                     raise SystemExit("mutation errors:\n" + "\n".join(errors))
                 ok, _ = baseline_passes(worktree, "ledgerlite/tests", 300)

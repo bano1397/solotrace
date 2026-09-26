@@ -90,14 +90,14 @@ def build_row(req: dict[str, Any], verdict: dict[str, Any] | None,
         final = ai_status
     elif n_verified == 0:
         final = "unverified"
-    elif tests is not None and n_passing == 0:
-        final = "untested"
-    elif mutation is not None and not mutation["proven"]:
-        final = "weak"
-    elif mutation is not None:
-        final = "proven"
+    elif tests is None or n_passing == 0:
+        final = "untested"          # no test run recorded, or no cited test exists and passed
+    elif mutation is None or mutation["tried"] == 0:
+        final = "covered"           # evidence is good, but the tests were never sabotage-tested
+    elif not mutation["proven"]:
+        final = "weak"              # at least one sabotage slipped through the tests
     else:
-        final = "covered"
+        final = "proven"
 
     return {
         "id": req["id"],
@@ -129,6 +129,12 @@ def build_matrix(out_dir: Path) -> dict[str, Any]:
     tests = _load_json(out_dir / "tests.json")
     prove = _load_json(out_dir / "prove.json")
     meta = _load_json(out_dir / "audit.json") or {}
+    audited = meta.get("code_commit")
+    # Results only count if they were produced on the audited code.
+    if tests and audited and tests.get("commit") and tests["commit"] != audited:
+        tests = None
+    if prove and audited and prove.get("commit") and prove["commit"] != audited:
+        prove = None
 
     # Evidence is always re-checked here against the audited code; "verified" flags that
     # happen to be present in a verdict file are ignored.

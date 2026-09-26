@@ -43,19 +43,19 @@
       "file": "ledgerlite/services.py",
       "line": 243,
       "snippet": "    except Exception:",
-      "verified": true,
-      "match": "relocated",
-      "actual_line": 339,
-      "actual_snippet": "    except Exception:"
+      "verified": false,
+      "match": "ambiguous",
+      "actual_line": null,
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
       "line": 244,
       "snippet": "        db.rollback()",
-      "verified": true,
-      "match": "relocated",
-      "actual_line": 260,
-      "actual_snippet": "        db.rollback()"
+      "verified": false,
+      "match": "ambiguous",
+      "actual_line": null,
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",

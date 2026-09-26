@@ -230,3 +230,27 @@ def test_ignored_and_git_internal_files_are_refused(tmp_path):
     for path in (".env", ".git/config"):
         r = verify_code_evidence({"file": path, "line": 1, "snippet": "API_TOKEN=super-secret-value"}, reader)
         assert r["match"] == "invalid_path" and r["actual_snippet"] is None
+
+
+def test_generic_quote_far_from_its_citation_is_ambiguous(tmp_path):
+    lines = ["def a():", "    db.commit()"] + [f"x{i} = {i}" for i in range(40)] + ["def b():", "    db.commit()"]
+    (tmp_path / "g.py").write_text("\n".join(lines) + "\n")
+    reader = SourceReader(tmp_path)
+    far = verify_code_evidence({"file": "g.py", "line": 22, "snippet": "db.commit()"}, reader)
+    assert far["verified"] is False and far["match"] == "ambiguous"
+    near = verify_code_evidence({"file": "g.py", "line": 3, "snippet": "db.commit()"}, reader)
+    assert near["verified"] and near["actual_line"] == 2
+
+
+def test_unique_quote_may_move_far(tmp_path):
+    lines = [f"x{i} = {i}" for i in range(60)] + ["LIMIT_FOR_TRANSFERS = 5000"]
+    (tmp_path / "u.py").write_text("\n".join(lines) + "\n")
+    r = verify_code_evidence({"file": "u.py", "line": 1, "snippet": "LIMIT_FOR_TRANSFERS = 5000"}, SourceReader(tmp_path))
+    assert r["verified"] and r["match"] == "relocated" and r["actual_line"] == 61
+
+
+def test_check_fails_for_covered_without_evidence(repo, reader, tmp_path):
+    out = tmp_path / "out"
+    _write_verdict(out, "REQ-01", [], [])
+    report = verify_dir(out, reader, write=False)
+    assert report["covered_without_evidence"] == ["REQ-01"]

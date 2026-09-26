@@ -42,6 +42,34 @@
       "find": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
       "replace": "    _write_audit(db, actor_id=0, action=\"deposit\", amount=amount, account_id=account_id)",
       "description": "deposit audit entry records the wrong actor"
+    },
+    {
+      "id": "REQ-06-M7",
+      "file": "ledgerlite/services.py",
+      "find": "        _write_audit(\n            db,\n            actor_id=approver_id,\n            action=\"transfer_approved\",\n            amount=transfer.amount,\n            account_id=transfer.sender_id,\n            related_account_id=transfer.recipient_id,\n            detail=f\"transfer {transfer_id} approved\",\n        )\n",
+      "replace": "",
+      "description": "approvals are not audited"
+    },
+    {
+      "id": "REQ-06-X1",
+      "file": "ledgerlite/services.py",
+      "find": "        timestamp=_now(),",
+      "replace": "        timestamp=datetime.datetime.now(),",
+      "description": "[independent QA R2-06a] audit timestamp is naive server-local time, serialised with a 'Z' (UTC+5 here -> 5h wrong)"
+    },
+    {
+      "id": "REQ-06-X2",
+      "file": "ledgerlite/main.py",
+      "find": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+      "replace": "@app.patch(\"/admin/audit/{entry_id}\", response_model=AuditEntryResponse, dependencies=[Depends(require_admin)])\ndef amend_audit_entry(entry_id: int, body: dict, session: Session = Depends(db.get_db)):\n    from ledgerlite.models import AuditEntry\n    entry = session.get(AuditEntry, entry_id)\n    if entry is None:\n        raise HTTPException(status_code=404, detail=\"Audit entry not found\")\n    entry.detail = body.get(\"detail\", entry.detail)\n    session.commit()\n    session.refresh(entry)\n    return entry\n\n\n@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+      "description": "[independent QA R2-06b] PATCH /admin/audit/{id} lets compliance edit an audit entry"
+    },
+    {
+      "id": "REQ-06-X3",
+      "file": "ledgerlite/services.py",
+      "find": "            detail=f\"transfer {transfer.id}: {status}\",\n        )\n",
+      "replace": "            detail=f\"transfer {transfer.id}: {status}\",\n        )\n        if large:\n            _write_audit(db, actor_id=sender_id, action=\"transfer_held\", amount=amount, account_id=sender_id, related_account_id=recipient_id)\n",
+      "description": "[independent QA R2-06c] held (>=5,000) transfers write TWO audit entries"
     }
   ]
 }

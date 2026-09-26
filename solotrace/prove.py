@@ -9,7 +9,10 @@ of the repository and runs the test suite:
 
 * **killed**   — at least one test failed: the tests really guard the requirement;
 * **survived** — every test still passed: the requirement is NOT proven by its tests;
-* **invalid**  — the mutated code could not even be collected (bad mutation).
+* **invalid**  — the run crashed or no named test failed (bad mutation; proves nothing);
+* **timeout**  — the suite did not finish in time (not counted as caught).
+
+Mutations may only change application code, never the tests.
 
 A requirement is *proven* only if it has mutations and every one of them is killed.
 
@@ -48,7 +51,20 @@ _REQUIRED_KEYS = ("id", "file", "find", "replace", "description")
 
 # ── loading and validation ───────────────────────────────────────────────────
 
-def load_mutations(mutations_dir: Path, reader: SourceReader) -> tuple[list[dict[str, Any]], list[str]]:
+def is_test_file(rel: str, tests_path: str | None = None) -> bool:
+    """Mutations must change application code; the tests are the judge, not the defendant."""
+    name = rel.rsplit("/", 1)[-1]
+    if name == "conftest.py" or name.startswith("test_") or name.endswith("_test.py"):
+        return True
+    if tests_path:
+        prefix = tests_path.strip("/").rstrip("/") + "/"
+        if rel.startswith(prefix) or rel == tests_path.strip("/"):
+            return True
+    return "/tests/" in "/" + rel
+
+
+def load_mutations(mutations_dir: Path, reader: SourceReader,
+                   tests_path: str | None = None) -> tuple[list[dict[str, Any]], list[str]]:
     """Load and validate all mutation files. Returns (mutations, errors)."""
     mutations: list[dict[str, Any]] = []
     errors: list[str] = []
@@ -64,6 +80,9 @@ def load_mutations(mutations_dir: Path, reader: SourceReader) -> tuple[list[dict
         if requirement != path.stem:
             errors.append(f"{path.name}: requirement {requirement!r} does not match the file name")
             continue
+        if not isinstance(items, list):
+            errors.append(f"{path.name}: 'mutations' must be a list")
+            continue
         for index, m in enumerate(items):
             where = f"{path.name}[{index}]"
             if not isinstance(m, dict) or any(not isinstance(m.get(k), str) for k in _REQUIRED_KEYS):
@@ -77,6 +96,9 @@ def load_mutations(mutations_dir: Path, reader: SourceReader) -> tuple[list[dict
                 text = reader.text(rel)
             except UnsafePathError as exc:
                 errors.append(f"{where}: {exc}")
+                continue
+            if is_test_file(rel, tests_path):
+                errors.append(f"{where}: mutations may not change tests ({rel}); sabotage the application code")
                 continue
             if text is None:
                 errors.append(f"{where}: file not found: {m['file']}")
@@ -111,9 +133,9 @@ def _pytest(copy: Path, tests_path: str, timeout: int) -> tuple[str, str | None,
     )
     if proc.returncode == 0:
         return "survived", None, duration
-    if proc.returncode == 1:
-        return "killed", killed_by, duration
-    return "invalid", None, duration
+    if proc.returncode == 1 and killed_by:
+        return "killed", killed_by, duration  # a named test failed: the tests caught the sabotage
+    return "invalid", None, duration  # crash, collection error or no named failure: proves nothing
 
 
 _SKIP_PREFIXES = ("out/", "out-", "docs/", "bob_sessions/")
@@ -197,15 +219,17 @@ def summarise(results: list[dict[str, Any]], requirement_ids: list[str]) -> dict
         grouped[r["requirement"]].append(r)
     for req in requirement_ids:
         items = grouped.get(req, [])
-        killed = sum(1 for r in items if r["outcome"] in ("killed", "timeout"))
+        killed = sum(1 for r in items if r["outcome"] == "killed")
         survived = [r for r in items if r["outcome"] == "survived"]
         invalid = sum(1 for r in items if r["outcome"] == "invalid")
+        timeouts = sum(1 for r in items if r["outcome"] == "timeout")
         per_req[req] = {
             "tried": len(items),
             "killed": killed,
             "survived": len(survived),
             "invalid": invalid,
-            "proven": bool(items) and not survived and not invalid,
+            "timeouts": timeouts,
+            "proven": bool(items) and killed == len(items),
             "mutations": [
                 {k: r[k] for k in ("id", "description", "file", "line", "outcome", "killed_by", "duration_s")}
                 for r in items
@@ -216,6 +240,7 @@ def summarise(results: list[dict[str, Any]], requirement_ids: list[str]) -> dict
         "killed": sum(v["killed"] for v in per_req.values()),
         "survived": sum(v["survived"] for v in per_req.values()),
         "invalid": sum(v["invalid"] for v in per_req.values()),
+        "timeouts": sum(v["timeouts"] for v in per_req.values()),
         "requirements_proven": sum(1 for v in per_req.values() if v["proven"]),
         "requirements": len(requirement_ids),
     }
@@ -226,7 +251,7 @@ def cmd_prove(out: str, tests_path: str, workers: int = 4, timeout: int = 300) -
     root = repo_root()
     out_dir = Path(out)
     reader = SourceReader(root)
-    mutations, errors = load_mutations(out_dir / "mutations", reader)
+    mutations, errors = load_mutations(out_dir / "mutations", reader, tests_path)
     if errors:
         print("ERROR: invalid mutation files:\n  " + "\n  ".join(errors), file=sys.stderr)
         return 1
@@ -270,7 +295,7 @@ def cmd_prove(out: str, tests_path: str, workers: int = 4, timeout: int = 300) -
             if m["outcome"] != "killed":
                 print(f"{'':12}   {m['outcome'].upper()}: {m['id']} — {m['description']}")
     t = summary["totals"]
-    print(f"Mutations killed: {t['killed']}/{t['mutations']} · requirements proven: "
+    print(f"Mutations killed: {t['killed']}/{t['mutations']} · requirements whose tests catch every sabotage: "
           f"{t['requirements_proven']}/{t['requirements']} · {report['duration_s']}s")
     # Exit 0 only if every requirement is proven (a requirement without mutations is not).
     return 0 if t["requirements_proven"] == t["requirements"] else 2

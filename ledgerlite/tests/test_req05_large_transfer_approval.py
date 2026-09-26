@@ -153,3 +153,17 @@ def test_only_the_compliance_officer_can_grant_the_role(client):
     assert client.post(f"/accounts/{acct['id']}/grant-approver").status_code == 401
     unverified = make_account(client, "unverified@example.com")
     assert client.post(f"/accounts/{unverified['id']}/grant-approver", headers=ADMIN).status_code == 403
+
+
+def test_approval_needs_the_approvers_own_pin(client):
+    """Knowing the initiator's PIN is not enough to approve on someone else's behalf."""
+    sender = make_account(client, "pin_s@example.com", pin="1111")
+    assert client.post(f"/accounts/{sender['id']}/verify-kyc", headers=ADMIN).status_code == 200
+    assert client.post(f"/accounts/{sender['id']}/deposit", json={"amount": "6000.00", "pin": "1111"}).status_code == 200
+    recipient = ready_account(client, "pin_r@example.com")
+    approver = make_account(client, "pin_a@example.com", pin="2222")
+    assert client.post(f"/accounts/{approver['id']}/verify-kyc", headers=ADMIN).status_code == 200
+    assert client.post(f"/accounts/{approver['id']}/grant-approver", headers=ADMIN).status_code == 200
+    held = transfer(client, sender["id"], recipient["id"], "5000.00", pin="1111").json()
+    assert approve(client, held["id"], approver["id"], pin="1111").status_code == 403
+    assert approve(client, held["id"], approver["id"], pin="2222").status_code == 200

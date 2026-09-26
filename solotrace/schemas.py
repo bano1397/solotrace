@@ -12,7 +12,7 @@ _REQ_ID_RE = re.compile(r"^REQ-\d{2}$")
 _RISK_VALUES = {"High", "Medium", "Low"}
 _CHANGE_VALUES = {"none", "changed", "new"}
 _STATUS_VALUES = {"covered", "untested", "contradicts", "missing"}
-_MATCH_VALUES = {"exact", "relocated", "not_found", "too_short", "invalid_path", "missing_file"}
+_MATCH_VALUES = {"exact", "relocated", "not_found", "ambiguous", "too_short", "invalid_path", "missing_file"}
 # Fields written by the AI auditor, plus optional fields added by `solotrace verify`.
 _CODE_EVIDENCE_KEYS = {"file", "line", "snippet", "verified", "match", "actual_line", "actual_snippet"}
 _TEST_EVIDENCE_KEYS = {"file", "test_name", "exists", "passed"}

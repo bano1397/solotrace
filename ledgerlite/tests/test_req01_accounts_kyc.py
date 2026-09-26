@@ -107,3 +107,10 @@ class TestKYCGating:
         assert bad.status_code == 401
         ok = client.post(f"/accounts/{acct['id']}/verify-kyc", headers=ADMIN)
         assert ok.status_code == 200 and ok.json()["kyc_status"] == "verified"
+
+
+def test_held_transfer_to_unverified_recipient_is_rejected(client):
+    """KYC applies to large (held) transfers too, not only to small ones."""
+    sender = ready_account(client, "s@example.com", "6000.00")
+    recipient = make_account(client, "r@example.com")
+    assert transfer(client, sender["id"], recipient["id"], "5000.00").status_code == 403

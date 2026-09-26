@@ -31,11 +31,54 @@ from solotrace.testrun import run_tests
 from solotrace.verify import verify_dir
 
 
-def _spec_info(spec: Path, root: Path, requirement_ids: list[str]) -> dict[str, Any]:
-    text = pdf_to_text(spec)
-    missing = [rid for rid in requirement_ids if rid not in text]
-    if missing:
-        raise ValueError(f"requirements not found in the spec text: {', '.join(missing)}")
+def _normalised(text: str) -> str:
+    """Letters and digits only; 'fi'/'fl' removed because PDF text extraction often drops ligatures."""
+    return re.sub(r"[^a-z0-9]", "", text.lower()).replace("fi", "").replace("fl", "")
+
+
+def text_similarity(requirement_text: str, spec_section: str) -> float:
+    """Share of the requirement's 6-character shingles that occur in its spec section (1.0 = identical)."""
+    req, sec = _normalised(requirement_text), _normalised(spec_section)
+    shingles = {req[i:i + 6] for i in range(max(1, len(req) - 5))}
+    return sum(1 for sh in shingles if sh in sec) / len(shingles)
+
+
+def numbers_in(text: str) -> set[str]:
+    """Numbers as written (thousands separators removed), e.g. {'5000.00', '10000.00'}."""
+    return {n.replace(",", "") for n in re.findall(r"\d[\d,]*(?:\.\d+)?", text)}
+
+
+def matches_spec(requirement_text: str, spec_section: str) -> bool:
+    """Same wording (≥ 90% shingle overlap) and no number that the spec section does not contain."""
+    return (text_similarity(requirement_text, spec_section) >= 0.9
+            and numbers_in(requirement_text) <= numbers_in(spec_section))
+
+
+def spec_sections(text: str) -> dict[str, str]:
+    """Spec text between each REQ-nn marker and the next one."""
+    marks = [(m.group(0), m.start()) for m in re.finditer(r"REQ-\d{2}", text)]
+    sections: dict[str, str] = {}
+    for i, (rid, start) in enumerate(marks):
+        end = marks[i + 1][1] if i + 1 < len(marks) else len(text)
+        sections[rid] = sections.get(rid, "") + text[start:end]
+    return sections
+
+
+def _spec_info(spec: Path, root: Path, requirements: list[dict[str, Any]]) -> dict[str, Any]:
+    try:
+        text = pdf_to_text(spec)
+    except Exception as exc:  # corrupt or unreadable PDF
+        raise ValueError(f"cannot read the specification {spec}: {exc}") from exc
+    requirement_ids = [r["id"] for r in requirements]
+    in_spec = sorted(set(re.findall(r"REQ-\d{2}", text)))
+    if sorted(requirement_ids) != in_spec:
+        missing = sorted(set(in_spec) - set(requirement_ids))
+        extra = sorted(set(requirement_ids) - set(in_spec))
+        raise ValueError(f"requirements.json does not match the spec: missing {missing or 'none'}, extra {extra or 'none'}")
+    sections = spec_sections(text)
+    changed = [r["id"] for r in requirements if not matches_spec(r["text"], sections.get(r["id"], ""))]
+    if changed:
+        raise ValueError(f"requirement text differs from the spec for: {', '.join(changed)}")
     version = re.search(r"Version\s+([0-9]+(?:\.[0-9]+)*)", text)
     return {
         "path": relative_display(spec, root),
@@ -84,7 +127,7 @@ def cmd_run(spec: str, out: str, before: str | None, round1: str | None, tests_p
     def do_requirements() -> str:
         reqs = load_requirements(out_dir / "requirements.json")
         ids = [r["id"] for r in reqs]
-        info = _spec_info(Path(spec), root, ids)
+        info = _spec_info(Path(spec), root, reqs)
         previous = json.loads((out_dir / "audit.json").read_text()) if (out_dir / "audit.json").exists() else {}
         claims = verdict_claims_hash(out_dir)
         same_verdicts = previous.get("verdicts_sha256") == claims
@@ -124,7 +167,7 @@ def cmd_run(spec: str, out: str, before: str | None, round1: str | None, tests_p
                 f"{t['tests_checked'] - t['tests_missing']}/{t['tests_checked']} cited tests exist")
 
     def do_prove() -> str:
-        mutations, errors = load_mutations(out_dir / "mutations", SourceReader(root))
+        mutations, errors = load_mutations(out_dir / "mutations", SourceReader(root), tests_path)
         if errors:
             raise ValueError("invalid mutation files:\n  " + "\n  ".join(errors))
         ok, _ = baseline_passes(root, tests_path, 300)
@@ -137,7 +180,8 @@ def cmd_run(spec: str, out: str, before: str | None, round1: str | None, tests_p
                   "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), **summary}
         (out_dir / "prove.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         t = summary["totals"]
-        return f"{t['killed']}/{t['mutations']} sabotage attempts caught; {t['requirements_proven']}/{t['requirements']} requirements proven"
+        return (f"{t['killed']}/{t['mutations']} sabotage attempts caught; tests catch every sabotage for "
+                f"{t['requirements_proven']}/{t['requirements']} requirements")
 
     def do_matrix() -> str:
         matrix = build_matrix(out_dir)

@@ -116,3 +116,39 @@ def test_file_name_must_match_requirement(project, tmp_path):
 def test_requirement_without_mutations_is_not_proven():
     summary = summarise([], ["REQ-01"])
     assert summary["requirements"]["REQ-01"]["proven"] is False
+
+
+@pytest.mark.parametrize("target", ["tests/test_calc.py", "tests/conftest.py", "test_x.py"])
+def test_mutations_may_not_touch_tests(project, tmp_path, target):
+    (project / "tests" / "conftest.py").write_text("# fixtures\n")
+    (project / "test_x.py").write_text("def test_x():\n    assert True\n")
+    out = tmp_path / "out"
+    write_mutations(out, "REQ-01", [{**m("REQ-01-M1", "assert", "assert not"), "file": target}])
+    mutations, errors = load_mutations(out / "mutations", SourceReader(project), "tests")
+    assert mutations == [] and any("may not change tests" in e for e in errors)
+
+
+def test_crashing_the_test_process_is_not_a_kill(project, tmp_path):
+    out = tmp_path / "out"
+    write_mutations(out, "REQ-01", [m("REQ-01-M1", "LIMIT = 100", "import os; os._exit(1); LIMIT = 100")])
+    mutations, _ = load_mutations(out / "mutations", SourceReader(project), "tests")
+    [result] = run_mutations(project, mutations, "tests", workers=1, timeout=120)
+    assert result["outcome"] == "invalid"
+    assert summarise([result], ["REQ-01"])["requirements"]["REQ-01"]["proven"] is False
+
+
+def test_a_timeout_is_not_a_kill(project, tmp_path):
+    out = tmp_path / "out"
+    write_mutations(out, "REQ-01", [m("REQ-01-M1", "return 0 < amount <= LIMIT", "import time; time.sleep(30)")])
+    mutations, _ = load_mutations(out / "mutations", SourceReader(project), "tests")
+    [result] = run_mutations(project, mutations, "tests", workers=1, timeout=3)
+    assert result["outcome"] == "timeout"
+    assert summarise([result], ["REQ-01"])["requirements"]["REQ-01"]["proven"] is False
+
+
+def test_mutations_must_be_a_list(project, tmp_path):
+    out = tmp_path / "out"
+    (out / "mutations").mkdir(parents=True)
+    (out / "mutations" / "REQ-01.json").write_text(json.dumps({"requirement": "REQ-01", "mutations": 5}))
+    _, errors = load_mutations(out / "mutations", SourceReader(project))
+    assert errors and "must be a list" in errors[0]

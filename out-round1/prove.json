@@ -7,6 +7,7 @@
     "killed": 23,
     "survived": 11,
     "invalid": 0,
+    "timeouts": 0,
     "requirements_proven": 6,
     "requirements": 12
   },
@@ -16,6 +17,7 @@
       "killed": 3,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -25,7 +27,7 @@
           "line": 176,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec1_accounts_kyc.py::TestKYCGating::test_transfer_recipient_blocked_before_kyc",
-          "duration_s": 4.39
+          "duration_s": 91.92
         },
         {
           "id": "REQ-01-M01b",
@@ -34,7 +36,7 @@
           "line": 151,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec1_accounts_kyc.py::TestKYCGating::test_withdraw_blocked_before_kyc",
-          "duration_s": 3.86
+          "duration_s": 79.53
         },
         {
           "id": "REQ-01-M01c",
@@ -43,7 +45,7 @@
           "line": 101,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec1_accounts_kyc.py::TestAccountCreation::test_duplicate_email_rejected",
-          "duration_s": 4.69
+          "duration_s": 96.84
         }
       ]
     },
@@ -52,6 +54,7 @@
       "killed": 2,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -61,7 +64,7 @@
           "line": 19,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec2_deposit_limits.py::TestDepositValidation::test_boundary_50000_01_rejected",
-          "duration_s": 4.71
+          "duration_s": 106.49
         },
         {
           "id": "REQ-02-M02b",
@@ -70,7 +73,7 @@
           "line": 135,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec2_deposit_limits.py::TestDepositValidation::test_zero_rejected",
-          "duration_s": 4.59
+          "duration_s": 97.66
         }
       ]
     },
@@ -79,6 +82,7 @@
       "killed": 2,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -88,7 +92,7 @@
           "line": 156,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec3_withdrawals.py::TestWithdrawal::test_withdrawal_overdraft_rejected",
-          "duration_s": 5.56
+          "duration_s": 114.47
         },
         {
           "id": "REQ-03-M03b",
@@ -97,7 +101,7 @@
           "line": 156,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec3_withdrawals.py::TestWithdrawal::test_withdrawal_overdraft_rejected",
-          "duration_s": 5.28
+          "duration_s": 111.89
         }
       ]
     },
@@ -106,6 +110,7 @@
       "killed": 2,
       "survived": 1,
       "invalid": 0,
+      "timeouts": 0,
       "proven": false,
       "mutations": [
         {
@@ -115,7 +120,7 @@
           "line": 237,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec4_transfer_atomicity.py::TestTransferAtomicity::test_transfer_rolls_back_on_db_error",
-          "duration_s": 6.59
+          "duration_s": 101.26
         },
         {
           "id": "REQ-04-M04b",
@@ -124,7 +129,7 @@
           "line": 221,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec4_transfer_atomicity.py::TestTransferAtomicity::test_transfer_rolls_back_on_db_error",
-          "duration_s": 6.57
+          "duration_s": 136.03
         },
         {
           "id": "REQ-04-M04c",
@@ -133,7 +138,7 @@
           "line": 221,
           "outcome": "survived",
           "killed_by": null,
-          "duration_s": 10.16
+          "duration_s": 166.55
         }
       ]
     },
@@ -142,6 +147,7 @@
       "killed": 1,
       "survived": 2,
       "invalid": 0,
+      "timeouts": 0,
       "proven": false,
       "mutations": [
         {
@@ -151,7 +157,7 @@
           "line": 20,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec5_large_transfer_threshold.py::test_transfer_at_threshold_pending",
-          "duration_s": 7.45
+          "duration_s": 137.09
         },
         {
           "id": "REQ-05-M05b",
@@ -160,7 +166,7 @@
           "line": 257,
           "outcome": "survived",
           "killed_by": null,
-          "duration_s": 9.75
+          "duration_s": 176.96
         },
         {
           "id": "REQ-05-M05c",
@@ -169,7 +175,7 @@
           "line": 255,
           "outcome": "survived",
           "killed_by": null,
-          "duration_s": 9.42
+          "duration_s": 171.48
         }
       ]
     },
@@ -178,6 +184,7 @@
       "killed": 1,
       "survived": 4,
       "invalid": 0,
+      "timeouts": 0,
       "proven": false,
       "mutations": [
         {
@@ -187,7 +194,7 @@
           "line": 269,
           "outcome": "survived",
           "killed_by": null,
-          "duration_s": 9.39
+          "duration_s": 160.75
         },
         {
           "id": "REQ-06-M06b",
@@ -196,7 +203,7 @@
           "line": 141,
           "outcome": "survived",
           "killed_by": null,
-          "duration_s": 9.43
+          "duration_s": 146.28
         },
         {
           "id": "REQ-06-M06c",
@@ -205,7 +212,7 @@
           "line": 98,
           "outcome": "survived",
           "killed_by": null,
-          "duration_s": 9.04
+          "duration_s": 154.58
         },
         {
           "id": "REQ-06-M06d",
@@ -214,7 +221,7 @@
           "line": 141,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec6_audit_log.py::test_audit_entry_written_on_deposit",
-          "duration_s": 6.56
+          "duration_s": 110.35
         },
         {
           "id": "REQ-06-M06e",
@@ -223,7 +230,7 @@
           "line": 141,
           "outcome": "survived",
           "killed_by": null,
-          "duration_s": 8.49
+          "duration_s": 156.6
         }
       ]
     },
@@ -232,6 +239,7 @@
       "killed": 3,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -241,7 +249,7 @@
           "line": 21,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec7_pin_lockout.py::test_fifth_wrong_pin_locks_account",
-          "duration_s": 7.74
+          "duration_s": 225.55
         },
         {
           "id": "REQ-07-M07b",
@@ -250,7 +258,7 @@
           "line": 83,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec7_pin_lockout.py::test_correct_pin_resets_counter",
-          "duration_s": 8.43
+          "duration_s": 220.74
         },
         {
           "id": "REQ-07-M07c",
@@ -259,7 +267,7 @@
           "line": 70,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec7_pin_lockout.py::test_fifth_wrong_pin_locks_account",
-          "duration_s": 8.18
+          "duration_s": 192.87
         }
       ]
     },
@@ -268,6 +276,7 @@
       "killed": 1,
       "survived": 2,
       "invalid": 0,
+      "timeouts": 0,
       "proven": false,
       "mutations": [
         {
@@ -277,7 +286,7 @@
           "line": 140,
           "outcome": "survived",
           "killed_by": null,
-          "duration_s": 9.28
+          "duration_s": 212.27
         },
         {
           "id": "REQ-08-M08b",
@@ -286,7 +295,7 @@
           "line": 93,
           "outcome": "survived",
           "killed_by": null,
-          "duration_s": 9.27
+          "duration_s": 231.54
         },
         {
           "id": "REQ-08-M08c",
@@ -295,7 +304,7 @@
           "line": 65,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec1_accounts_kyc.py::TestAccountCreation::test_create_account_success",
-          "duration_s": 3.03
+          "duration_s": 116.42
         }
       ]
     },
@@ -304,6 +313,7 @@
       "killed": 2,
       "survived": 1,
       "invalid": 0,
+      "timeouts": 0,
       "proven": false,
       "mutations": [
         {
@@ -313,7 +323,7 @@
           "line": 22,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec9_daily_cap.py::test_daily_cap_exceeded_rejected",
-          "duration_s": 9.26
+          "duration_s": 89.78
         },
         {
           "id": "REQ-09-M09b",
@@ -322,7 +332,7 @@
           "line": 206,
           "outcome": "survived",
           "killed_by": null,
-          "duration_s": 9.43
+          "duration_s": 111.94
         },
         {
           "id": "REQ-09-M09c",
@@ -331,7 +341,7 @@
           "line": 205,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec9_daily_cap.py::test_daily_cap_exceeded_rejected",
-          "duration_s": 8.48
+          "duration_s": 66.1
         }
       ]
     },
@@ -340,6 +350,7 @@
       "killed": 4,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -349,7 +360,7 @@
           "line": 180,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec10_sanctions.py::test_sanctioned_sender_blocked[KP]",
-          "duration_s": 1.0
+          "duration_s": 18.34
         },
         {
           "id": "REQ-10-M10b",
@@ -358,7 +369,7 @@
           "line": 181,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec10_sanctions.py::test_audit_entry_written_for_sanctions_block",
-          "duration_s": 2.57
+          "duration_s": 29.13
         },
         {
           "id": "REQ-10-M10c",
@@ -367,7 +378,7 @@
           "line": 187,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec10_sanctions.py::test_audit_entry_written_for_sanctions_block",
-          "duration_s": 2.57
+          "duration_s": 30.32
         },
         {
           "id": "REQ-10-M10d",
@@ -376,7 +387,7 @@
           "line": 23,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec10_sanctions.py::test_sanctioned_sender_blocked[CU]",
-          "duration_s": 1.68
+          "duration_s": 17.94
         }
       ]
     },
@@ -385,6 +396,7 @@
       "killed": 1,
       "survived": 0,
       "invalid": 0,
+      "timeouts": 0,
       "proven": true,
       "mutations": [
         {
@@ -394,7 +406,7 @@
           "line": 108,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec11_statement_masking.py::test_statement_masks_account_number",
-          "duration_s": 2.85
+          "duration_s": 27.46
         }
       ]
     },
@@ -403,6 +415,7 @@
       "killed": 1,
       "survived": 1,
       "invalid": 0,
+      "timeouts": 0,
       "proven": false,
       "mutations": [
         {
@@ -412,7 +425,7 @@
           "line": 98,
           "outcome": "killed",
           "killed_by": "ledgerlite/tests/test_spec12_audit_retention.py::test_delete_audit_returns_405",
-          "duration_s": 3.12
+          "duration_s": 41.07
         },
         {
           "id": "REQ-12-M12b",
@@ -421,7 +434,7 @@
           "line": 98,
           "outcome": "survived",
           "killed_by": null,
-          "duration_s": 6.74
+          "duration_s": 140.15
         }
       ]
     }

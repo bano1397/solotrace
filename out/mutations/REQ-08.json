@@ -21,6 +21,27 @@
       "find": "    if value != value.quantize(CENT):\n        raise ValueError(\"amount must have at most 2 decimal places\")",
       "replace": "    pass",
       "description": "silently round amounts with more than 2 decimals"
+    },
+    {
+      "id": "REQ-08-X1",
+      "file": "ledgerlite/schemas.py",
+      "find": "    def serialize_amount(self, v: Decimal) -> str:\n        return _money_str(v)",
+      "replace": "    def serialize_amount(self, v: Decimal) -> float:\n        return float(v)",
+      "description": "[independent QA R2-08a] TransferResponse.amount returned as a JSON float (100.0)"
+    },
+    {
+      "id": "REQ-08-X2",
+      "file": "ledgerlite/models.py",
+      "find": "        return (Decimal(int(value)) / 100).quantize(CENT)",
+      "replace": "        return Decimal(int(value) / 100)",
+      "description": "[independent QA R2-08b] money read back from the DB through float division (cents / 100)"
+    },
+    {
+      "id": "REQ-08-X3",
+      "file": "ledgerlite/services.py",
+      "find": "    return Decimal(total or 0)",
+      "replace": "    return Decimal(float(total or 0))",
+      "description": "[independent QA R2-08c] daily outgoing total converted through float"
     }
   ]
 }

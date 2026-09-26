@@ -61,10 +61,10 @@
       "file": "ledgerlite/services.py",
       "line": 212,
       "snippet": "        raise HTTPException(",
-      "verified": true,
-      "match": "relocated",
-      "actual_line": 186,
-      "actual_snippet": "        raise HTTPException(status_code=409, detail=\"Email already registered\")"
+      "verified": false,
+      "match": "ambiguous",
+      "actual_line": null,
+      "actual_snippet": null
     }
   ],
   "test_evidence": [

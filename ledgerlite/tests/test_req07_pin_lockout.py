@@ -8,6 +8,8 @@ AC2: a correct PIN before that resets the counter.
 Every request below runs in its own database session (see conftest), so these
 tests prove the counter and the lock are really persisted.
 """
+import pytest
+
 from ledgerlite.models import Account
 from ledgerlite.tests.conftest import db_read, deposit, get_account, ready_account, transfer, withdraw
 
@@ -66,3 +68,32 @@ def test_brute_force_is_stopped(client):
     codes = [deposit(client, acct["id"], "1.00", pin=g).status_code for g in guesses]
     assert codes[:5] == [403, 403, 403, 403, 423]
     assert set(codes[5:]) == {423}
+
+
+
+def _pin_call(client, kind, acct, other, pin):
+    return {
+        "withdraw": lambda: withdraw(client, acct["id"], "1.00", pin=pin),
+        "transfer": lambda: transfer(client, acct["id"], other["id"], "1.00", pin=pin),
+        "read": lambda: get_account(client, acct["id"], pin=pin),
+        "statement": lambda: client.get(f"/accounts/{acct['id']}/statement", headers={"X-PIN": pin}),
+    }[kind]()
+
+
+@pytest.mark.parametrize("kind", ["withdraw", "transfer", "read", "statement"])
+def test_fifth_wrong_pin_locks_on_every_endpoint(client, kind):
+    acct = ready_account(client, f"lock_{kind}@example.com", "100.00")
+    other = ready_account(client, f"other_{kind}@example.com")
+    codes = [_pin_call(client, kind, acct, other, "0000").status_code for _ in range(5)]
+    assert codes == [403, 403, 403, 403, 423]
+    assert _stored(acct["id"]) == (5, True)
+
+
+@pytest.mark.parametrize("kind", ["withdraw", "transfer", "read", "statement"])
+def test_correct_pin_on_every_endpoint_resets_the_counter(client, kind):
+    acct = ready_account(client, f"reset_{kind}@example.com", "100.00")
+    other = ready_account(client, f"peer_{kind}@example.com")
+    for _ in range(4):
+        deposit(client, acct["id"], "1.00", pin="0000")
+    assert _pin_call(client, kind, acct, other, "1234").status_code in (200, 201)
+    assert _stored(acct["id"]) == (0, False)

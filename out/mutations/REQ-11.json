@@ -21,6 +21,27 @@
       "find": "    return \"****\" + number[-4:]",
       "replace": "    return \"****\" + number[-5:]",
       "description": "reveal 5 digits instead of 4"
+    },
+    {
+      "id": "REQ-11-X1",
+      "file": "ledgerlite/schemas.py",
+      "find": "    return \"****\" + number[-4:]",
+      "replace": "    return \"****\" + number[:4]",
+      "description": "[independent QA R2-11a] mask shows the FIRST 4 digits"
+    },
+    {
+      "id": "REQ-11-X2",
+      "file": "ledgerlite/schemas.py",
+      "find": "    approver_id: Optional[int]\n    created_at: datetime.datetime\n",
+      "replace": "    approver_id: Optional[int]\n    created_at: datetime.datetime\n    recipient: Optional[AccountResponse] = None  # counterparty details for statements\n",
+      "description": "[independent QA R2-11b] statement lines embed the counterparty's full account record"
+    },
+    {
+      "id": "REQ-11-X3",
+      "file": "ledgerlite/main.py",
+      "find": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)\ndef get_statement(account_id: AccountId, pin: PinHeader, session: Session = Depends(db.get_db)):\n    account, transactions = svc.statement(session, account_id, pin)\n",
+      "replace": "from fastapi import Response  # noqa: E402\n\n\n@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)\ndef get_statement(account_id: AccountId, pin: PinHeader, response: Response, session: Session = Depends(db.get_db)):\n    account, transactions = svc.statement(session, account_id, pin)\n    response.headers[\"Content-Disposition\"] = f'attachment; filename=\"statement-{account.account_number}.json\"'\n",
+      "description": "[independent QA R2-11c] statement response carries the full account number in a Content-Disposition filename"
     }
   ]
 }

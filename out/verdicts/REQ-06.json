@@ -34,10 +34,10 @@
       "file": "ledgerlite/services.py",
       "line": 234,
       "snippet": "        _write_audit(",
-      "verified": true,
-      "match": "relocated",
-      "actual_line": 284,
-      "actual_snippet": "        _write_audit("
+      "verified": false,
+      "match": "ambiguous",
+      "actual_line": null,
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/main.py",

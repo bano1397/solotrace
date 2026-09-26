@@ -14,6 +14,34 @@
       "find": "        if not _debit(db, sender_id, amount):\n            db.rollback()\n            raise HTTPException(status_code=400, detail=\"Insufficient funds\")\n        if not large:",
       "replace": "        _debit(db, sender_id, amount)\n        if not large:",
       "description": "credit the recipient even when the debit failed"
+    },
+    {
+      "id": "REQ-04-X1",
+      "file": "ledgerlite/services.py",
+      "find": "        if not large:\n            _credit(db, recipient_id, amount)\n",
+      "replace": "        if not large:\n            try:\n                _credit(db, recipient_id, amount)\n            except Exception:\n                pass  # best effort; reconciled later\n",
+      "description": "[independent QA R2-04a] credit errors swallowed (debit kept, transfer 'completed')"
+    },
+    {
+      "id": "REQ-04-X2",
+      "file": "ledgerlite/services.py",
+      "find": "        _credit(db, transfer.recipient_id, transfer.amount)\n",
+      "replace": "        db.commit()  # persist the approval first\n        _credit(db, transfer.recipient_id, transfer.amount)\n",
+      "description": "[independent QA R2-04b] approval commits 'completed' BEFORE crediting (credit failure on approval = debit without credit)"
+    },
+    {
+      "id": "REQ-04-X3",
+      "file": "ledgerlite/services.py",
+      "find": "    except Exception:\n        db.rollback()\n        raise\n\n    db.refresh(transfer)\n    return transfer\n\n\ndef approve_transfer",
+      "replace": "    except Exception:\n        db.commit()\n        raise\n\n    db.refresh(transfer)\n    return transfer\n\n\ndef approve_transfer",
+      "description": "[independent QA R2-04c] create_transfer commits (not rolls back) on unexpected errors"
+    },
+    {
+      "id": "REQ-04-X4",
+      "file": "ledgerlite/services.py",
+      "find": "        db.add(transfer)\n        db.flush()",
+      "replace": "        db.add(transfer)\n        db.commit()",
+      "description": "[independent QA R2-04d] transfer row + balances committed before the audit write"
     }
   ]
 }

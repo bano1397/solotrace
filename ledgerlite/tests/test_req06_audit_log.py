@@ -120,3 +120,19 @@ def test_no_route_can_change_audit_entries():
     """Route table check: the only audit route is read-only GET /audit."""
     audit_routes = [r for r in app.routes if getattr(r, "path", "").startswith("/audit")]
     assert [(r.path, sorted(r.methods)) for r in audit_routes] == [("/audit", ["GET"])]
+
+
+def test_audit_timestamps_are_real_utc_even_on_a_non_utc_server(client, karachi_tz):
+    ready_account(client, "tz@example.com", "10.00")
+    ts = audit_log(client)[-1]["timestamp"]
+    logged = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    assert abs((datetime.datetime.now(datetime.timezone.utc) - logged).total_seconds()) < 120
+
+
+def test_held_transfer_writes_exactly_one_entry(client):
+    sender = ready_account(client, "held_s@example.com", "6000.00")
+    recipient = ready_account(client, "held_r@example.com")
+    before = len(audit_log(client))
+    assert transfer(client, sender["id"], recipient["id"], "5000.00").status_code == 201
+    new = _new_entries(client, before)
+    assert [e["action"] for e in new] == ["transfer_initiated"]

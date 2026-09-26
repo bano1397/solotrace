@@ -35,6 +35,34 @@
       "find": "            Transfer.created_at >= _utc_day_start(now),\n",
       "replace": "",
       "description": "drop the UTC-day window (cap becomes all-time)"
+    },
+    {
+      "id": "REQ-09-X1",
+      "file": "ledgerlite/services.py",
+      "find": "    day = moment.astimezone(datetime.timezone.utc).date()\n    return datetime.datetime(day.year, day.month, day.day, tzinfo=datetime.timezone.utc)",
+      "replace": "    return moment.astimezone(datetime.timezone.utc).replace(hour=0, minute=0, second=0)",
+      "description": "[independent QA R2-09a] UTC day start keeps the current microseconds (transfers in the first instant after midnight not counted)"
+    },
+    {
+      "id": "REQ-09-X2",
+      "file": "ledgerlite/services.py",
+      "find": "    day = moment.astimezone(datetime.timezone.utc).date()",
+      "replace": "    day = moment.astimezone().date()",
+      "description": "[independent QA R2-09b] day boundary uses the server-local date (UTC+5: cap disabled 19:00-24:00 UTC)"
+    },
+    {
+      "id": "REQ-09-X3",
+      "file": "ledgerlite/services.py",
+      "find": "    if outgoing_total_today(db, sender_id, now) + amount > DAILY_TRANSFER_CAP:",
+      "replace": "    if amount < LARGE_TRANSFER_THRESHOLD and outgoing_total_today(db, sender_id, now) + amount > DAILY_TRANSFER_CAP:",
+      "description": "[independent QA R2-09c] held (>=5,000) transfers exempt from the daily cap"
+    },
+    {
+      "id": "REQ-09-X4",
+      "file": "ledgerlite/services.py",
+      "find": "    if outgoing_total_today(db, sender_id, now) + amount > DAILY_TRANSFER_CAP:",
+      "replace": "    if outgoing_total_today(db, sender_id, now) >= DAILY_TRANSFER_CAP:",
+      "description": "[independent QA R2-09d] cap check ignores the new transfer's own amount"
     }
   ]
 }

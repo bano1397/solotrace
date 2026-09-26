@@ -49,6 +49,27 @@
       "find": "    if not approver.can_approve:\n        raise HTTPException(status_code=403, detail=\"Approver is not authorised to approve transfers\")",
       "replace": "    pass",
       "description": "any customer can approve (approver role not required)"
+    },
+    {
+      "id": "REQ-05-X1",
+      "file": "ledgerlite/services.py",
+      "find": "    pin_ok = _pin_matches(db, approver_id, pin)\n    transfer = db.get(Transfer, transfer_id)\n",
+      "replace": "    transfer = db.get(Transfer, transfer_id)\n    pin_ok = _pin_matches(db, transfer.sender_id if transfer else approver_id, pin)\n    transfer = db.get(Transfer, transfer_id)\n",
+      "description": "[independent QA R2-05a] approval authorised with the INITIATOR's PIN (initiator can self-approve by naming any approver_id)"
+    },
+    {
+      "id": "REQ-05-X2",
+      "file": "ledgerlite/services.py",
+      "find": "        if not large:\n            _credit(db, recipient_id, amount)\n\n        transfer = Transfer(",
+      "replace": "        _credit(db, recipient_id, amount)\n\n        transfer = Transfer(",
+      "description": "[independent QA R2-05b] held transfers still credit the recipient at creation"
+    },
+    {
+      "id": "REQ-05-X3",
+      "file": "ledgerlite/services.py",
+      "find": "            .values(status=\"completed\", approver_id=approver_id)",
+      "replace": "            .values(status=\"completed\", approver_id=transfer.sender_id)",
+      "description": "[independent QA R2-05c] approval records the initiator as approver"
     }
   ]
 }

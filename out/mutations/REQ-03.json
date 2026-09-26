@@ -14,6 +14,34 @@
       "find": "    _require_positive(amount, \"Withdrawal\")",
       "replace": "    pass",
       "description": "accept negative withdrawals (which increase the balance)"
+    },
+    {
+      "id": "REQ-03-X1",
+      "file": "ledgerlite/services.py",
+      "find": "        .where(Account.id == account_id, Account.balance >= amount)",
+      "replace": "        .where(Account.id == account_id, Account.balance > amount)",
+      "description": "[independent QA R2-03a] debit guard off-by-one: withdrawing the exact balance rejected"
+    },
+    {
+      "id": "REQ-03-X2",
+      "file": "ledgerlite/services.py",
+      "find": "        .where(Account.id == account_id, Account.balance >= amount)",
+      "replace": "        .where(Account.id == account_id, Account.balance + Decimal(\"0.01\") >= amount)",
+      "description": "[independent QA R2-03b] 1-cent overdraft tolerance in the debit guard"
+    },
+    {
+      "id": "REQ-03-X3",
+      "file": "ledgerlite/services.py",
+      "find": "        if not _debit(db, sender_id, amount):\n            db.rollback()\n            raise HTTPException(status_code=400, detail=\"Insufficient funds\")\n",
+      "replace": "        _credit(db, sender_id, -amount)  # debit without the balance guard\n",
+      "description": "[independent QA R2-03c] transfer path debits without the balance guard (sender can go negative)"
+    },
+    {
+      "id": "REQ-03-X4",
+      "file": "ledgerlite/services.py",
+      "find": "    if not _debit(db, account_id, amount):  # REQ-03: never below zero, even under concurrency\n        db.rollback()\n",
+      "replace": "    if not _debit(db, account_id, amount):  # REQ-03: never below zero, even under concurrency\n        _debit(db, account_id, account.balance)  # pay out what is available\n        db.commit()\n",
+      "description": "[independent QA R2-03d] rejected withdrawal still pays out what is available (balance changes on rejection)"
     }
   ]
 }

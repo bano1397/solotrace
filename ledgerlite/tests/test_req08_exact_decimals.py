@@ -62,3 +62,29 @@ def test_many_small_amounts_add_up_exactly(client):
     resp = withdraw(client, acct["id"], "3.00")
     assert resp.status_code == 200
     assert resp.json()["balance"] == "0.00"
+
+
+def test_transfer_amount_is_returned_as_a_two_decimal_string(client):
+    sender = ready_account(client, "amt_s@example.com", "500.00")
+    recipient = ready_account(client, "amt_r@example.com")
+    assert transfer(client, sender["id"], recipient["id"], "100").json()["amount"] == "100.00"
+
+
+def test_values_read_back_from_the_database_are_exact_decimals(client):
+    from decimal import Decimal
+
+    from ledgerlite.models import Account
+
+    acct = ready_account(client, "orm@example.com")
+    deposit(client, acct["id"], "0.10")
+    deposit(client, acct["id"], "0.20")
+    balance = db_read(lambda s: s.get(Account, acct["id"]).balance)
+    assert balance == Decimal("0.30") and str(balance) == "0.30"
+
+
+def test_daily_total_arithmetic_is_exact(client):
+    sender = ready_account(client, "sum_s@example.com", "30000.00")
+    recipient = ready_account(client, "sum_r@example.com")
+    assert transfer(client, sender["id"], recipient["id"], "15000.01").status_code == 201
+    assert transfer(client, sender["id"], recipient["id"], "4999.98").status_code == 201
+    assert transfer(client, sender["id"], recipient["id"], "0.01").status_code == 201  # exactly 20,000.00

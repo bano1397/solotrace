@@ -16,10 +16,10 @@
       "file": "ledgerlite/services.py",
       "line": 157,
       "snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")",
-      "verified": true,
-      "match": "relocated",
-      "actual_line": 261,
-      "actual_snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")"
+      "verified": false,
+      "match": "ambiguous",
+      "actual_line": null,
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",

@@ -162,10 +162,9 @@ def collect(before: str, round1: str, after: str, docs: Path, video_url: str | N
 
 def render(data: dict[str, Any]) -> str:
     payload = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
-    return (TEMPLATE
-            .replace("__DATA__", payload)
-            .replace("__PAGES_URL__", data["pages_url"])
-            .replace("__VERSION__", data["version"]))
+    # Fill the fixed placeholders first and the data last, so data can never be rewritten.
+    page = TEMPLATE.replace("__PAGES_URL__", data["pages_url"]).replace("__VERSION__", data["version"])
+    return page.replace("__DATA__", payload)
 
 
 def cmd_dashboard(before: str, round1: str, after: str, out: str = "docs/index.html", video_url: str | None = None) -> int:
@@ -173,6 +172,9 @@ def cmd_dashboard(before: str, round1: str, after: str, out: str = "docs/index.h
     docs.mkdir(parents=True, exist_ok=True)
     if not (Path(after) / "matrix.json").exists():
         print(f"ERROR: {after}/matrix.json not found — run `python -m solotrace matrix --out {after}` first.")
+        return 1
+    if video_url and not video_url.startswith("https://"):
+        print("ERROR: --video-url must be an https:// link")
         return 1
     data = collect(before, round1, after, docs, video_url)
     cover = Path("docs/assets/cover.png")
@@ -456,7 +458,7 @@ footer{border-top:1px solid var(--border);padding:28px 0 40px;color:var(--muted)
     }
     var facts = [];
     facts.push(s.citations_verified + " of " + s.citations_total + " code citations verified");
-    if (s.not_verbatim) facts.push(s.not_verbatim + " citations were not real code (paraphrased or abridged)");
+    if (s.not_verbatim) facts.push(s.not_verbatim + " citations could not be found in the audited code");
     if (s.tests_passed !== null && s.tests_passed !== undefined) facts.push(s.tests_passed + " tests passing" + (s.tests_failed ? ", " + s.tests_failed + " failing" : ""));
     if (s.mutation_testing) facts.push(s.mutations_killed + " of " + s.mutations_total + " sabotage attempts caught" + (s.mutations_total - s.mutations_killed ? " — " + (s.mutations_total - s.mutations_killed) + " slipped through" : ""));
     card.appendChild(h("ul", null, facts.map(function (f) { return h("li", {text: f}); })));
@@ -582,7 +584,7 @@ footer{border-top:1px solid var(--border);padding:28px 0 40px;color:var(--muted)
       h("div", {class: "muted small", text: s.label}),
       h("b", {text: s.citations_verified + " / " + s.citations_total}),
       h("div", {text: "code citations verified in commit " + s.commit}),
-      h("div", {class: "muted small", text: bad ? bad + " rejected: " + (s.not_verbatim ? s.not_verbatim + " not real code" : "") + (s.not_verbatim && s.too_short ? ", " : "") + (s.too_short ? s.too_short + " too short to prove anything" : "") : "no citation rejected"})
+      h("div", {class: "muted small", text: bad ? bad + " rejected: " + (s.not_verbatim ? s.not_verbatim + " not found in the code" : "") + (s.not_verbatim && s.too_short ? ", " : "") + (s.too_short ? s.too_short + " too short to prove anything" : "") : "no citation rejected"})
     ]));
   });
 

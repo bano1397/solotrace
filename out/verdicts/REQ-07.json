@@ -43,10 +43,10 @@
       "file": "ledgerlite/services.py",
       "line": 74,
       "snippet": "        account.failed_pin_attempts += 1",
-      "verified": true,
-      "match": "relocated",
-      "actual_line": 102,
-      "actual_snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter"
+      "verified": false,
+      "match": "ambiguous",
+      "actual_line": null,
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",

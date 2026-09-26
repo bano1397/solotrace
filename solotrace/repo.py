@@ -39,6 +39,18 @@ def _git(root: Path, *args: str) -> str | None:
     return result.stdout if result.returncode == 0 else None
 
 
+def _git_bytes(root: Path, *args: str) -> bytes | None:
+    try:
+        result = subprocess.run(["git", *args], cwd=root, capture_output=True, timeout=30, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return result.stdout if result.returncode == 0 else None
+
+
+# SoloTrace's own outputs do not make the audited code "dirty".
+_OUTPUT_PATHSPECS = (":(exclude,glob)out*/**", ":(exclude)docs", ":(exclude)AUDIT_REPORT.md")
+
+
 def repo_root(start: Path | str = ".") -> Path:
     """The git top-level directory containing *start* (or *start* itself)."""
     start = Path(start).resolve()
@@ -52,7 +64,8 @@ def head_commit(root: Path) -> str | None:
 
 
 def is_dirty(root: Path) -> bool:
-    out = _git(root, "status", "--porcelain", "--untracked-files=no")
+    """Uncommitted changes to the audited project (SoloTrace's own outputs excluded)."""
+    out = _git(root, "status", "--porcelain", "--untracked-files=no", "--", ".", *_OUTPUT_PATHSPECS)
     return bool(out and out.strip())
 
 
@@ -124,7 +137,17 @@ class SourceReader:
     def text(self, relpath: str) -> str | None:
         rel = self.check(relpath)
         if self.commit is not None:
-            return _git(self.root, "show", f"{self.commit}:{rel}")
+            listing = _git(self.root, "ls-tree", self.commit, "--", rel)
+            if not listing or not listing.strip():
+                return None
+            meta, _, _name = listing.strip().partition("\t")
+            mode, kind, sha = (meta.split() + ["", "", ""])[:3]
+            if mode == "120000":
+                raise UnsafePathError(f"symbolic links are not source files: {relpath!r}")
+            if kind != "blob":
+                raise UnsafePathError(f"not a file: {relpath!r}")
+            data = _git_bytes(self.root, "cat-file", "blob", sha)
+            return None if data is None else data.decode("utf-8", errors="replace")
         path = self.root / rel
         if not path.is_file():
             return None

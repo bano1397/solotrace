@@ -51,3 +51,11 @@ def test_multiple_deposits_accumulate(client, acct):
     deposit(client, acct["id"], "200.50")
     resp = deposit(client, acct["id"], "0.50")
     assert resp.json()["balance"] == "301.00"
+
+
+def test_limit_is_per_transaction_not_per_balance(client, acct):
+    """50,000.00 is a per-deposit limit: a second 50,000.00 deposit is still allowed."""
+    assert deposit(client, acct["id"], "50000.00").status_code == 200
+    resp = deposit(client, acct["id"], "50000.00")
+    assert resp.status_code == 200
+    assert resp.json()["balance"] == "100000.00"

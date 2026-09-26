@@ -72,3 +72,22 @@ def test_concurrent_transfers_cannot_exceed_the_cap(client, pair):
     codes = [r.status_code for r in results]
     assert codes.count(201) == 5, codes  # 5 x 4,000 = 20,000
     assert codes.count(400) == 5, codes
+
+
+DAY = datetime.datetime(2026, 9, 26, tzinfo=UTC)
+
+
+def test_transfer_just_after_midnight_counts_for_the_whole_day(client, pair, monkeypatch):
+    sender, recipient, _ = pair
+    monkeypatch.setattr(svc, "_now", lambda: DAY + datetime.timedelta(microseconds=1))
+    assert transfer(client, sender["id"], recipient["id"], "15000.00").status_code == 201
+    monkeypatch.setattr(svc, "_now", lambda: DAY + datetime.timedelta(hours=12, microseconds=500000))
+    assert transfer(client, sender["id"], recipient["id"], "15000.00").status_code == 400
+
+
+def test_the_day_is_the_utc_day_not_the_server_local_day(client, pair, monkeypatch, karachi_tz):
+    sender, recipient, _ = pair
+    monkeypatch.setattr(svc, "_now", lambda: DAY + datetime.timedelta(hours=21))
+    assert transfer(client, sender["id"], recipient["id"], "15000.00").status_code == 201
+    monkeypatch.setattr(svc, "_now", lambda: DAY + datetime.timedelta(hours=23))
+    assert transfer(client, sender["id"], recipient["id"], "15000.00").status_code == 400

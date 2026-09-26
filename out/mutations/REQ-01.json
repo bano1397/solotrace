@@ -21,6 +21,34 @@
       "find": "    email = email.strip().lower()",
       "replace": "    email = email.strip()",
       "description": "make the unique-email check case-sensitive"
+    },
+    {
+      "id": "REQ-01-X1",
+      "file": "ledgerlite/services.py",
+      "find": "    _require_kyc(recipient, \"Recipient\")\n",
+      "replace": "    if amount < LARGE_TRANSFER_THRESHOLD:  # held transfers get a human review anyway\n        _require_kyc(recipient, \"Recipient\")\n",
+      "description": "[independent QA R2-01a] recipient KYC skipped for held (>=5,000) transfers; approval later credits an unverified account"
+    },
+    {
+      "id": "REQ-01-X2",
+      "file": "ledgerlite/services.py",
+      "find": "        kyc_status=\"pending\",",
+      "replace": "        kyc_status=\"verified\",",
+      "description": "[independent QA R2-01c] new accounts are born KYC-verified"
+    },
+    {
+      "id": "REQ-01-X3",
+      "file": "ledgerlite/main.py",
+      "find": "@app.post(\"/accounts/{account_id}/verify-kyc\", response_model=AccountResponse, dependencies=[Depends(require_admin)])",
+      "replace": "@app.post(\"/accounts/{account_id}/verify-kyc\", response_model=AccountResponse)",
+      "description": "[independent QA R2-01d] verify-kyc endpoint no longer requires the admin token (self-verification)"
+    },
+    {
+      "id": "REQ-01-X4",
+      "file": "ledgerlite/services.py",
+      "find": "    _check_pin(db, account, pin_ok)\n    _require_kyc(account)\n\n    _require_positive(amount, \"Deposit\")",
+      "replace": "    _check_pin(db, account, pin_ok)\n    if amount > Decimal(\"1000.00\"):  # KYC only for larger deposits\n        _require_kyc(account)\n\n    _require_positive(amount, \"Deposit\")",
+      "description": "[independent QA R2-01b] KYC only enforced for deposits above 1,000.00 (AML-style threshold)"
     }
   ]
 }

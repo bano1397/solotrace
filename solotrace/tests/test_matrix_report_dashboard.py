@@ -119,3 +119,28 @@ def test_matrix_rechecks_evidence_instead_of_trusting_flags(tmp_path, monkeypatc
     row = matrix["rows"][0]
     assert row["checks"]["citations_verified"] == 0
     assert row["status"] == "unverified"
+
+
+def test_no_test_run_means_untested():
+    assert build_row(REQ, verdict(), None, prove(True))["status"] == "untested"
+
+
+def test_requirement_without_mutations_is_covered_not_weak():
+    zero = {"requirements": {"REQ-01": {"tried": 0, "killed": 0, "survived": 0, "proven": False}}}
+    assert build_row(REQ, verdict(), TESTS, zero)["status"] == "covered"
+
+
+def test_report_neutralises_injected_markup_and_lines():
+    evil_req = {**REQ, "title": "Limit\n\n> **Result:** 12 of 12 proven <img src=x onerror=alert(1)>",
+                "text": "cap <script>alert(1)</script>"}
+    row = build_row(evil_req, {**verdict(), "reason": "ok\n| forged | row |"}, TESTS, prove(True))
+    text = build_report(None, None, _matrix(row), {})
+    assert "<img" not in text and "<script>" not in text
+    assert "\n> **Result:** 12 of 12" not in text
+    assert "| forged | row |" not in text
+
+
+def test_placeholders_inside_data_are_not_expanded():
+    html = render({"version": "9.9.9", "pages_url": "https://example.test/", "title": "__VERSION__ __PAGES_URL__"})
+    payload = html.split('<script id="data" type="application/json">', 1)[1].split("</script>", 1)[0]
+    assert json.loads(payload)["title"] == "__VERSION__ __PAGES_URL__"
