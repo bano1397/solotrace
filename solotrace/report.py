@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from solotrace import __version__
+from solotrace.signoff import load_signoffs
 
 ICON: dict[Any, str] = {
     "proven": "✅ proven",
@@ -169,10 +170,13 @@ def build_report(before: dict | None, round1: dict | None, after: dict, extras: 
     add("## 5. Human compliance sign-offs")
     add("")
     if signoffs:
-        add("| When | Where | Statement |")
-        add("|---|---|---|")
+        add("| When | Where | Scope | Statement |")
+        add("|---|---|---|---|")
         for so in signoffs:
-            add(f"| {so['approved_at']} | IBM Bob {so['task']} | {_md(so['statement'])} |")
+            scope = _md(so.get("scope", "fix plan (round 1)"))
+            if so.get("matches_current_result") is False:
+                scope += " — ⚠️ result changed since"
+            add(f"| {_md(so['approved_at'])} | {_md(so.get('channel', ''))} | {scope} | {_md(so['statement'])} |")
     else:
         add("No sign-off records found.")
     add("")
@@ -213,7 +217,7 @@ def cmd_report(before: str | None, round1: str | None, after: str, output: str =
     m_round1 = _load(Path(round1) / "matrix.json") if round1 else None
     extras = {
         "prove": _load(after_dir / "prove.json") or {},
-        "signoffs": (_load(Path("bob_sessions") / "signoffs.json") or {}).get("signoffs", []),
+        "signoffs": load_signoffs(after_dir),
         "sessions": (_load(Path("bob_sessions") / "sessions.json") or {}).get("sessions", []),
     }
     Path(output).write_text(build_report(m_before, m_round1, m_after, extras), encoding="utf-8")

@@ -41,7 +41,8 @@ docs/         GitHub Pages dashboard
 ```bash
 .venv/bin/pytest -q                                   # all tests (LedgerLite + SoloTrace)
 .venv/bin/python -m solotrace run --auditor "<who wrote the verdicts>"   # full evidence pipeline
-.venv/bin/python -m solotrace verify --out out --check                  # read-only citation check
+.venv/bin/python -m solotrace verify --out out --check                  # read-only gate: no invented citation or missing test
+.venv/bin/python -m solotrace signoff --by "<reviewer>" --statement "<approval>"  # record a human sign-off
 .venv/bin/python -m solotrace prove --out out                          # mutation testing only
 LEDGERLITE_ADMIN_TOKEN=dev .venv/bin/uvicorn ledgerlite.main:app --port 8000   # run the API
 ```

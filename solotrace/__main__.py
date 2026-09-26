@@ -8,6 +8,7 @@ python -m solotrace <command>
   matrix     traceability matrix scored on evidence
   report     write AUDIT_REPORT.md
   dashboard  write docs/index.html (static, for GitHub Pages)
+  signoff    record a human compliance sign-off bound to the current result
 
 The judgement stages (READ the spec, AUDIT with one subagent per requirement,
 FIX after human sign-off) run inside IBM Bob: SoloTrace Auditor mode +
@@ -39,6 +40,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--video-url", help="demo video link for the dashboard")
     p.add_argument("--strict", action="store_true", help="exit 2 unless every requirement is proven")
     p.add_argument("--project", help="name of the audited project (recorded in audit.json)")
+
+    p = sub.add_parser("signoff", help="record a human compliance sign-off of the current result")
+    p.add_argument("--out", default="out")
+    p.add_argument("--by", required=True, help="who approves")
+    p.add_argument("--statement", required=True, help="the approval statement, verbatim")
+    p.add_argument("--channel", default="command line", help="where the approval was given")
+    p.add_argument("--scope", default="final audit result", help="what is approved")
 
     p = sub.add_parser("verify", help="evidence verifier")
     p.add_argument("--out", default="out")
@@ -80,6 +88,9 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_run(args.spec, args.out, args.before, args.round1, args.tests, prove=not args.no_prove,
                        workers=args.workers, auditor=args.auditor, bob_task=args.bob_task,
                        video_url=args.video_url, strict=args.strict, project=args.project)
+    if args.command == "signoff":
+        from solotrace.signoff import cmd_signoff
+        return cmd_signoff(args.out, args.by, args.statement, args.channel, args.scope)
     if args.command == "verify":
         from solotrace.verify import cmd_verify
         return cmd_verify(args.out, args.source_commit, args.check)

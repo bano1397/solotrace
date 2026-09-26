@@ -85,7 +85,8 @@ round-1 audits from git history with the same tool.
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m pytest -q                          # LedgerLite + SoloTrace test suites
 .venv/bin/python -m solotrace run                      # test → verify → prove → matrix → report → dashboard
-.venv/bin/python -m solotrace verify --out out --check # read-only: every citation still real?
+.venv/bin/python -m solotrace verify --out out --check # read-only gate: no invented citation or missing test
+.venv/bin/python -m solotrace signoff --by "<reviewer>" --statement "<approval>"  # human sign-off, bound to this result
 LEDGERLITE_ADMIN_TOKEN=dev .venv/bin/uvicorn ledgerlite.main:app --port 8000   # the API (docs at /docs)
 ```
 

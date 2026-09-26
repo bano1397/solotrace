@@ -8,7 +8,8 @@ This command checks every citation against the real source:
 * ``relocated``    the snippet exists in the file, but at another line (stale line number)
 * ``not_found``    the snippet does not exist in the file (paraphrase, invention, or the code moved on)
 * ``ambiguous``    a generic snippet (``db.commit()``) found several times, none near the cited line
-* ``too_short``    the snippet is too short to prove anything (e.g. ``"("``)
+* ``too_short``    the snippet is too short, or only a comment, so it proves nothing
+                   (e.g. ``"("`` or ``try:``); reported, but never counted as evidence
 * ``invalid_path`` the path is absolute, contains ``..`` or escapes the repository
 * ``missing_file`` the file does not exist
 
@@ -316,6 +317,22 @@ def verify_dir(out_dir: Path, reader: SourceReader, write: bool = True) -> dict[
     return report
 
 
+def check_failures(report: dict[str, Any]) -> list[str]:
+    """Why ``verify --check`` fails: citations of code that is not there (or cannot be pinned
+    down), cited tests that do not exist, and "covered" verdicts without verified evidence.
+    Citations too short to prove anything are reported, but are neither counted nor fatal."""
+    t = report["totals"]
+    problems = []
+    unconfirmed = t["not_found"] + t["ambiguous"] + t["invalid_path"] + t["missing_file"]
+    if unconfirmed:
+        problems.append(f"{unconfirmed} code citation(s) not confirmed in the code")
+    if t["tests_missing"]:
+        problems.append(f"{t['tests_missing']} cited test(s) do not exist")
+    if report["covered_without_evidence"]:
+        problems.append("'covered' without verified evidence: " + ", ".join(report["covered_without_evidence"]))
+    return problems
+
+
 def cmd_verify(out: str, source_commit: str | None = None, check: bool = False) -> int:
     root = repo_root()
     out_dir = Path(out)
@@ -334,12 +351,14 @@ def cmd_verify(out: str, source_commit: str | None = None, check: bool = False) 
     print(f"  Verified               : {t['verified']}  (exact {t['exact']}, relocated {t['relocated']})")
     print(f"  Not found in the code  : {t['not_found']}")
     print(f"  Ambiguous (generic)    : {t['ambiguous']}")
-    print(f"  Too short to prove     : {t['too_short']}")
+    print(f"  Too short / comment    : {t['too_short']}  (not counted as evidence)")
     print(f"  Unsafe or missing path : {t['invalid_path'] + t['missing_file']}")
     print(f"  Test citations         : {t['tests_checked']}  ({t['tests_missing']} do not exist)")
     if t["covered_without_evidence"]:
         print(f"  'covered' but no verified code or existing test: {', '.join(report['covered_without_evidence'])}")
     if check:
-        unverified = t["checked"] - t["verified"]
-        return 1 if unverified or t["tests_missing"] or t["covered_without_evidence"] else 0
+        problems = check_failures(report)
+        for problem in problems:
+            print(f"CHECK FAILED: {problem}", file=sys.stderr)
+        return 1 if problems else 0
     return 0

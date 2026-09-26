@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from solotrace import __version__
+from solotrace.signoff import load_signoffs
 
 REPO_URL = "https://github.com/bano1397/solotrace"
 PAGES_URL = "https://bano1397.github.io/solotrace/"
@@ -154,7 +155,7 @@ def collect(before: str, round1: str, after: str, docs: Path, video_url: str | N
         "sessions": sessions,
         "subagents_total": sum(s["subagents"]["count"] for s in sessions),
         "bobcoins_total": round(sum(s["bobcoins"] for s in sessions), 2),
-        "signoffs": (_load(Path("bob_sessions") / "signoffs.json") or {}).get("signoffs", []),
+        "signoffs": load_signoffs(Path(after)),
         "bob_config": [{"path": p, "what": w, "url": f"{REPO_URL}/blob/main/{p}"} for p, w in BOB_CONFIG],
         "screenshots": _screenshots(docs),
     }
@@ -603,7 +604,12 @@ footer{border-top:1px solid var(--border);padding:28px 0 40px;color:var(--muted)
   D.bob_config.forEach(function (c) { cfg.appendChild(h("li", null, [link(c.path, c.url), h("div", {class: "muted small", text: c.what})])); });
   var so = document.getElementById("signoffs");
   if (!D.signoffs.length) so.appendChild(h("li", {class: "muted", text: "No sign-off recorded yet."}));
-  D.signoffs.forEach(function (s) { so.appendChild(h("li", null, [h("b", {text: "“" + s.statement + "”"}), h("div", {class: "muted small", text: s.approved_at.replace("T", " ").slice(0, 19) + " PKT · IBM Bob " + s.task.replace("task0", "task ")})])); });
+  D.signoffs.forEach(function (s) {
+    var when = String(s.approved_at || "").replace("T", " ").slice(0, 16);
+    var scope = s.scope || "fix plan (round 1)";
+    so.appendChild(h("li", null, [h("b", {text: "“" + s.statement + "”"}),
+      h("div", {class: "muted small", text: when + " · " + (s.channel || "") + " · " + scope + (s.matches_current_result === false ? " · result changed since" : "")})]));
+  });
   var shots = document.getElementById("shots");
   D.screenshots.forEach(function (s) {
     shots.appendChild(h("a", {href: s.src, target: "_blank", rel: "noopener"}, [h("img", {src: s.src, alt: "IBM Bob " + s.caption, loading: "lazy"}), h("span", {text: s.caption})]));

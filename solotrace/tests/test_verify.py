@@ -7,6 +7,7 @@ import pytest
 
 from solotrace.repo import SourceReader, UnsafePathError
 from solotrace.verify import (
+    check_failures,
     parse_test_name,
     snippet_lines,
     verify_code_evidence,
@@ -254,3 +255,16 @@ def test_check_fails_for_covered_without_evidence(repo, reader, tmp_path):
     _write_verdict(out, "REQ-01", [], [])
     report = verify_dir(out, reader, write=False)
     assert report["covered_without_evidence"] == ["REQ-01"]
+
+
+def test_check_gate_ignores_too_short_citations_but_fails_on_invented_ones(repo, reader, tmp_path):
+    out = tmp_path / "out"
+    good = cite(6, "if amount > MAX_DEPOSIT:")
+    tests = [{"file": "app/test_svc.py", "test_name": "test_limit"}]
+    _write_verdict(out, "REQ-01", [good, cite(5, "try:"), cite(6, "# a comment is not evidence")], tests)
+    report = verify_dir(out, reader, write=False)
+    assert report["totals"]["too_short"] == 2 and check_failures(report) == []
+    _write_verdict(out, "REQ-01", [good, cite(3, "made-up code line here")], tests)
+    assert check_failures(verify_dir(out, reader, write=False)) == ["1 code citation(s) not confirmed in the code"]
+    _write_verdict(out, "REQ-01", [cite(5, "try:")], tests)
+    assert check_failures(verify_dir(out, reader, write=False)) == ["'covered' without verified evidence: REQ-01"]
