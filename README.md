@@ -52,7 +52,7 @@ cap, sanctions screening, account-number masking).
 |---|---|---|---|---|---|
 | Baseline — [IBM Bob task 1](bob_sessions/) | — | 4/12 (33%) | 27/36 (9 were not real code) | not run | — |
 | Round 1 — [IBM Bob task 3](bob_sessions/) | IBM Bob, after human sign-off | 12/12 (100%) | 55/57 | 23/34 | **6/12** |
-| Round 2 — final | see below | 12/12 | see [report](AUDIT_REPORT.md) | **88/88** | **12/12** |
+| Round 2 — final, [IBM Bob task 5](bob_sessions/) | see below | 12/12 | 82/85 (0 invented; 3 too short to count) | **99/99** | **12/12** |
 
 What round 2 exposed and fixed (all now covered by tests): the PIN lockout never persisted (unlimited
 PIN guessing), money was stored as floating point, concurrent withdrawals could overdraw an account,
@@ -64,6 +64,12 @@ independent adversarial auditor wrote **42 more** without seeing the tests, and 
 slipped through (for example: the lockout enforced on only one endpoint, the UTC day computed in
 server-local time, a hidden audit-purge route). The tests were strengthened until all **88/88** are
 caught. The [mutation files](out/mutations/) mark every independent one as `[independent QA …]`.
+
+**Bob's final audit found one more gap.** In task 5, Bob's 12 subagents re-audited everything and each
+wrote one new sabotage. One of them (REQ-04-B1: drop the rollback when an approval fails) slipped past
+all 161 tests, so REQ-04 was marked *weak* (11/12 proven). A test was added, and the re-run proved
+12/12 with 99/99 sabotage caught. The final result was then signed off by a human
+([`out/signoffs.json`](out/signoffs.json)).
 
 Every number above is reproducible: `python scripts/rebuild_history.py` re-runs the baseline and
 round-1 audits from git history with the same tool.
