@@ -1,6 +1,6 @@
 # SoloTrace audit report — LedgerLite Payments API
 
-*Generated 2026-09-26T10:24:34+00:00 by SoloTrace 2.0.0 · verdicts by IBM Bob 2.0 — task 5 (SoloTrace Auditor mode, 12 parallel subagents; 11 finished before the 40-Bobcoin budget ran out, the REQ-12 verdict was reformatted to the schema unchanged, and this pipeline was run locally).*
+*Generated 2026-09-26T10:28:33+00:00 by SoloTrace 2.0.0 · verdicts by IBM Bob 2.0 — task 5 (SoloTrace Auditor mode, 12 parallel subagents; 11 finished before the 40-Bobcoin budget ran out, the REQ-12 verdict was reformatted to the schema unchanged, and this pipeline was run locally).*
 
 > **Result:** 12 of 12 requirements are **proven**: implemented, cited with verified file:line evidence, covered by passing tests, and every deliberate sabotage of them was caught by the tests.
 
@@ -534,6 +534,7 @@ Mutations (deliberate sabotage — each must make a test fail):
 | When | Where | Scope | Statement |
 |---|---|---|---|
 | 2026-09-25T21:46:52+05:00 | IBM Bob task03 | fix plan (round 1) | Approved — compliance sign-off by Shehar Bano |
+| 2026-09-26T15:28:33+05:00 | chat with Claude Code (Bob budget exhausted) | final audit result (task 5, 12/12 proven) | Approved — compliance sign-off by Shehar Bano |
 
 ## 6. IBM Bob sessions
 

@@ -1,0 +1,13 @@
+{
+  "signoffs": [
+    {
+      "approved_at": "2026-09-26T15:28:33+05:00",
+      "by": "Shehar Bano",
+      "statement": "Approved — compliance sign-off by Shehar Bano",
+      "channel": "chat with Claude Code (Bob budget exhausted)",
+      "scope": "final audit result (task 5, 12/12 proven)",
+      "code_commit": "4912014d48a305cba65164eb09fc851ff0bf7f8c",
+      "result_sha256": "f8df9bf57a80597f42711d6c3f17782913d111bec93cb762e589a4d936c0809a"
+    }
+  ]
+}
