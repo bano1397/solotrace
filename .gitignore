@@ -126,3 +126,4 @@ __pycache__/
 .pytest_cache/
 *.db
 *.pyc
+.claude/

@@ -7,7 +7,7 @@
       "channel": "chat with Claude Code (Bob budget exhausted)",
       "scope": "final audit result (task 5, 12/12 proven)",
       "code_commit": "4912014d48a305cba65164eb09fc851ff0bf7f8c",
-      "result_sha256": "f8df9bf57a80597f42711d6c3f17782913d111bec93cb762e589a4d936c0809a"
+      "result_sha256": "7d1640e9e5c0ceedcd68b145e1daec553c41ac4540b40c556e53cac9eff09864"
     }
   ]
 }
