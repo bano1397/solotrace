@@ -1,3 +1,4 @@
+"""Request and response models for LedgerLite (all money as exact 2-decimal strings)."""
 import datetime
 import re
 from decimal import Decimal
@@ -116,6 +117,7 @@ class AccountResponse(BaseModel):
     kyc_status: str
     failed_pin_attempts: int
     locked: bool
+    can_approve: bool
 
     @field_serializer("balance")
     def serialize_balance(self, v: Decimal) -> str:

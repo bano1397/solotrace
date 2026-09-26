@@ -8,9 +8,11 @@ AC2: the initiator cannot approve their own transfer.
 import pytest
 
 from ledgerlite.tests.conftest import (
+    ADMIN,
     approve,
     balance_of,
     make_account,
+    make_approver,
     ready_account,
     run_concurrently,
     transfer,
@@ -21,7 +23,7 @@ from ledgerlite.tests.conftest import (
 def trio(client):
     sender = ready_account(client, "sender@example.com", "20000.00")
     recipient = ready_account(client, "recipient@example.com")
-    approver = ready_account(client, "approver@example.com")
+    approver = make_approver(client, "approver@example.com")
     return sender, recipient, approver
 
 
@@ -61,8 +63,14 @@ def test_second_user_approval_completes_and_credits_once(client, trio):
     assert balance_of(client, sender["id"]) == "15000.00"
 
 
+def _grant_role(client, account_id):
+    assert client.post(f"/accounts/{account_id}/grant-approver", headers=ADMIN).status_code == 200
+
+
 def test_initiator_cannot_approve_own_transfer(client, trio):
+    """Even an initiator who holds the approver role cannot approve their own transfer."""
     sender, recipient, _ = trio
+    _grant_role(client, sender["id"])
     held = transfer(client, sender["id"], recipient["id"], "5000.00").json()
     resp = approve(client, held["id"], sender["id"])
     assert resp.status_code == 403
@@ -71,10 +79,13 @@ def test_initiator_cannot_approve_own_transfer(client, trio):
 
 
 def test_recipient_cannot_approve(client, trio):
+    """Even a recipient who holds the approver role cannot approve a transfer to themselves."""
     sender, recipient, _ = trio
+    _grant_role(client, recipient["id"])
     held = transfer(client, sender["id"], recipient["id"], "5000.00").json()
     resp = approve(client, held["id"], recipient["id"])
     assert resp.status_code == 403
+    assert "Recipient" in resp.json()["detail"]
     assert balance_of(client, recipient["id"]) == "0.00"
 
 
@@ -97,7 +108,7 @@ def test_unverified_approver_rejected(client, trio):
 
 def test_double_approval_rejected_and_credits_once(client, trio):
     sender, recipient, approver = trio
-    other = ready_account(client, "other@example.com")
+    other = make_approver(client, "other@example.com")
     held = transfer(client, sender["id"], recipient["id"], "5000.00").json()
     assert approve(client, held["id"], approver["id"]).status_code == 200
     again = approve(client, held["id"], other["id"])
@@ -125,3 +136,20 @@ def test_completed_transfer_cannot_be_approved(client, trio):
     sender, recipient, approver = trio
     done = transfer(client, sender["id"], recipient["id"], "100.00").json()
     assert approve(client, done["id"], approver["id"]).status_code == 400
+
+
+def test_customer_without_approver_role_cannot_approve(client, trio):
+    sender, recipient, _ = trio
+    customer = ready_account(client, "customer@example.com")
+    held = transfer(client, sender["id"], recipient["id"], "5000.00").json()
+    resp = approve(client, held["id"], customer["id"])
+    assert resp.status_code == 403
+    assert "not authorised" in resp.json()["detail"]
+    assert balance_of(client, recipient["id"]) == "0.00"
+
+
+def test_only_the_compliance_officer_can_grant_the_role(client):
+    acct = ready_account(client, "wannabe@example.com")
+    assert client.post(f"/accounts/{acct['id']}/grant-approver").status_code == 401
+    unverified = make_account(client, "unverified@example.com")
+    assert client.post(f"/accounts/{unverified['id']}/grant-approver", headers=ADMIN).status_code == 403

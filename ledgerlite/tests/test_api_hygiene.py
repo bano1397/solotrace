@@ -43,3 +43,8 @@ def test_non_finite_json_numbers_are_rejected_cleanly(client, literal):
     resp = client.post(f"/accounts/{acct['id']}/deposit", content=raw, headers={"Content-Type": "application/json"})
     assert resp.status_code == 422
     assert resp.json()["detail"]
+
+
+def test_non_ascii_admin_token_is_rejected_not_500(client):
+    resp = client.get("/audit", headers={"X-Admin-Token": "tökén".encode("latin-1")})
+    assert resp.status_code == 401

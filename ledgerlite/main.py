@@ -3,8 +3,11 @@
 Authentication model (deliberately simple for a demo):
 * money movement and account reads require the account PIN
   (JSON field ``pin`` or header ``X-PIN``);
-* compliance-officer endpoints (KYC verification, audit log) require the
-  ``X-Admin-Token`` header matching the ``LEDGERLITE_ADMIN_TOKEN`` env variable.
+* compliance-officer endpoints (KYC verification, granting the approver role,
+  audit log) require the ``X-Admin-Token`` header matching the
+  ``LEDGERLITE_ADMIN_TOKEN`` env variable;
+* held transfers (REQ-05) can only be approved by a different account that holds
+  the approver role, with its own PIN.
 """
 import math
 import secrets
@@ -70,7 +73,7 @@ def require_admin(x_admin_token: Annotated[str | None, Header()] = None) -> None
     expected = svc.admin_token()
     if expected is None:
         raise HTTPException(status_code=503, detail="Admin endpoints are disabled: set LEDGERLITE_ADMIN_TOKEN")
-    if x_admin_token is None or not secrets.compare_digest(x_admin_token, expected):
+    if x_admin_token is None or not secrets.compare_digest(x_admin_token.encode(), expected.encode()):
         raise HTTPException(status_code=401, detail="Invalid admin token")
 
 
@@ -92,6 +95,12 @@ def create_account(body: AccountCreate, session: Session = Depends(db.get_db)):
 @app.post("/accounts/{account_id}/verify-kyc", response_model=AccountResponse, dependencies=[Depends(require_admin)])
 def verify_kyc(account_id: AccountId, session: Session = Depends(db.get_db)):
     return svc.verify_kyc(session, account_id)
+
+
+@app.post("/accounts/{account_id}/grant-approver", response_model=AccountResponse,
+          dependencies=[Depends(require_admin)])
+def grant_approver(account_id: AccountId, session: Session = Depends(db.get_db)):
+    return svc.grant_approver(session, account_id)
 
 
 @app.get("/accounts/{account_id}", response_model=AccountResponse)

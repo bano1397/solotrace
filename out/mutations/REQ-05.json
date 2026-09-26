@@ -32,16 +32,23 @@
     {
       "id": "REQ-05-M5",
       "file": "ledgerlite/services.py",
-      "find": "    _check_pin(db, approver, pin)\n    _require_kyc(approver, \"Approver\")",
+      "find": "    _check_pin(db, approver, pin_ok)\n    _require_kyc(approver, \"Approver\")",
       "replace": "    _require_kyc(approver, \"Approver\")",
       "description": "approve without the approver's PIN"
     },
     {
       "id": "REQ-05-M6",
       "file": "ledgerlite/services.py",
-      "find": "    if transfer.status != \"pending_approval\":\n        raise HTTPException(status_code=400, detail=\"Transfer is not pending approval\")\n    if approver_id == transfer.sender_id:\n        raise HTTPException(status_code=403, detail=\"Initiator cannot approve their own transfer\")\n    if approver_id == transfer.recipient_id:\n        raise HTTPException(status_code=403, detail=\"Recipient cannot approve a transfer to themselves\")\n\n    approver = get_account_or_404(db, approver_id)\n    _check_pin(db, approver, pin)\n    _require_kyc(approver, \"Approver\")\n    if approver.country_code in SANCTIONED_COUNTRIES:\n        raise HTTPException(status_code=403, detail=\"Approver is not permitted to approve transfers\")\n\n    try:\n        # Only one approval can ever win, even if two arrive at the same time.\n        result = db.execute(\n            update(Transfer)\n            .where(Transfer.id == transfer_id, Transfer.status == \"pending_approval\")",
-      "replace": "    if approver_id == transfer.sender_id:\n        raise HTTPException(status_code=403, detail=\"Initiator cannot approve their own transfer\")\n    if approver_id == transfer.recipient_id:\n        raise HTTPException(status_code=403, detail=\"Recipient cannot approve a transfer to themselves\")\n\n    approver = get_account_or_404(db, approver_id)\n    _check_pin(db, approver, pin)\n    _require_kyc(approver, \"Approver\")\n    if approver.country_code in SANCTIONED_COUNTRIES:\n        raise HTTPException(status_code=403, detail=\"Approver is not permitted to approve transfers\")\n\n    try:\n        # Only one approval can ever win, even if two arrive at the same time.\n        result = db.execute(\n            update(Transfer)\n            .where(Transfer.id == transfer_id)",
+      "find": "    if transfer.status != \"pending_approval\":\n        raise HTTPException(status_code=400, detail=\"Transfer is not pending approval\")\n    if approver_id == transfer.sender_id:\n        raise HTTPException(status_code=403, detail=\"Initiator cannot approve their own transfer\")\n    if approver_id == transfer.recipient_id:\n        raise HTTPException(status_code=403, detail=\"Recipient cannot approve a transfer to themselves\")\n\n    approver = get_account_or_404(db, approver_id)\n    _check_pin(db, approver, pin_ok)\n    _require_kyc(approver, \"Approver\")\n    if not approver.can_approve:\n        raise HTTPException(status_code=403, detail=\"Approver is not authorised to approve transfers\")\n    if approver.country_code in SANCTIONED_COUNTRIES:\n        raise HTTPException(status_code=403, detail=\"Approver is not permitted to approve transfers\")\n\n    try:\n        # Only one approval can ever win, even if two arrive at the same time.\n        result = db.execute(\n            update(Transfer)\n            .where(Transfer.id == transfer_id, Transfer.status == \"pending_approval\")",
+      "replace": "    if approver_id == transfer.sender_id:\n        raise HTTPException(status_code=403, detail=\"Initiator cannot approve their own transfer\")\n    if approver_id == transfer.recipient_id:\n        raise HTTPException(status_code=403, detail=\"Recipient cannot approve a transfer to themselves\")\n\n    approver = get_account_or_404(db, approver_id)\n    _check_pin(db, approver, pin_ok)\n    _require_kyc(approver, \"Approver\")\n    if not approver.can_approve:\n        raise HTTPException(status_code=403, detail=\"Approver is not authorised to approve transfers\")\n    if approver.country_code in SANCTIONED_COUNTRIES:\n        raise HTTPException(status_code=403, detail=\"Approver is not permitted to approve transfers\")\n\n    try:\n        # Only one approval can ever win, even if two arrive at the same time.\n        result = db.execute(\n            update(Transfer)\n            .where(Transfer.id == transfer_id)",
       "description": "a transfer can be approved twice (recipient credited twice)"
+    },
+    {
+      "id": "REQ-05-M7",
+      "file": "ledgerlite/services.py",
+      "find": "    if not approver.can_approve:\n        raise HTTPException(status_code=403, detail=\"Approver is not authorised to approve transfers\")",
+      "replace": "    pass",
+      "description": "any customer can approve (approver role not required)"
     }
   ]
 }

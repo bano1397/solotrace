@@ -80,12 +80,24 @@ def get_account_or_404(db: Session, account_id: int) -> Account:
     return account
 
 
-def _check_pin(db: Session, account: Account, pin: str) -> None:
-    """Verify a PIN. Failed attempts are committed before raising (REQ-07)."""
+def _pin_matches(db: Session, account_id: int, pin: str) -> bool | None:
+    """Check a PIN *before* the write lock is taken (PBKDF2 is deliberately slow).
+
+    Returns None when the account does not exist.
+    """
+    stored = db.scalar(select(Account.pin_hash).where(Account.id == account_id))
+    db.rollback()  # release SQLite's lock while hashing
+    if stored is None:
+        return None
+    return verify_pin(pin, stored)
+
+
+def _check_pin(db: Session, account: Account, pin_ok: bool | None) -> None:
+    """Apply the PIN result. Failed attempts are committed before raising (REQ-07)."""
     if account.locked:
         raise HTTPException(status_code=423, detail="Account is locked due to too many failed PIN attempts")
 
-    if verify_pin(pin, account.pin_hash):
+    if pin_ok:
         if account.failed_pin_attempts:
             account.failed_pin_attempts = 0  # a correct PIN resets the counter
             db.commit()
@@ -184,10 +196,21 @@ def verify_kyc(db: Session, account_id: int) -> Account:
     return account
 
 
+def grant_approver(db: Session, account_id: int) -> Account:
+    """Compliance officer grants the approver role (needed for four-eyes approvals)."""
+    account = get_account_or_404(db, account_id)
+    _require_kyc(account)
+    account.can_approve = True
+    db.commit()
+    db.refresh(account)
+    return account
+
+
 def read_account(db: Session, account_id: int, pin: str) -> Account:
     """Account details are only shown to someone who knows the account PIN."""
+    pin_ok = _pin_matches(db, account_id, pin)
     account = get_account_or_404(db, account_id)
-    _check_pin(db, account, pin)
+    _check_pin(db, account, pin_ok)
     db.commit()
     db.refresh(account)
     return account
@@ -210,8 +233,9 @@ def list_audit(db: Session) -> list[AuditEntry]:
 # ── money movement ────────────────────────────────────────────────────────────
 
 def deposit(db: Session, account_id: int, *, amount: Decimal, pin: str) -> Account:
+    pin_ok = _pin_matches(db, account_id, pin)
     account = get_account_or_404(db, account_id)
-    _check_pin(db, account, pin)
+    _check_pin(db, account, pin_ok)
     _require_kyc(account)
 
     _require_positive(amount, "Deposit")
@@ -226,8 +250,9 @@ def deposit(db: Session, account_id: int, *, amount: Decimal, pin: str) -> Accou
 
 
 def withdraw(db: Session, account_id: int, *, amount: Decimal, pin: str) -> Account:
+    pin_ok = _pin_matches(db, account_id, pin)
     account = get_account_or_404(db, account_id)
-    _check_pin(db, account, pin)
+    _check_pin(db, account, pin_ok)
     _require_kyc(account)
     _require_positive(amount, "Withdrawal")
 
@@ -246,9 +271,10 @@ def create_transfer(db: Session, *, sender_id: int, recipient_id: int, amount: D
     if sender_id == recipient_id:
         raise HTTPException(status_code=400, detail="Sender and recipient must be different accounts")
 
+    pin_ok = _pin_matches(db, sender_id, pin)
     sender = get_account_or_404(db, sender_id)
     recipient = get_account_or_404(db, recipient_id)
-    _check_pin(db, sender, pin)
+    _check_pin(db, sender, pin_ok)
 
     # REQ-10: sanctions screening happens before any other business check and is always logged.
     blocked = sorted(
@@ -319,7 +345,8 @@ def create_transfer(db: Session, *, sender_id: int, recipient_id: int, amount: D
 
 
 def approve_transfer(db: Session, transfer_id: int, *, approver_id: int, pin: str) -> Transfer:
-    """Four-eyes approval of a held transfer (REQ-05)."""
+    """Four-eyes approval of a held transfer (REQ-05) by an authorised approver."""
+    pin_ok = _pin_matches(db, approver_id, pin)
     transfer = db.get(Transfer, transfer_id)
     if transfer is None:
         raise HTTPException(status_code=404, detail="Transfer not found")
@@ -331,8 +358,10 @@ def approve_transfer(db: Session, transfer_id: int, *, approver_id: int, pin: st
         raise HTTPException(status_code=403, detail="Recipient cannot approve a transfer to themselves")
 
     approver = get_account_or_404(db, approver_id)
-    _check_pin(db, approver, pin)
+    _check_pin(db, approver, pin_ok)
     _require_kyc(approver, "Approver")
+    if not approver.can_approve:
+        raise HTTPException(status_code=403, detail="Approver is not authorised to approve transfers")
     if approver.country_code in SANCTIONED_COUNTRIES:
         raise HTTPException(status_code=403, detail="Approver is not permitted to approve transfers")
 

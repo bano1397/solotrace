@@ -28,6 +28,13 @@
       "find": "    if account.locked:\n        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")",
       "replace": "    pass",
       "description": "locked accounts can still move money"
+    },
+    {
+      "id": "REQ-07-M5",
+      "file": "ledgerlite/services.py",
+      "find": "    stored = db.scalar(select(Account.pin_hash).where(Account.id == account_id))\n    db.rollback()  # release SQLite's lock while hashing\n    if stored is None:\n        return None\n    return verify_pin(pin, stored)",
+      "replace": "    stored = db.scalar(select(Account.pin_hash).where(Account.id == account_id))\n    db.rollback()  # release SQLite's lock while hashing\n    if stored is None:\n        return None\n    return True",
+      "description": "any PIN is accepted"
     }
   ]
 }

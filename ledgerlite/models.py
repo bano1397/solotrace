@@ -1,3 +1,4 @@
+"""Database models for LedgerLite: accounts, transfers and the append-only audit log."""
 import datetime
 from decimal import ROUND_HALF_EVEN, Decimal
 
@@ -49,6 +50,7 @@ class Account(Base):
     pin_hash: Mapped[str] = mapped_column(String, nullable=False)
     failed_pin_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     locked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    can_approve: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     sent_transfers: Mapped[list["Transfer"]] = relationship(
         "Transfer", foreign_keys="Transfer.sender_id", back_populates="sender"

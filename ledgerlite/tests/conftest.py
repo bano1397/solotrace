@@ -77,6 +77,14 @@ def ready_account(client: TestClient, email: str, balance: str | None = None, co
     return acct
 
 
+def make_approver(client: TestClient, email: str) -> dict:
+    """A KYC-verified account holding the approver role."""
+    acct = ready_account(client, email)
+    resp = client.post(f"/accounts/{acct['id']}/grant-approver", headers=ADMIN)
+    assert resp.status_code == 200, resp.json()
+    return resp.json()
+
+
 def deposit(client: TestClient, account_id: int, amount, pin: str = PIN):
     return client.post(f"/accounts/{account_id}/deposit", json={"amount": amount, "pin": pin})
 

@@ -15,6 +15,7 @@ from ledgerlite.tests.conftest import (
     approve,
     audit_log,
     deposit,
+    make_approver,
     ready_account,
     transfer,
     withdraw,
@@ -74,7 +75,7 @@ def test_transfer_writes_exactly_one_entry(client):
 def test_approval_writes_exactly_one_entry(client):
     sender = ready_account(client, "s@example.com", "9000.00")
     recipient = ready_account(client, "r@example.com")
-    approver = ready_account(client, "a@example.com")
+    approver = make_approver(client, "a@example.com")
     held = transfer(client, sender["id"], recipient["id"], "6000.00").json()
     before = len(audit_log(client))
     assert approve(client, held["id"], approver["id"]).status_code == 200
