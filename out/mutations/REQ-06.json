@@ -1,0 +1,47 @@
+{
+  "requirement": "REQ-06",
+  "mutations": [
+    {
+      "id": "REQ-06-M1",
+      "file": "ledgerlite/services.py",
+      "find": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
+      "replace": "    pass",
+      "description": "deposits are not audited"
+    },
+    {
+      "id": "REQ-06-M2",
+      "file": "ledgerlite/services.py",
+      "find": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)",
+      "replace": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)\n    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)",
+      "description": "withdrawals write two audit entries"
+    },
+    {
+      "id": "REQ-06-M3",
+      "file": "ledgerlite/services.py",
+      "find": "            actor_id=approver_id,",
+      "replace": "            actor_id=transfer.sender_id,",
+      "description": "approval entry records the wrong actor"
+    },
+    {
+      "id": "REQ-06-M4",
+      "file": "ledgerlite/schemas.py",
+      "find": "    return value.astimezone(datetime.timezone.utc).isoformat().replace(\"+00:00\", \"Z\")",
+      "replace": "    return value.replace(tzinfo=None).isoformat()",
+      "description": "audit timestamps lose their UTC marker"
+    },
+    {
+      "id": "REQ-06-M5",
+      "file": "ledgerlite/main.py",
+      "find": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+      "replace": "@app.patch(\"/audit/{entry_id}\")\ndef edit_audit_entry(entry_id: int, body: dict, session: Session = Depends(db.get_db)):\n    from ledgerlite.models import AuditEntry\n    entry = session.get(AuditEntry, entry_id)\n    for key, value in body.items():\n        setattr(entry, key, value)\n    session.commit()\n    return {\"edited\": entry_id}\n\n\n@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+      "description": "add an endpoint that edits audit entries"
+    },
+    {
+      "id": "REQ-06-M6",
+      "file": "ledgerlite/services.py",
+      "find": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
+      "replace": "    _write_audit(db, actor_id=0, action=\"deposit\", amount=amount, account_id=account_id)",
+      "description": "deposit audit entry records the wrong actor"
+    }
+  ]
+}

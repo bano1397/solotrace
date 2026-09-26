@@ -6,14 +6,20 @@
     {
       "file": "ledgerlite/schemas.py",
       "line": 56,
-      "snippet": "    email: str",
-      "verified": false
+      "snippet": "account_number: str   # ← FULL account number, no masking",
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 57,
+      "actual_snippet": "    account_number: str"
     },
     {
       "file": "ledgerlite/main.py",
       "line": 49,
-      "snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)",
-      "verified": true
+      "snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)\ndef get_statement(account_id: int, db: Session = Depends(get_db)):\n    account = svc._get_account_or_404(db, account_id)\n    ...\n    return StatementResponse(account=account, transactions=transactions)",
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)"
     }
   ],
   "test_evidence": [],

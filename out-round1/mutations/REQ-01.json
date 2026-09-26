@@ -1,0 +1,26 @@
+{
+  "requirement": "REQ-01",
+  "mutations": [
+    {
+      "id": "REQ-01-M01a",
+      "file": "ledgerlite/services.py",
+      "find": "    _require_kyc(sender)\n    _require_kyc(recipient)\n",
+      "replace": "    _require_kyc(sender)\n",
+      "description": "drop KYC check on recipient"
+    },
+    {
+      "id": "REQ-01-M01b",
+      "file": "ledgerlite/services.py",
+      "find": "    _check_pin(account, pin)\n    _require_kyc(account)\n\n    if amount <= Decimal(\"0\"):\n        raise HTTPException(status_code=400, detail=\"Withdrawal",
+      "replace": "    _check_pin(account, pin)\n\n    if amount <= Decimal(\"0\"):\n        raise HTTPException(status_code=400, detail=\"Withdrawal",
+      "description": "drop KYC check in withdraw"
+    },
+    {
+      "id": "REQ-01-M01c",
+      "file": "ledgerlite/services.py",
+      "find": "    if db.query(Account).filter(Account.email == email).first():\n        raise HTTPException(status_code=409, detail=\"Email already registered\")\n",
+      "replace": "",
+      "description": "drop app-level duplicate-email check (DB unique constraint remains)"
+    }
+  ]
+}

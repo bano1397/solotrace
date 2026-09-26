@@ -12,6 +12,10 @@ _REQ_ID_RE = re.compile(r"^REQ-\d{2}$")
 _RISK_VALUES = {"High", "Medium", "Low"}
 _CHANGE_VALUES = {"none", "changed", "new"}
 _STATUS_VALUES = {"covered", "untested", "contradicts", "missing"}
+_MATCH_VALUES = {"exact", "relocated", "not_found", "too_short", "invalid_path", "missing_file"}
+# Fields written by the AI auditor, plus optional fields added by `solotrace verify`.
+_CODE_EVIDENCE_KEYS = {"file", "line", "snippet", "verified", "match", "actual_line", "actual_snippet"}
+_TEST_EVIDENCE_KEYS = {"file", "test_name", "exists", "passed"}
 
 
 # ── internal helpers ──────────────────────────────────────────────────────────
@@ -120,11 +124,19 @@ def validate_verdict(data: Any) -> None:
             raise ValueError(f"{ectx}: 'line' must be an integer")
         if item["line"] < 1:
             raise ValueError(f"{ectx}: 'line' must be >= 1")
-        extra = set(item.keys()) - {"file", "line", "snippet", "verified"}
+        extra = set(item.keys()) - _CODE_EVIDENCE_KEYS
         if extra:
             raise ValueError(f"{ectx}: unexpected fields: {sorted(extra)!r}")
         if "verified" in item and not isinstance(item["verified"], bool):
             raise ValueError(f"{ectx}: 'verified' must be a boolean if present")
+        if "match" in item and item["match"] not in _MATCH_VALUES:
+            raise ValueError(f"{ectx}: 'match' must be one of {sorted(_MATCH_VALUES)!r}")
+        if item.get("actual_line") is not None and (
+            not isinstance(item["actual_line"], int) or isinstance(item["actual_line"], bool)
+        ):
+            raise ValueError(f"{ectx}: 'actual_line' must be an integer or null")
+        if item.get("actual_snippet") is not None and not isinstance(item["actual_snippet"], str):
+            raise ValueError(f"{ectx}: 'actual_snippet' must be a string or null")
 
     # test_evidence
     te = data["test_evidence"]
@@ -137,9 +149,12 @@ def validate_verdict(data: Any) -> None:
         _require_keys(item, ["file", "test_name"], tctx)
         _require_str(item, "file", tctx)
         _require_str(item, "test_name", tctx)
-        extra = set(item.keys()) - {"file", "test_name"}
+        extra = set(item.keys()) - _TEST_EVIDENCE_KEYS
         if extra:
             raise ValueError(f"{tctx}: unexpected fields: {sorted(extra)!r}")
+        for flag in ("exists", "passed"):
+            if item.get(flag) is not None and not isinstance(item[flag], bool):
+                raise ValueError(f"{tctx}: '{flag}' must be a boolean or null")
 
     # optional suggested_fix
     if "suggested_fix" in data and not isinstance(data["suggested_fix"], str):

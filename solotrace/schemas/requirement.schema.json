@@ -1,10 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/solotrace/schemas/requirement.schema.json",
+  "$id": "https://github.com/bano1397/solotrace/blob/main/solotrace/schemas/requirement.schema.json",
   "title": "Requirement",
   "description": "A single traceable requirement extracted from a specification document.",
   "type": "object",
-  "required": ["id", "title", "text", "acceptance_criteria", "risk", "change"],
+  "required": [
+    "id",
+    "title",
+    "text",
+    "acceptance_criteria",
+    "risk",
+    "change"
+  ],
   "additionalProperties": false,
   "properties": {
     "id": {
@@ -24,18 +31,29 @@
     },
     "acceptance_criteria": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 },
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "minItems": 1,
       "description": "List of testable acceptance criteria for this requirement."
     },
     "risk": {
       "type": "string",
-      "enum": ["High", "Medium", "Low"],
+      "enum": [
+        "High",
+        "Medium",
+        "Low"
+      ],
       "description": "Risk classification for the requirement."
     },
     "change": {
       "type": "string",
-      "enum": ["none", "changed", "new"],
+      "enum": [
+        "none",
+        "changed",
+        "new"
+      ],
       "description": "Change indicator relative to the previous spec version."
     }
   }

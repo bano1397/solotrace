@@ -1,0 +1,429 @@
+{
+  "tool": "solotrace prove",
+  "commit": "149d4098a3665e9f81f62d2c2d2ae0bcf0418ff2",
+  "tests": "ledgerlite/tests",
+  "totals": {
+    "mutations": 34,
+    "killed": 23,
+    "survived": 11,
+    "invalid": 0,
+    "requirements_proven": 6,
+    "requirements": 12
+  },
+  "requirements": {
+    "REQ-01": {
+      "tried": 3,
+      "killed": 3,
+      "survived": 0,
+      "invalid": 0,
+      "proven": true,
+      "mutations": [
+        {
+          "id": "REQ-01-M01a",
+          "description": "drop KYC check on recipient",
+          "file": "ledgerlite/services.py",
+          "line": 176,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec1_accounts_kyc.py::TestKYCGating::test_transfer_recipient_blocked_before_kyc",
+          "duration_s": 3.87
+        },
+        {
+          "id": "REQ-01-M01b",
+          "description": "drop KYC check in withdraw",
+          "file": "ledgerlite/services.py",
+          "line": 151,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec1_accounts_kyc.py::TestKYCGating::test_withdraw_blocked_before_kyc",
+          "duration_s": 3.47
+        },
+        {
+          "id": "REQ-01-M01c",
+          "description": "drop app-level duplicate-email check (DB unique constraint remains)",
+          "file": "ledgerlite/services.py",
+          "line": 101,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec1_accounts_kyc.py::TestAccountCreation::test_duplicate_email_rejected",
+          "duration_s": 3.93
+        }
+      ]
+    },
+    "REQ-02": {
+      "tried": 2,
+      "killed": 2,
+      "survived": 0,
+      "invalid": 0,
+      "proven": true,
+      "mutations": [
+        {
+          "id": "REQ-02-M02a",
+          "description": "max deposit 50000.01",
+          "file": "ledgerlite/services.py",
+          "line": 19,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec2_deposit_limits.py::TestDepositValidation::test_boundary_50000_01_rejected",
+          "duration_s": 4.28
+        },
+        {
+          "id": "REQ-02-M02b",
+          "description": "allow zero deposit (<= -> <)",
+          "file": "ledgerlite/services.py",
+          "line": 135,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec2_deposit_limits.py::TestDepositValidation::test_zero_rejected",
+          "duration_s": 4.01
+        }
+      ]
+    },
+    "REQ-03": {
+      "tried": 2,
+      "killed": 2,
+      "survived": 0,
+      "invalid": 0,
+      "proven": true,
+      "mutations": [
+        {
+          "id": "REQ-03-M03a",
+          "description": "remove insufficient-funds check in withdraw",
+          "file": "ledgerlite/services.py",
+          "line": 156,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec3_withdrawals.py::TestWithdrawal::test_withdrawal_overdraft_rejected",
+          "duration_s": 4.83
+        },
+        {
+          "id": "REQ-03-M03b",
+          "description": "allow overdraft down to -100.00",
+          "file": "ledgerlite/services.py",
+          "line": 156,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec3_withdrawals.py::TestWithdrawal::test_withdrawal_overdraft_rejected",
+          "duration_s": 4.49
+        }
+      ]
+    },
+    "REQ-04": {
+      "tried": 3,
+      "killed": 2,
+      "survived": 1,
+      "invalid": 0,
+      "proven": false,
+      "mutations": [
+        {
+          "id": "REQ-04-M04a",
+          "description": "remove db.rollback() in create_transfer",
+          "file": "ledgerlite/services.py",
+          "line": 237,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec4_transfer_atomicity.py::TestTransferAtomicity::test_transfer_rolls_back_on_db_error",
+          "duration_s": 5.87
+        },
+        {
+          "id": "REQ-04-M04b",
+          "description": "commit debit before credit",
+          "file": "ledgerlite/services.py",
+          "line": 221,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec4_transfer_atomicity.py::TestTransferAtomicity::test_transfer_rolls_back_on_db_error",
+          "duration_s": 5.88
+        },
+        {
+          "id": "REQ-04-M04c",
+          "description": "credit applied in a 2nd transaction after the debit commit (classic non-atomic transfer)",
+          "file": "ledgerlite/services.py",
+          "line": 221,
+          "outcome": "survived",
+          "killed_by": null,
+          "duration_s": 9.17
+        }
+      ]
+    },
+    "REQ-05": {
+      "tried": 3,
+      "killed": 1,
+      "survived": 2,
+      "invalid": 0,
+      "proven": false,
+      "mutations": [
+        {
+          "id": "REQ-05-M05a",
+          "description": "threshold 5000.01",
+          "file": "ledgerlite/services.py",
+          "line": 20,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec5_large_transfer_threshold.py::test_transfer_at_threshold_pending",
+          "duration_s": 6.61
+        },
+        {
+          "id": "REQ-05-M05b",
+          "description": "remove 'initiator cannot approve own transfer' check",
+          "file": "ledgerlite/services.py",
+          "line": 257,
+          "outcome": "survived",
+          "killed_by": null,
+          "duration_s": 9.44
+        },
+        {
+          "id": "REQ-05-M05c",
+          "description": "remove pending_approval status check (double approval credits twice)",
+          "file": "ledgerlite/services.py",
+          "line": 255,
+          "outcome": "survived",
+          "killed_by": null,
+          "duration_s": 9.63
+        }
+      ]
+    },
+    "REQ-06": {
+      "tried": 5,
+      "killed": 1,
+      "survived": 4,
+      "invalid": 0,
+      "proven": false,
+      "mutations": [
+        {
+          "id": "REQ-06-M06a",
+          "description": "remove audit write on approval",
+          "file": "ledgerlite/services.py",
+          "line": 269,
+          "outcome": "survived",
+          "killed_by": null,
+          "duration_s": 9.9
+        },
+        {
+          "id": "REQ-06-M06b",
+          "description": "deposit writes TWO audit entries (violates 'exactly one')",
+          "file": "ledgerlite/services.py",
+          "line": 141,
+          "outcome": "survived",
+          "killed_by": null,
+          "duration_s": 9.89
+        },
+        {
+          "id": "REQ-06-M06c",
+          "description": "add PATCH /audit/{entry_id} edit endpoint",
+          "file": "ledgerlite/main.py",
+          "line": 98,
+          "outcome": "survived",
+          "killed_by": null,
+          "duration_s": 10.0
+        },
+        {
+          "id": "REQ-06-M06d",
+          "description": "remove audit write on deposit",
+          "file": "ledgerlite/services.py",
+          "line": 141,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec6_audit_log.py::test_audit_entry_written_on_deposit",
+          "duration_s": 7.85
+        },
+        {
+          "id": "REQ-06-M06e",
+          "description": "deposit audit entry records wrong actor (actor_id=0)",
+          "file": "ledgerlite/services.py",
+          "line": 141,
+          "outcome": "survived",
+          "killed_by": null,
+          "duration_s": 9.85
+        }
+      ]
+    },
+    "REQ-07": {
+      "tried": 3,
+      "killed": 3,
+      "survived": 0,
+      "invalid": 0,
+      "proven": true,
+      "mutations": [
+        {
+          "id": "REQ-07-M07a",
+          "description": "lock after 6 failures",
+          "file": "ledgerlite/services.py",
+          "line": 21,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec7_pin_lockout.py::test_fifth_wrong_pin_locks_account",
+          "duration_s": 8.58
+        },
+        {
+          "id": "REQ-07-M07b",
+          "description": "correct PIN no longer resets counter",
+          "file": "ledgerlite/services.py",
+          "line": 83,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec7_pin_lockout.py::test_correct_pin_resets_counter",
+          "duration_s": 9.13
+        },
+        {
+          "id": "REQ-07-M07c",
+          "description": "locked account can still move money (remove locked guard)",
+          "file": "ledgerlite/services.py",
+          "line": 70,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec7_pin_lockout.py::test_fifth_wrong_pin_locks_account",
+          "duration_s": 8.82
+        }
+      ]
+    },
+    "REQ-08": {
+      "tried": 3,
+      "killed": 1,
+      "survived": 2,
+      "invalid": 0,
+      "proven": false,
+      "mutations": [
+        {
+          "id": "REQ-08-M08a",
+          "description": "deposit arithmetic done in binary float",
+          "file": "ledgerlite/services.py",
+          "line": 140,
+          "outcome": "survived",
+          "killed_by": null,
+          "duration_s": 10.32
+        },
+        {
+          "id": "REQ-08-M08b",
+          "description": "_to_decimal goes through float (Decimal(float(value)))",
+          "file": "ledgerlite/services.py",
+          "line": 93,
+          "outcome": "survived",
+          "killed_by": null,
+          "duration_s": 10.3
+        },
+        {
+          "id": "REQ-08-M08c",
+          "description": "balance serialised with 3 dp",
+          "file": "ledgerlite/schemas.py",
+          "line": 65,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec1_accounts_kyc.py::TestAccountCreation::test_create_account_success",
+          "duration_s": 3.23
+        }
+      ]
+    },
+    "REQ-09": {
+      "tried": 3,
+      "killed": 2,
+      "survived": 1,
+      "invalid": 0,
+      "proven": false,
+      "mutations": [
+        {
+          "id": "REQ-09-M09a",
+          "description": "daily cap 20000.01",
+          "file": "ledgerlite/services.py",
+          "line": 22,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec9_daily_cap.py::test_daily_cap_exceeded_rejected",
+          "duration_s": 10.35
+        },
+        {
+          "id": "REQ-09-M09b",
+          "description": "drop the UTC-day window (cap becomes all-time)",
+          "file": "ledgerlite/services.py",
+          "line": 206,
+          "outcome": "survived",
+          "killed_by": null,
+          "duration_s": 10.08
+        },
+        {
+          "id": "REQ-09-M09c",
+          "description": "only count completed transfers toward cap",
+          "file": "ledgerlite/services.py",
+          "line": 205,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec9_daily_cap.py::test_daily_cap_exceeded_rejected",
+          "duration_s": 9.43
+        }
+      ]
+    },
+    "REQ-10": {
+      "tried": 4,
+      "killed": 4,
+      "survived": 0,
+      "invalid": 0,
+      "proven": true,
+      "mutations": [
+        {
+          "id": "REQ-10-M10a",
+          "description": "remove sanctions check",
+          "file": "ledgerlite/services.py",
+          "line": 180,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec10_sanctions.py::test_sanctioned_sender_blocked[KP]",
+          "duration_s": 1.46
+        },
+        {
+          "id": "REQ-10-M10b",
+          "description": "sanctions block no longer audited (audit write removed)",
+          "file": "ledgerlite/services.py",
+          "line": 181,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec10_sanctions.py::test_audit_entry_written_for_sanctions_block",
+          "duration_s": 2.88
+        },
+        {
+          "id": "REQ-10-M10c",
+          "description": "sanctions audit entry not committed before raise",
+          "file": "ledgerlite/services.py",
+          "line": 187,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec10_sanctions.py::test_audit_entry_written_for_sanctions_block",
+          "duration_s": 2.91
+        },
+        {
+          "id": "REQ-10-M10d",
+          "description": "drop CU from sanctions list",
+          "file": "ledgerlite/services.py",
+          "line": 23,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec10_sanctions.py::test_sanctioned_sender_blocked[CU]",
+          "duration_s": 1.86
+        }
+      ]
+    },
+    "REQ-11": {
+      "tried": 1,
+      "killed": 1,
+      "survived": 0,
+      "invalid": 0,
+      "proven": true,
+      "mutations": [
+        {
+          "id": "REQ-11-M11a",
+          "description": "stop masking",
+          "file": "ledgerlite/schemas.py",
+          "line": 108,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec11_statement_masking.py::test_statement_masks_account_number",
+          "duration_s": 3.02
+        }
+      ]
+    },
+    "REQ-12": {
+      "tried": 2,
+      "killed": 1,
+      "survived": 1,
+      "invalid": 0,
+      "proven": false,
+      "mutations": [
+        {
+          "id": "REQ-12-M12a",
+          "description": "add DELETE /audit (purge all)",
+          "file": "ledgerlite/main.py",
+          "line": 98,
+          "outcome": "killed",
+          "killed_by": "ledgerlite/tests/test_spec12_audit_retention.py::test_delete_audit_returns_405",
+          "duration_s": 3.16
+        },
+        {
+          "id": "REQ-12-M12b",
+          "description": "add DELETE /audit/{entry_id}",
+          "file": "ledgerlite/main.py",
+          "line": 98,
+          "outcome": "survived",
+          "killed_by": null,
+          "duration_s": 6.47
+        }
+      ]
+    }
+  }
+}

@@ -1,23 +1,60 @@
-# Requirement schema (supporting file for the solotrace-audit skill)
-
-Paste this as a quick-reference when reviewing extracted requirements.
-
-```json
 {
-  "id": "REQ-01",
-  "title": "Short title",
-  "text": "Full requirement text from the specification.",
-  "acceptance_criteria": [
-    "System must reject deposits of 0 or less.",
-    "System must reject deposits greater than 50000.00."
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bano1397/solotrace/blob/main/solotrace/schemas/requirement.schema.json",
+  "title": "Requirement",
+  "description": "A single traceable requirement extracted from a specification document.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "text",
+    "acceptance_criteria",
+    "risk",
+    "change"
   ],
-  "risk": "High",
-  "change": "none"
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^REQ-\\d{2}$",
+      "description": "Unique requirement identifier, e.g. REQ-01."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Short human-readable title for the requirement."
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Full requirement text as written in the specification."
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "description": "List of testable acceptance criteria for this requirement."
+    },
+    "risk": {
+      "type": "string",
+      "enum": [
+        "High",
+        "Medium",
+        "Low"
+      ],
+      "description": "Risk classification for the requirement."
+    },
+    "change": {
+      "type": "string",
+      "enum": [
+        "none",
+        "changed",
+        "new"
+      ],
+      "description": "Change indicator relative to the previous spec version."
+    }
+  }
 }
-```
-
-**Rules:**
-- `id` must match `^REQ-\d{2}$`
-- `risk` ∈ `{High, Medium, Low}`
-- `change` ∈ `{none, changed, new}`
-- `acceptance_criteria` must have at least one entry

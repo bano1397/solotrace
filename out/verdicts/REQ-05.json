@@ -7,37 +7,50 @@
       "file": "ledgerlite/services.py",
       "line": 20,
       "snippet": "_LARGE_TRANSFER_THRESHOLD = Decimal(\"5000.00\")",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "from fastapi import HTTPException"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 217,
       "snippet": "    large = amount >= _LARGE_TRANSFER_THRESHOLD",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "    _require_positive(amount, \"Deposit\")"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 218,
       "snippet": "    status = \"pending_approval\" if large else \"completed\"",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 282,
+      "actual_snippet": "    status = \"pending_approval\" if large else \"completed\""
     }
   ],
   "test_evidence": [
     {
       "file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py",
-      "test_name": "test_transfer_below_threshold_completed"
+      "test_name": "test_transfer_below_threshold_completed",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py",
-      "test_name": "test_transfer_at_threshold_pending"
+      "test_name": "test_transfer_at_threshold_pending",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py",
-      "test_name": "test_transfer_above_threshold_pending"
+      "test_name": "test_transfer_above_threshold_pending",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py",
-      "test_name": "test_transfer_just_below_threshold_completed"
+      "test_name": "test_transfer_just_below_threshold_completed",
+      "exists": false
     }
   ]
 }

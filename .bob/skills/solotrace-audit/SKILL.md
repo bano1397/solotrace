@@ -1,84 +1,51 @@
 ---
 name: solotrace-audit
-description: >
-  Run the SoloTrace Read → Audit → Fix → Report process to prove whether
-  every requirement in a spec document is implemented and tested in a codebase.
-  Reference the schemas in solotrace/schemas/ as supporting files.
+description: >-
+  Audit a codebase against a requirements document and prove every requirement:
+  read the spec, audit each requirement with its own subagent (verbatim file:line
+  evidence), then let the solotrace CLI verify the evidence, run the tests and
+  sabotage each requirement to prove the tests really guard it. Use for compliance,
+  traceability and release-readiness audits.
 ---
 
-# SoloTrace Audit Skill
+# SoloTrace audit skill
 
-This skill guides you through the full SoloTrace audit process on any repository
-that has a requirements specification document (PDF or Markdown).
+Works on any repository with a specification document (PDF, DOCX or Markdown) and a test suite.
+Run it in the **SoloTrace Auditor** mode so `.bob/rules-solotrace/` applies.
 
-## Supporting files
+Supporting files in this folder:
+- `requirement.schema.json`, `verdict.schema.json` — the JSON formats (validated by `solotrace/schemas.py`)
+- `mutation.example.json` — the format of a sabotage attempt
+- `audit-checklist.md` — the checklist below, for tracking progress
 
-- `requirement.schema.json` — schema for extracted requirement objects
-- `verdict.schema.json` — schema for per-requirement audit verdicts
-- `audit-checklist.md` — step-by-step checklist for the audit process
+## Phase 1 — READ
 
----
+1. Read the specification with your own document understanding.
+2. Write `out/requirements.json`: one object per requirement (`id` `REQ-01`…, verbatim `text`,
+   every acceptance criterion as its own string, `risk`, `change` = `none` | `changed` | `new`).
+3. Validate with `validate_requirement()`; IDs must be unique and sequential.
 
-## Phase 1 — Read: Extract requirements
+## Phase 2 — AUDIT (one subagent per requirement, in parallel)
 
-1. Locate the specification document (e.g. `demo-data/*.pdf` or a Markdown file).
-2. For each requirement found, produce a JSON object that validates against
-   `solotrace/schemas/requirement.schema.json`:
-   - Assign a unique `id` matching `^REQ-\d{2}$` (e.g. `REQ-01`).
-   - Extract verbatim `text` from the spec.
-   - Derive testable `acceptance_criteria` — at least one per requirement.
-   - Classify `risk` as `High`, `Medium`, or `Low`.
-   - Set `change` to `none`, `changed`, or `new` relative to the previous version.
-3. Write the array to `out/requirements.json`.
-4. Validate every object using `solotrace/schemas.py::validate_requirement()`.
+Give each subagent one requirement, the verdict schema and the rules. Each subagent:
+1. Finds the implementing code and the tests that assert each acceptance criterion.
+2. Decides `covered` / `untested` / `contradicts` / `missing` (doubt → `untested`).
+3. Cites code **verbatim** (open the file, copy the line) and cites only real test functions.
+4. Writes `out/verdicts/<ID>.json` and validates it with `validate_verdict()`.
+5. Never edits application code or tests.
 
-## Phase 2 — Audit: Produce verdicts
+Optionally each subagent also adds a mutation for its requirement to `out/mutations/<ID>.json`
+(see `mutation.example.json`; `find` must occur exactly once — check with `grep -c`).
 
-For each requirement in `out/requirements.json`:
+## Phase 3 — PROVE (deterministic)
 
-1. Search the codebase for the implementation:
-   - Use `grep` to find relevant functions, constants, and conditionals.
-   - Read the identified lines; do **not** infer from comments.
-2. Search the test suite for assertions covering the acceptance criteria:
-   - Look for test functions that assert the exact threshold/behaviour.
-   - A test that does not assert the criterion does **not** count.
-3. Assign a `status`:
-   - `covered` — implementation matches spec **and** ≥1 test asserts the criterion.
-   - `untested` — correct implementation, no asserting test exists.
-   - `contradicts` — implementation differs from the spec (wrong value, inverted logic, etc.).
-   - `missing` — no implementation found.
-4. Populate `code_evidence` (file, line, snippet) and `test_evidence` (file, test_name).
-5. For non-`covered` verdicts, write a `suggested_fix`.
-6. Validate every verdict object using `solotrace/schemas.py::validate_verdict()`.
-7. Write one JSON file per verdict to `out/verdicts/REQ-XX.json`.
+Run `python -m solotrace run --spec <spec> --auditor "<who wrote the verdicts>"`. It runs the
+tests, verifies every citation in the audited commit, applies every mutation, scores each
+requirement on evidence, and writes `AUDIT_REPORT.md` and `docs/index.html`.
+Read the output: every requirement that is not **proven** is an open finding.
 
-## Phase 3 — Fix (only after explicit human approval)
+## Phase 4 — SIGN-OFF and FIX
 
-For each non-`covered` verdict the human asks you to fix:
-
-1. Write a **failing** test that directly asserts the missing acceptance criterion.
-2. Confirm the new test fails; all existing tests must still pass.
-3. Implement the fix in the application code.
-4. Run the full test suite (`.venv/bin/pytest -q`); all tests must pass.
-5. Never weaken, skip, or delete any existing test.
-
-## Phase 4 — Report: Build the traceability matrix
-
-1. Load all verdict files from `out/verdicts/`.
-2. Build `out/matrix.json`:
-   ```json
-   {
-     "generated_at": "<ISO-8601 UTC timestamp>",
-     "summary": { "covered": N, "untested": N, "contradicts": N, "missing": N },
-     "verdicts": [ <verdict objects in REQ-id order> ]
-   }
-   ```
-3. Print a Markdown summary table to the chat with columns:
-   `ID | Title | Status | Risk | Evidence`.
-
-## Audit constraints (always active)
-
-- **Never modify application code or tests** during Phases 1 and 2.
-- Every verdict must cite at least one `code_evidence` entry (except `missing`).
-- Doubt about whether a test covers a criterion → verdict is `untested`, not `covered`.
-- All JSON output must pass the stdlib validators in `solotrace/schemas.py` before writing.
+1. Present the findings and a fix plan; ask **"Approve these fixes? (compliance sign-off)"** and wait.
+2. For each approved item: failing test first, then the fix, then the full suite.
+3. Re-audit the changed requirements (Phase 2) and re-run Phase 3 until everything is proven.

@@ -1,0 +1,19 @@
+{
+  "requirement": "REQ-03",
+  "mutations": [
+    {
+      "id": "REQ-03-M03a",
+      "file": "ledgerlite/services.py",
+      "find": "    if account.balance - amount < Decimal(\"0\"):\n        raise HTTPException(status_code=400, detail=\"Insufficient funds\")\n",
+      "replace": "",
+      "description": "remove insufficient-funds check in withdraw"
+    },
+    {
+      "id": "REQ-03-M03b",
+      "file": "ledgerlite/services.py",
+      "find": "    if account.balance - amount < Decimal(\"0\"):",
+      "replace": "    if account.balance - amount < Decimal(\"-100.00\"):",
+      "description": "allow overdraft down to -100.00"
+    }
+  ]
+}

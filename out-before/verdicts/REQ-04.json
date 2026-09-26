@@ -5,19 +5,24 @@
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
-      "line": 185,
-      "snippet": "    try:",
-      "verified": true
+      "line": 184,
+      "snippet": "try:\n    sender.balance -= amount\n    if not large:\n        recipient.balance += amount\n    transfer = Transfer(...)\n    db.add(transfer)\n    db.flush()\n    _write_audit(...)\n    db.commit()\nexcept Exception:\n    db.rollback()\n    raise",
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "    try:"
     }
   ],
   "test_evidence": [
     {
       "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
-      "test_name": "test_transfer_rolls_back_on_db_error"
+      "test_name": "test_transfer_rolls_back_on_db_error",
+      "exists": true
     },
     {
       "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
-      "test_name": "test_successful_transfer_debits_sender_credits_recipient"
+      "test_name": "test_successful_transfer_debits_sender_credits_recipient",
+      "exists": true
     }
   ],
   "suggested_fix": ""

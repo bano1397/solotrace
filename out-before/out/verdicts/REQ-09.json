@@ -1,8 +1,0 @@
-{
-  "id": "REQ-09",
-  "status": "missing",
-  "reason": "create_transfer() performs no daily outgoing total check. There is no query summing today's outgoing transfers for the sender, no daily cap constant, and no rejection path for exceeding 20,000.00 in a UTC calendar day. No test file covers this criterion.",
-  "code_evidence": [],
-  "test_evidence": [],
-  "suggested_fix": "In create_transfer(), before processing, query the sum of Transfer.amount for transfers where sender_id matches and created_at is on today's UTC date. If the sum plus the new amount would exceed Decimal('20000.00'), raise HTTPException(status_code=400, detail='Daily transfer limit exceeded'). Add a test that sends transfers totalling 20,000.00 then asserts the next transfer is rejected."
-}

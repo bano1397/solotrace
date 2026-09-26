@@ -1,0 +1,69 @@
+{
+  "id": "REQ-11",
+  "status": "covered",
+  "reason": "StatementAccountResponse overrides the account_number serializer to emit '******' + last-4 digits. The statement route uses StatementResponse (which embeds StatementAccountResponse) as its response_model, so every GET /accounts/{id}/statement response has a masked account number. The detail endpoint continues to use the unmasked AccountResponse. Three tests cover the requirement: pattern format, last-4 preservation, and detail-endpoint passthrough.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 103,
+      "snippet": "class StatementAccountResponse(AccountResponse):",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 103,
+      "actual_snippet": "class StatementAccountResponse(AccountResponse):"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 107,
+      "snippet": "    def serialize_account_number(self, v: str) -> str:",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 107,
+      "actual_snippet": "    def serialize_account_number(self, v: str) -> str:"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 108,
+      "snippet": "        return \"******\" + v[-4:]",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 108,
+      "actual_snippet": "        return \"******\" + v[-4:]"
+    },
+    {
+      "file": "ledgerlite/main.py",
+      "line": 49,
+      "snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 49,
+      "actual_snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)"
+    },
+    {
+      "file": "ledgerlite/main.py",
+      "line": 60,
+      "snippet": "    return StatementResponse(account=account, transactions=transactions)",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 60,
+      "actual_snippet": "    return StatementResponse(account=account, transactions=transactions)"
+    }
+  ],
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec11_statement_masking.py",
+      "test_name": "test_statement_masks_account_number",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_spec11_statement_masking.py",
+      "test_name": "test_statement_mask_preserves_last4",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_spec11_statement_masking.py",
+      "test_name": "test_account_detail_endpoint_not_masked",
+      "exists": true
+    }
+  ]
+}

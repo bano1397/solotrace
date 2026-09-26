@@ -7,55 +7,77 @@
       "file": "ledgerlite/models.py",
       "line": 24,
       "snippet": "    balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "            return None"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 11,
       "snippet": "from decimal import Decimal, InvalidOperation",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "* Failed PIN attempts are committed *before* the error is raised, so the lockout"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 91,
       "snippet": "def _to_decimal(value) -> Decimal:",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "            db.commit()"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 93,
       "snippet": "        return Decimal(str(value))",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": ""
     },
     {
       "file": "ledgerlite/schemas.py",
       "line": 64,
       "snippet": "    @field_serializer(\"balance\")",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 117,
+      "actual_snippet": "    @field_serializer(\"balance\")"
     },
     {
       "file": "ledgerlite/schemas.py",
       "line": 66,
       "snippet": "        return f\"{v:.2f}\"",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": ""
     }
   ],
   "test_evidence": [
     {
       "file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py",
-      "test_name": "test_point_one_plus_point_two_equals_point_three"
+      "test_name": "test_point_one_plus_point_two_equals_point_three",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py",
-      "test_name": "test_balance_serialised_as_two_decimal_places"
+      "test_name": "test_balance_serialised_as_two_decimal_places",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_multiple_deposits_accumulate"
+      "test_name": "test_multiple_deposits_accumulate",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_boundary_50000_accepted"
+      "test_name": "test_boundary_50000_accepted",
+      "exists": false
     }
   ]
 }

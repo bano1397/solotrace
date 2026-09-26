@@ -1,0 +1,26 @@
+{
+  "requirement": "REQ-08",
+  "mutations": [
+    {
+      "id": "REQ-08-M08a",
+      "file": "ledgerlite/services.py",
+      "find": "    account.balance += amount\n",
+      "replace": "    account.balance = Decimal(float(account.balance) + float(amount))\n",
+      "description": "deposit arithmetic done in binary float"
+    },
+    {
+      "id": "REQ-08-M08b",
+      "file": "ledgerlite/services.py",
+      "find": "        return Decimal(str(value))",
+      "replace": "        return Decimal(float(value))",
+      "description": "_to_decimal goes through float (Decimal(float(value)))"
+    },
+    {
+      "id": "REQ-08-M08c",
+      "file": "ledgerlite/schemas.py",
+      "find": "    def serialize_balance(self, v: Decimal) -> str:\n        return f\"{v:.2f}\"",
+      "replace": "    def serialize_balance(self, v: Decimal) -> str:\n        return f\"{v:.3f}\"",
+      "description": "balance serialised with 3 dp"
+    }
+  ]
+}

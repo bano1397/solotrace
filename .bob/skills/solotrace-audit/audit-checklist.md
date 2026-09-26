@@ -1,36 +1,24 @@
-# SoloTrace Audit Checklist
+# SoloTrace audit checklist
 
-Use this checklist to track progress through an audit session.
+## READ
+- [ ] Specification located and read
+- [ ] `out/requirements.json` written; every entry passes `validate_requirement()`
 
-## Phase 1 — Read
+## AUDIT (one subagent per requirement)
+- [ ] Verdict status decided (doubt → `untested`)
+- [ ] Code quoted verbatim with file and line
+- [ ] Only real, asserting tests cited
+- [ ] `out/verdicts/<ID>.json` passes `validate_verdict()`
+- [ ] No application code or tests changed
 
-- [ ] Specification document located
-- [ ] All requirements extracted to `out/requirements.json`
-- [ ] Each requirement validated with `validate_requirement()`
-- [ ] IDs are sequential (`REQ-01`, `REQ-02`, …)
+## PROVE
+- [ ] `python -m solotrace run --spec … --auditor "…"` completed
+- [ ] Every citation verified (no `not_found`, `too_short`, bad paths)
+- [ ] Every cited test exists and passes
+- [ ] Every mutation killed; every requirement **proven**
 
-## Phase 2 — Audit
-
-For each requirement:
-
-- [ ] Implementation searched with grep + read
-- [ ] Test coverage searched for each acceptance criterion
-- [ ] Status assigned (`covered` / `untested` / `contradicts` / `missing`)
-- [ ] `code_evidence` populated (skip only for `missing`)
-- [ ] `test_evidence` populated (skip only for `missing` / `untested`)
-- [ ] `suggested_fix` written for non-`covered` verdicts
-- [ ] Verdict validated with `validate_verdict()`
-- [ ] Written to `out/verdicts/REQ-XX.json`
-
-## Phase 3 — Fix (human-approved only)
-
-- [ ] Failing test written for each gap
-- [ ] New test confirmed to fail in isolation
-- [ ] Application code fixed
-- [ ] Full suite passes (`.venv/bin/pytest -q`)
-- [ ] No existing tests weakened or deleted
-
-## Phase 4 — Report
-
-- [ ] `out/matrix.json` built
-- [ ] Markdown summary table posted to chat
+## SIGN-OFF and FIX
+- [ ] Fix plan approved: "Approve these fixes? (compliance sign-off)"
+- [ ] Failing test written first for every gap
+- [ ] Full suite green; no test weakened or deleted
+- [ ] Changed requirements re-audited and re-proven

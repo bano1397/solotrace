@@ -1,0 +1,26 @@
+{
+  "requirement": "REQ-02",
+  "mutations": [
+    {
+      "id": "REQ-02-M1",
+      "file": "ledgerlite/services.py",
+      "find": "MAX_DEPOSIT = Decimal(\"50000.00\")",
+      "replace": "MAX_DEPOSIT = Decimal(\"49999.99\")",
+      "description": "lower the deposit maximum by one cent"
+    },
+    {
+      "id": "REQ-02-M2",
+      "file": "ledgerlite/services.py",
+      "find": "    if amount > MAX_DEPOSIT:",
+      "replace": "    if amount > MAX_DEPOSIT + Decimal(\"0.01\"):",
+      "description": "allow a deposit of 50,000.01"
+    },
+    {
+      "id": "REQ-02-M3",
+      "file": "ledgerlite/services.py",
+      "find": "    _require_positive(amount, \"Deposit\")",
+      "replace": "    pass",
+      "description": "accept zero and negative deposits"
+    }
+  ]
+}

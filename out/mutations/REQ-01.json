@@ -1,0 +1,26 @@
+{
+  "requirement": "REQ-01",
+  "mutations": [
+    {
+      "id": "REQ-01-M1",
+      "file": "ledgerlite/services.py",
+      "find": "    if account.kyc_status != \"verified\":",
+      "replace": "    if account.kyc_status == \"blocked\":",
+      "description": "KYC gate never fires (unverified accounts can move money)"
+    },
+    {
+      "id": "REQ-01-M2",
+      "file": "ledgerlite/services.py",
+      "find": "    _require_kyc(recipient, \"Recipient\")",
+      "replace": "    pass",
+      "description": "skip the recipient KYC check on transfers"
+    },
+    {
+      "id": "REQ-01-M3",
+      "file": "ledgerlite/services.py",
+      "find": "    email = email.strip().lower()",
+      "replace": "    email = email.strip()",
+      "description": "make the unique-email check case-sensitive"
+    }
+  ]
+}

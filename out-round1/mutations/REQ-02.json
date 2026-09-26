@@ -1,0 +1,19 @@
+{
+  "requirement": "REQ-02",
+  "mutations": [
+    {
+      "id": "REQ-02-M02a",
+      "file": "ledgerlite/services.py",
+      "find": "_MAX_DEPOSIT = Decimal(\"50000.00\")",
+      "replace": "_MAX_DEPOSIT = Decimal(\"50000.01\")",
+      "description": "max deposit 50000.01"
+    },
+    {
+      "id": "REQ-02-M02b",
+      "file": "ledgerlite/services.py",
+      "find": "    if amount <= Decimal(\"0\"):\n        raise HTTPException(status_code=400, detail=\"Deposit amount",
+      "replace": "    if amount < Decimal(\"0\"):\n        raise HTTPException(status_code=400, detail=\"Deposit amount",
+      "description": "allow zero deposit (<= -> <)"
+    }
+  ]
+}

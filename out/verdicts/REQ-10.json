@@ -7,63 +7,84 @@
       "file": "ledgerlite/services.py",
       "line": 23,
       "snippet": "_SANCTIONED_COUNTRIES = {\"KP\", \"IR\", \"SY\", \"CU\"}",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "from sqlalchemy.orm import Session"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 180,
       "snippet": "    if sender.country_code in _SANCTIONED_COUNTRIES or recipient.country_code in _SANCTIONED_COUNTRIES:",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "    account = get_account_or_404(db, account_id)"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 184,
       "snippet": "            action=\"sanctions_blocked\",",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 261,
+      "actual_snippet": "            action=\"sanctions_blocked\","
     },
     {
       "file": "ledgerlite/services.py",
       "line": 190,
       "snippet": "        raise HTTPException(status_code=400, detail=\"sanctions\")",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 268,
+      "actual_snippet": "        raise HTTPException(status_code=400, detail=\"sanctions\")"
     }
   ],
   "test_evidence": [
     {
       "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_sender_blocked[KP]"
+      "test_name": "test_sanctioned_sender_blocked[KP]",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_sender_blocked[IR]"
+      "test_name": "test_sanctioned_sender_blocked[IR]",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_sender_blocked[SY]"
+      "test_name": "test_sanctioned_sender_blocked[SY]",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_sender_blocked[CU]"
+      "test_name": "test_sanctioned_sender_blocked[CU]",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_recipient_blocked[KP]"
+      "test_name": "test_sanctioned_recipient_blocked[KP]",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_recipient_blocked[IR]"
+      "test_name": "test_sanctioned_recipient_blocked[IR]",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_recipient_blocked[SY]"
+      "test_name": "test_sanctioned_recipient_blocked[SY]",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_sanctioned_recipient_blocked[CU]"
+      "test_name": "test_sanctioned_recipient_blocked[CU]",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec10_sanctions.py",
-      "test_name": "test_audit_entry_written_for_sanctions_block"
+      "test_name": "test_audit_entry_written_for_sanctions_block",
+      "exists": false
     }
   ]
 }

@@ -1,0 +1,19 @@
+{
+  "requirement": "REQ-04",
+  "mutations": [
+    {
+      "id": "REQ-04-M1",
+      "file": "ledgerlite/services.py",
+      "find": "        if not large:\n            _credit(db, recipient_id, amount)",
+      "replace": "        db.commit()\n        if not large:\n            _credit(db, recipient_id, amount)",
+      "description": "commit the debit before the credit (two transactions)"
+    },
+    {
+      "id": "REQ-04-M2",
+      "file": "ledgerlite/services.py",
+      "find": "        if not _debit(db, sender_id, amount):\n            db.rollback()\n            raise HTTPException(status_code=400, detail=\"Insufficient funds\")\n        if not large:",
+      "replace": "        _debit(db, sender_id, amount)\n        if not large:",
+      "description": "credit the recipient even when the debit failed"
+    }
+  ]
+}

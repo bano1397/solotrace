@@ -1,0 +1,19 @@
+{
+  "requirement": "REQ-12",
+  "mutations": [
+    {
+      "id": "REQ-12-M1",
+      "file": "ledgerlite/main.py",
+      "find": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+      "replace": "@app.delete(\"/audit/{entry_id}\")\ndef delete_audit_entry(entry_id: int, session: Session = Depends(db.get_db)):\n    from ledgerlite.models import AuditEntry\n    session.query(AuditEntry).filter(AuditEntry.id == entry_id).delete()\n    session.commit()\n    return {\"deleted\": entry_id}\n\n\n@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+      "description": "add an endpoint that deletes audit entries"
+    },
+    {
+      "id": "REQ-12-M2",
+      "file": "ledgerlite/main.py",
+      "find": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+      "replace": "@app.delete(\"/audit\")\ndef purge_audit(session: Session = Depends(db.get_db)):\n    from ledgerlite.models import AuditEntry\n    session.query(AuditEntry).delete()\n    session.commit()\n    return {\"purged\": True}\n\n\n@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+      "description": "add an endpoint that purges the whole audit log"
+    }
+  ]
+}

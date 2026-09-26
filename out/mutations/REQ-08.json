@@ -1,0 +1,26 @@
+{
+  "requirement": "REQ-08",
+  "mutations": [
+    {
+      "id": "REQ-08-M1",
+      "file": "ledgerlite/models.py",
+      "find": "    impl = Integer",
+      "replace": "    impl = __import__(\"sqlalchemy\").Float",
+      "description": "store money as floating point (REAL)"
+    },
+    {
+      "id": "REQ-08-M2",
+      "file": "ledgerlite/models.py",
+      "find": "        return int((value * 100).to_integral_value(rounding=ROUND_HALF_EVEN))",
+      "replace": "        return int(float(value) * 100)",
+      "description": "convert money through float"
+    },
+    {
+      "id": "REQ-08-M3",
+      "file": "ledgerlite/schemas.py",
+      "find": "    if value != value.quantize(CENT):\n        raise ValueError(\"amount must have at most 2 decimal places\")",
+      "replace": "    pass",
+      "description": "silently round amounts with more than 2 decimals"
+    }
+  ]
+}

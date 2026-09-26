@@ -1,0 +1,26 @@
+{
+  "requirement": "REQ-07",
+  "mutations": [
+    {
+      "id": "REQ-07-M07a",
+      "file": "ledgerlite/services.py",
+      "find": "_MAX_FAILED_PINS = 5",
+      "replace": "_MAX_FAILED_PINS = 6",
+      "description": "lock after 6 failures"
+    },
+    {
+      "id": "REQ-07-M07b",
+      "file": "ledgerlite/services.py",
+      "find": "    account.failed_pin_attempts = 0\n",
+      "replace": "    pass\n",
+      "description": "correct PIN no longer resets counter"
+    },
+    {
+      "id": "REQ-07-M07c",
+      "file": "ledgerlite/services.py",
+      "find": "    if account.locked:\n        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")\n",
+      "replace": "",
+      "description": "locked account can still move money (remove locked guard)"
+    }
+  ]
+}

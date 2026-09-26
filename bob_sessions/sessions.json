@@ -1,0 +1,79 @@
+{
+  "source": "IBM Bob IDE local task history (read-only export)",
+  "timezone": "PKT (UTC+05:00)",
+  "total_bobcoins": 31.59,
+  "sessions": [
+    {
+      "task": "task01",
+      "task_id": "7f673db17540c741e3cfac47706df035",
+      "title": "Create a new Python project called \"solotrace\" in this folder with this layout:",
+      "started_at": "2026-09-25T20:08:10+05:00",
+      "finished_at": "2026-09-25T21:19:55+05:00",
+      "duration_min": 71.7,
+      "bobcoins": 15.44,
+      "context_tokens": 150848,
+      "subagents": {
+        "count": 12,
+        "parallel_wall_clock_s": 112.7,
+        "sum_of_durations_s": 1021.0,
+        "bobcoins": 0.89,
+        "started_at": "2026-09-25T21:12:54+05:00"
+      },
+      "screenshot": "solotrace_task01_summary_P0-P4_setup_app_mode_read_audit.png"
+    },
+    {
+      "task": "task02",
+      "task_id": "fa8f670b6d46ec7f9e183bed51f47384",
+      "title": "Build the SoloTrace CLI (python -m solotrace) in the solotrace package. Standard library only.",
+      "started_at": "2026-09-25T21:26:20+05:00",
+      "finished_at": "2026-09-25T21:38:11+05:00",
+      "duration_min": 11.8,
+      "bobcoins": 3.14,
+      "context_tokens": 59110,
+      "subagents": {
+        "count": 0,
+        "parallel_wall_clock_s": null,
+        "sum_of_durations_s": null,
+        "bobcoins": 0,
+        "started_at": null
+      },
+      "screenshot": "solotrace_task02_summary_P5_cli_evidence_verifier.png"
+    },
+    {
+      "task": "task03",
+      "task_id": "61e43b678068235330a1f66e8e439254",
+      "title": "Stage 3 \u2014 FIX. Act as the SoloTrace Auditor and follow .bob/rules-solotrace strictly.",
+      "started_at": "2026-09-25T21:42:07+05:00",
+      "finished_at": "2026-09-25T21:57:17+05:00",
+      "duration_min": 15.2,
+      "bobcoins": 5.53,
+      "context_tokens": 77787,
+      "subagents": {
+        "count": 12,
+        "parallel_wall_clock_s": 37.5,
+        "sum_of_durations_s": 323.6,
+        "bobcoins": 1.35,
+        "started_at": "2026-09-25T21:52:11+05:00"
+      },
+      "screenshot": "solotrace_task03_summary_P6_fix_and_reaudit.png"
+    },
+    {
+      "task": "task04",
+      "task_id": "be4871b6a8936ac2e60ddbbfdb63a4d8",
+      "title": "Polish SoloTrace and build the public demo dashboard.",
+      "started_at": "2026-09-25T22:04:12+05:00",
+      "finished_at": "2026-09-25T22:18:01+05:00",
+      "duration_min": 13.8,
+      "bobcoins": 7.48,
+      "context_tokens": 97816,
+      "subagents": {
+        "count": 0,
+        "parallel_wall_clock_s": null,
+        "sum_of_durations_s": null,
+        "bobcoins": 0,
+        "started_at": null
+      },
+      "screenshot": "solotrace_task04_summary_P7_dashboard_pages.png"
+    }
+  ]
+}

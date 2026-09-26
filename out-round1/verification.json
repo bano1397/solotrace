@@ -1,0 +1,132 @@
+{
+  "tool": "solotrace verify",
+  "version": "2.0.0",
+  "generated_at": "2026-09-25T23:53:28+00:00",
+  "source": {
+    "kind": "commit",
+    "commit": "149d4098a3665e9f81f62d2c2d2ae0bcf0418ff2"
+  },
+  "totals": {
+    "checked": 57,
+    "verified": 55,
+    "exact": 55,
+    "relocated": 0,
+    "not_found": 0,
+    "too_short": 2,
+    "invalid_path": 0,
+    "missing_file": 0,
+    "tests_checked": 40,
+    "tests_missing": 0
+  },
+  "verdicts": [
+    {
+      "id": "REQ-01",
+      "code_evidence": 3,
+      "stats": {
+        "exact": 3,
+        "tests_checked": 5,
+        "tests_missing": 0
+      }
+    },
+    {
+      "id": "REQ-02",
+      "code_evidence": 5,
+      "stats": {
+        "exact": 5,
+        "tests_checked": 6,
+        "tests_missing": 0
+      }
+    },
+    {
+      "id": "REQ-03",
+      "code_evidence": 3,
+      "stats": {
+        "exact": 3,
+        "tests_checked": 3,
+        "tests_missing": 0
+      }
+    },
+    {
+      "id": "REQ-04",
+      "code_evidence": 7,
+      "stats": {
+        "exact": 5,
+        "tests_checked": 2,
+        "tests_missing": 0,
+        "too_short": 2
+      }
+    },
+    {
+      "id": "REQ-05",
+      "code_evidence": 3,
+      "stats": {
+        "exact": 3,
+        "tests_checked": 4,
+        "tests_missing": 0
+      }
+    },
+    {
+      "id": "REQ-06",
+      "code_evidence": 5,
+      "stats": {
+        "exact": 5,
+        "tests_checked": 5,
+        "tests_missing": 0
+      }
+    },
+    {
+      "id": "REQ-07",
+      "code_evidence": 8,
+      "stats": {
+        "exact": 8,
+        "tests_checked": 2,
+        "tests_missing": 0
+      }
+    },
+    {
+      "id": "REQ-08",
+      "code_evidence": 6,
+      "stats": {
+        "exact": 6,
+        "tests_checked": 4,
+        "tests_missing": 0
+      }
+    },
+    {
+      "id": "REQ-09",
+      "code_evidence": 7,
+      "stats": {
+        "exact": 7,
+        "tests_checked": 3,
+        "tests_missing": 0
+      }
+    },
+    {
+      "id": "REQ-10",
+      "code_evidence": 4,
+      "stats": {
+        "exact": 4,
+        "tests_checked": 1,
+        "tests_missing": 0
+      }
+    },
+    {
+      "id": "REQ-11",
+      "code_evidence": 5,
+      "stats": {
+        "exact": 5,
+        "tests_checked": 3,
+        "tests_missing": 0
+      }
+    },
+    {
+      "id": "REQ-12",
+      "code_evidence": 1,
+      "stats": {
+        "exact": 1,
+        "tests_checked": 2,
+        "tests_missing": 0
+      }
+    }
+  ]
+}

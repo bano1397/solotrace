@@ -1,0 +1,19 @@
+{
+  "requirement": "REQ-03",
+  "mutations": [
+    {
+      "id": "REQ-03-M1",
+      "file": "ledgerlite/services.py",
+      "find": "        .where(Account.id == account_id, Account.balance >= amount)",
+      "replace": "        .where(Account.id == account_id)",
+      "description": "debit without checking the balance"
+    },
+    {
+      "id": "REQ-03-M2",
+      "file": "ledgerlite/services.py",
+      "find": "    _require_positive(amount, \"Withdrawal\")",
+      "replace": "    pass",
+      "description": "accept negative withdrawals (which increase the balance)"
+    }
+  ]
+}

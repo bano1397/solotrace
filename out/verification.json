@@ -1,156 +1,143 @@
 {
-  "out_dir": "/Users/sheharbano/Desktop/Shehar/IBM-Bob-2.0 Hackathon/solotrace/out",
+  "tool": "solotrace verify",
+  "version": "2.0.0",
+  "generated_at": "2026-09-26T00:04:08+00:00",
+  "source": {
+    "kind": "working-tree",
+    "commit": "f6a47e4e98e9293bd8707aed14b5f63d02cf527f",
+    "dirty": true
+  },
   "totals": {
     "checked": 57,
-    "ok": 57,
-    "corrected": 0,
-    "replaced": 0,
-    "no_file": 0,
-    "tests_removed": 0
+    "verified": 24,
+    "exact": 0,
+    "relocated": 24,
+    "not_found": 31,
+    "too_short": 2,
+    "invalid_path": 0,
+    "missing_file": 0,
+    "tests_checked": 48,
+    "tests_missing": 48
   },
   "verdicts": [
     {
-      "file": "out/verdicts/REQ-01.json",
       "id": "REQ-01",
-      "code_evidence_count": 3,
+      "code_evidence": 3,
       "stats": {
-        "ok": 3,
-        "corrected": 0,
-        "replaced": 0,
-        "no_file": 0,
-        "tests_removed": 0
+        "not_found": 2,
+        "relocated": 1,
+        "tests_checked": 5,
+        "tests_missing": 5
       }
     },
     {
-      "file": "out/verdicts/REQ-02.json",
       "id": "REQ-02",
-      "code_evidence_count": 5,
+      "code_evidence": 5,
       "stats": {
-        "ok": 5,
-        "corrected": 0,
-        "replaced": 0,
-        "no_file": 0,
-        "tests_removed": 0
+        "not_found": 4,
+        "relocated": 1,
+        "tests_checked": 6,
+        "tests_missing": 6
       }
     },
     {
-      "file": "out/verdicts/REQ-03.json",
       "id": "REQ-03",
-      "code_evidence_count": 3,
+      "code_evidence": 3,
       "stats": {
-        "ok": 3,
-        "corrected": 0,
-        "replaced": 0,
-        "no_file": 0,
-        "tests_removed": 0
+        "not_found": 2,
+        "relocated": 1,
+        "tests_checked": 3,
+        "tests_missing": 3
       }
     },
     {
-      "file": "out/verdicts/REQ-04.json",
       "id": "REQ-04",
-      "code_evidence_count": 7,
+      "code_evidence": 7,
       "stats": {
-        "ok": 7,
-        "corrected": 0,
-        "replaced": 0,
-        "no_file": 0,
-        "tests_removed": 0
+        "not_found": 2,
+        "relocated": 3,
+        "tests_checked": 2,
+        "tests_missing": 2,
+        "too_short": 2
       }
     },
     {
-      "file": "out/verdicts/REQ-05.json",
       "id": "REQ-05",
-      "code_evidence_count": 3,
+      "code_evidence": 3,
       "stats": {
-        "ok": 3,
-        "corrected": 0,
-        "replaced": 0,
-        "no_file": 0,
-        "tests_removed": 0
+        "not_found": 2,
+        "relocated": 1,
+        "tests_checked": 4,
+        "tests_missing": 4
       }
     },
     {
-      "file": "out/verdicts/REQ-06.json",
       "id": "REQ-06",
-      "code_evidence_count": 5,
+      "code_evidence": 5,
       "stats": {
-        "ok": 5,
-        "corrected": 0,
-        "replaced": 0,
-        "no_file": 0,
-        "tests_removed": 0
+        "not_found": 1,
+        "relocated": 4,
+        "tests_checked": 5,
+        "tests_missing": 5
       }
     },
     {
-      "file": "out/verdicts/REQ-07.json",
       "id": "REQ-07",
-      "code_evidence_count": 8,
+      "code_evidence": 8,
       "stats": {
-        "ok": 8,
-        "corrected": 0,
-        "replaced": 0,
-        "no_file": 0,
-        "tests_removed": 0
+        "not_found": 3,
+        "relocated": 5,
+        "tests_checked": 2,
+        "tests_missing": 2
       }
     },
     {
-      "file": "out/verdicts/REQ-08.json",
       "id": "REQ-08",
-      "code_evidence_count": 6,
+      "code_evidence": 6,
       "stats": {
-        "ok": 6,
-        "corrected": 0,
-        "replaced": 0,
-        "no_file": 0,
-        "tests_removed": 0
+        "not_found": 5,
+        "relocated": 1,
+        "tests_checked": 4,
+        "tests_missing": 4
       }
     },
     {
-      "file": "out/verdicts/REQ-09.json",
       "id": "REQ-09",
-      "code_evidence_count": 7,
+      "code_evidence": 7,
       "stats": {
-        "ok": 7,
-        "corrected": 0,
-        "replaced": 0,
-        "no_file": 0,
-        "tests_removed": 0
+        "not_found": 6,
+        "relocated": 1,
+        "tests_checked": 3,
+        "tests_missing": 3
       }
     },
     {
-      "file": "out/verdicts/REQ-10.json",
       "id": "REQ-10",
-      "code_evidence_count": 4,
+      "code_evidence": 4,
       "stats": {
-        "ok": 4,
-        "corrected": 0,
-        "replaced": 0,
-        "no_file": 0,
-        "tests_removed": 0
+        "not_found": 2,
+        "relocated": 2,
+        "tests_checked": 9,
+        "tests_missing": 9
       }
     },
     {
-      "file": "out/verdicts/REQ-11.json",
       "id": "REQ-11",
-      "code_evidence_count": 5,
+      "code_evidence": 5,
       "stats": {
-        "ok": 5,
-        "corrected": 0,
-        "replaced": 0,
-        "no_file": 0,
-        "tests_removed": 0
+        "not_found": 1,
+        "relocated": 4,
+        "tests_checked": 3,
+        "tests_missing": 3
       }
     },
     {
-      "file": "out/verdicts/REQ-12.json",
       "id": "REQ-12",
-      "code_evidence_count": 1,
+      "code_evidence": 1,
       "stats": {
-        "ok": 1,
-        "corrected": 0,
-        "replaced": 0,
-        "no_file": 0,
-        "tests_removed": 0
+        "not_found": 1,
+        "tests_checked": 2,
+        "tests_missing": 2
       }
     }
   ]

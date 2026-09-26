@@ -1,0 +1,26 @@
+{
+  "requirement": "REQ-05",
+  "mutations": [
+    {
+      "id": "REQ-05-M05a",
+      "file": "ledgerlite/services.py",
+      "find": "_LARGE_TRANSFER_THRESHOLD = Decimal(\"5000.00\")",
+      "replace": "_LARGE_TRANSFER_THRESHOLD = Decimal(\"5000.01\")",
+      "description": "threshold 5000.01"
+    },
+    {
+      "id": "REQ-05-M05b",
+      "file": "ledgerlite/services.py",
+      "find": "    if transfer.sender_id == approver_id:\n        raise HTTPException(status_code=403, detail=\"Initiator cannot approve their own transfer\")\n",
+      "replace": "",
+      "description": "remove 'initiator cannot approve own transfer' check"
+    },
+    {
+      "id": "REQ-05-M05c",
+      "file": "ledgerlite/services.py",
+      "find": "    if transfer.status != \"pending_approval\":\n        raise HTTPException(status_code=400, detail=\"Transfer is not pending approval\")\n",
+      "replace": "",
+      "description": "remove pending_approval status check (double approval credits twice)"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "label": "Round 2 \u2014 final",
+  "description": "Final audit of LedgerLite against spec v2.0.",
+  "auditor": "INTERIM \u2014 round-1 verdicts, to be replaced by the final IBM Bob audit",
+  "bob_task": null,
+  "audited_at": "2026-09-25T17:32:22+00:00",
+  "code_commit": "f6a47e4e98e9293bd8707aed14b5f63d02cf527f",
+  "dirty": true,
+  "spec": {
+    "path": "demo-data/LedgerLite-Requirements-v2.0.pdf",
+    "sha256": "cf06e0a2c238e7806ae6692702a6d4a713816333b83e22a8b2e7ff14007f9250",
+    "version": "2.0",
+    "requirements_in_spec": 12
+  }
+}

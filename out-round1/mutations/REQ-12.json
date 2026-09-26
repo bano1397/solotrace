@@ -1,0 +1,19 @@
+{
+  "requirement": "REQ-12",
+  "mutations": [
+    {
+      "id": "REQ-12-M12a",
+      "file": "ledgerlite/main.py",
+      "find": "    return db.query(AuditEntry).order_by(AuditEntry.timestamp.asc()).all()\n",
+      "replace": "    return db.query(AuditEntry).order_by(AuditEntry.timestamp.asc()).all()\n\n\n@app.delete(\"/audit\", status_code=204)\ndef purge_audit(db: Session = Depends(get_db)):\n    from ledgerlite.models import AuditEntry\n    db.query(AuditEntry).delete()\n    db.commit()\n",
+      "description": "add DELETE /audit (purge all)"
+    },
+    {
+      "id": "REQ-12-M12b",
+      "file": "ledgerlite/main.py",
+      "find": "    return db.query(AuditEntry).order_by(AuditEntry.timestamp.asc()).all()\n",
+      "replace": "    return db.query(AuditEntry).order_by(AuditEntry.timestamp.asc()).all()\n\n\n@app.delete(\"/audit/{entry_id}\", status_code=204)\ndef delete_audit_entry(entry_id: int, db: Session = Depends(get_db)):\n    from fastapi import HTTPException\n    from ledgerlite.models import AuditEntry\n    entry = db.get(AuditEntry, entry_id)\n    if entry is None:\n        raise HTTPException(status_code=404, detail=\"Audit entry not found\")\n    db.delete(entry)\n    db.commit()\n",
+      "description": "add DELETE /audit/{entry_id}"
+    }
+  ]
+}

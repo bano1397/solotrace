@@ -5,35 +5,47 @@
   "code_evidence": [
     {
       "file": "ledgerlite/services.py",
+      "line": 153,
+      "snippet": "if account.balance - amount < Decimal(\"0\"):",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 153,
+      "actual_snippet": "    if account.balance - amount < Decimal(\"0\"):"
+    },
+    {
+      "file": "ledgerlite/services.py",
       "line": 154,
-      "snippet": "    if account.balance - amount < Decimal(\"0\"):",
-      "verified": true
+      "snippet": "    raise HTTPException(status_code=400, detail=\"Insufficient funds\")",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 154,
+      "actual_snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")"
     },
     {
       "file": "ledgerlite/services.py",
-      "line": 155,
-      "snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")",
-      "verified": true
-    },
-    {
-      "file": "ledgerlite/services.py",
-      "line": 157,
-      "snippet": "    account.balance -= amount",
-      "verified": true
+      "line": 156,
+      "snippet": "account.balance -= amount",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 156,
+      "actual_snippet": "    account.balance -= amount"
     }
   ],
   "test_evidence": [
     {
       "file": "ledgerlite/tests/test_spec3_withdrawals.py",
-      "test_name": "test_withdrawal_overdraft_rejected"
+      "test_name": "test_withdrawal_overdraft_rejected",
+      "exists": true
     },
     {
       "file": "ledgerlite/tests/test_spec3_withdrawals.py",
-      "test_name": "test_balance_never_goes_negative"
+      "test_name": "test_balance_never_goes_negative",
+      "exists": true
     },
     {
       "file": "ledgerlite/tests/test_spec3_withdrawals.py",
-      "test_name": "test_withdrawal_exact_balance_allowed"
+      "test_name": "test_withdrawal_exact_balance_allowed",
+      "exists": true
     }
   ]
 }

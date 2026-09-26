@@ -1,0 +1,47 @@
+{
+  "requirement": "REQ-05",
+  "mutations": [
+    {
+      "id": "REQ-05-M1",
+      "file": "ledgerlite/services.py",
+      "find": "LARGE_TRANSFER_THRESHOLD = Decimal(\"5000.00\")",
+      "replace": "LARGE_TRANSFER_THRESHOLD = Decimal(\"10000.00\")",
+      "description": "revert to the old v1.0 threshold of 10,000.00"
+    },
+    {
+      "id": "REQ-05-M2",
+      "file": "ledgerlite/services.py",
+      "find": "    large = amount >= LARGE_TRANSFER_THRESHOLD",
+      "replace": "    large = amount > LARGE_TRANSFER_THRESHOLD",
+      "description": "exactly 5,000.00 completes without approval"
+    },
+    {
+      "id": "REQ-05-M3",
+      "file": "ledgerlite/services.py",
+      "find": "    if approver_id == transfer.sender_id:\n        raise HTTPException(status_code=403, detail=\"Initiator cannot approve their own transfer\")",
+      "replace": "    pass",
+      "description": "let the initiator approve their own transfer"
+    },
+    {
+      "id": "REQ-05-M4",
+      "file": "ledgerlite/services.py",
+      "find": "    if approver_id == transfer.recipient_id:\n        raise HTTPException(status_code=403, detail=\"Recipient cannot approve a transfer to themselves\")",
+      "replace": "    pass",
+      "description": "let the recipient approve the transfer"
+    },
+    {
+      "id": "REQ-05-M5",
+      "file": "ledgerlite/services.py",
+      "find": "    _check_pin(db, approver, pin)\n    _require_kyc(approver, \"Approver\")",
+      "replace": "    _require_kyc(approver, \"Approver\")",
+      "description": "approve without the approver's PIN"
+    },
+    {
+      "id": "REQ-05-M6",
+      "file": "ledgerlite/services.py",
+      "find": "    if transfer.status != \"pending_approval\":\n        raise HTTPException(status_code=400, detail=\"Transfer is not pending approval\")\n    if approver_id == transfer.sender_id:\n        raise HTTPException(status_code=403, detail=\"Initiator cannot approve their own transfer\")\n    if approver_id == transfer.recipient_id:\n        raise HTTPException(status_code=403, detail=\"Recipient cannot approve a transfer to themselves\")\n\n    approver = get_account_or_404(db, approver_id)\n    _check_pin(db, approver, pin)\n    _require_kyc(approver, \"Approver\")\n    if approver.country_code in SANCTIONED_COUNTRIES:\n        raise HTTPException(status_code=403, detail=\"Approver is not permitted to approve transfers\")\n\n    try:\n        # Only one approval can ever win, even if two arrive at the same time.\n        result = db.execute(\n            update(Transfer)\n            .where(Transfer.id == transfer_id, Transfer.status == \"pending_approval\")",
+      "replace": "    if approver_id == transfer.sender_id:\n        raise HTTPException(status_code=403, detail=\"Initiator cannot approve their own transfer\")\n    if approver_id == transfer.recipient_id:\n        raise HTTPException(status_code=403, detail=\"Recipient cannot approve a transfer to themselves\")\n\n    approver = get_account_or_404(db, approver_id)\n    _check_pin(db, approver, pin)\n    _require_kyc(approver, \"Approver\")\n    if approver.country_code in SANCTIONED_COUNTRIES:\n        raise HTTPException(status_code=403, detail=\"Approver is not permitted to approve transfers\")\n\n    try:\n        # Only one approval can ever win, even if two arrive at the same time.\n        result = db.execute(\n            update(Transfer)\n            .where(Transfer.id == transfer_id)",
+      "description": "a transfer can be approved twice (recipient credited twice)"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "REQ-12",
+  "status": "covered",
+  "reason": "No DELETE /audit route is defined in main.py, making audit log deletion impossible at the API level. The GET /audit route at line 95 is the only audit endpoint. Tests confirm that DELETE requests to /audit and /audit/{id} both return 405 Method Not Allowed.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/main.py",
+      "line": 95,
+      "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 95,
+      "actual_snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])"
+    }
+  ],
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec12_audit_retention.py",
+      "test_name": "test_delete_audit_returns_405",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_spec12_audit_retention.py",
+      "test_name": "test_delete_audit_entry_returns_405",
+      "exists": true
+    }
+  ]
+}

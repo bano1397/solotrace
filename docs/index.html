@@ -1,545 +1,434 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="auto">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SoloTrace — Compliance Dashboard</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SoloTrace — Every requirement, proven</title>
+<meta name="description" content="SoloTrace turns IBM Bob into a compliance auditor: it reads the spec, proves every requirement in code and tests, and does not trust green tests until they catch deliberate sabotage.">
+<meta property="og:title" content="SoloTrace — Every requirement, proven">
+<meta property="og:description" content="Requirements-to-code traceability audits run by IBM Bob 2.0, proven by evidence verification and mutation testing.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://bano1397.github.io/solotrace/">
+<meta property="og:image" content="https://bano1397.github.io/solotrace/assets/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f62fe'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
-/* ── CSS Custom Properties ─────────────────────────────────────────────────── */
 :root {
-  --bg-page:     #161616;
-  --bg-card:     #1e1e1e;
-  --bg-card2:    #262626;
-  --bg-header:   #0f0f0f;
-  --border:      #393939;
-  --text-main:   #f4f4f4;
-  --text-muted:  #8d8d8d;
-  --text-dim:    #6f6f6f;
-  --ibm-blue:    #4589ff;
-  --ibm-blue-dk: #0043ce;
-  --green:       #42be65;
-  --amber:       #f1c21b;
-  --red:         #fa4d56;
-  --purple:      #be95ff;
-  --radius:      6px;
-  --shadow:      0 2px 8px rgba(0,0,0,.45);
-  --transition:  0.2s ease;
+  --bg:#ffffff; --layer:#f4f4f4; --layer-2:#e8e8e8; --border:#d6d6d6; --text:#161616; --muted:#525252;
+  --accent:#0f62fe; --accent-text:#ffffff; --accent-soft:#e5edff;
+  --proven:#198038; --proven-soft:#defbe6; --covered:#0f62fe; --covered-soft:#e5edff;
+  --weak:#ba4e00; --weak-soft:#fff2e8; --warn:#8e6a00; --warn-soft:#fcf4d6;
+  --bad:#da1e28; --bad-soft:#fff1f1; --missing:#9f1853; --missing-soft:#fff0f7;
+  --bob:#6929c4; --bob-soft:#f6f2ff; --human:#005d5d; --human-soft:#d9fbfb;
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.06);
+  --radius:14px; --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
-@media (prefers-color-scheme: light) {
-  html:not([data-theme="dark"]) {
-    --bg-page:   #f4f4f4;
-    --bg-card:   #ffffff;
-    --bg-card2:  #f4f4f4;
-    --bg-header: #ffffff;
-    --border:    #e0e0e0;
-    --text-main: #161616;
-    --text-muted:#525252;
-    --text-dim:  #8d8d8d;
-    --shadow:    0 2px 8px rgba(0,0,0,.12);
+:root[data-theme="dark"] {
+  --bg:#0e1117; --layer:#161b24; --layer-2:#1f2633; --border:#2c3444; --text:#f2f4f8; --muted:#aab2c0;
+  --accent:#4589ff; --accent-text:#0e1117; --accent-soft:#16264a;
+  --proven:#42be65; --proven-soft:#10291a; --covered:#78a9ff; --covered-soft:#16264a;
+  --weak:#ff832b; --weak-soft:#33200f; --warn:#f1c21b; --warn-soft:#2e2808;
+  --bad:#ff8389; --bad-soft:#3a1316; --missing:#ff7eb6; --missing-soft:#3a1227;
+  --bob:#be95ff; --bob-soft:#261a3d; --human:#3ddbd9; --human-soft:#0c2b2b;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] {
+    --bg:#0e1117; --layer:#161b24; --layer-2:#1f2633; --border:#2c3444; --text:#f2f4f8; --muted:#aab2c0;
+    --accent:#4589ff; --accent-text:#0e1117; --accent-soft:#16264a;
+    --proven:#42be65; --proven-soft:#10291a; --covered:#78a9ff; --covered-soft:#16264a;
+    --weak:#ff832b; --weak-soft:#33200f; --warn:#f1c21b; --warn-soft:#2e2808;
+    --bad:#ff8389; --bad-soft:#3a1316; --missing:#ff7eb6; --missing-soft:#3a1227;
+    --bob:#be95ff; --bob-soft:#261a3d; --human:#3ddbd9; --human-soft:#0c2b2b;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
   }
 }
-/* ── Reset & Base ─────────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
-  background: var(--bg-page);
-  color: var(--text-main);
-  line-height: 1.6;
-  min-height: 100vh;
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 var(--sans)}
+a{color:var(--accent)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+header.top{border-bottom:1px solid var(--border)}
+.top .wrap{display:flex;align-items:center;gap:14px;min-height:64px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;text-decoration:none;color:var(--text)}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--accent);display:grid;place-items:center}
+.logo svg{width:18px;height:18px}
+.spacer{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+.pill.bob{background:var(--bob-soft);color:var(--bob)}
+.theme-btn{border:1px solid var(--border);background:var(--layer);color:var(--text);border-radius:10px;padding:7px 11px;font:inherit;font-size:14px;cursor:pointer}
+.theme-btn:focus-visible,.btn:focus-visible,.chip:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+section{padding:44px 0}
+h1{font-size:clamp(32px,5vw,52px);line-height:1.08;margin:0 0 14px;letter-spacing:-.02em}
+h1 .hl{color:var(--accent)}
+h2{font-size:clamp(22px,3vw,30px);margin:0 0 6px;letter-spacing:-.01em}
+.lede{font-size:clamp(17px,2vw,20px);color:var(--muted);max-width:760px;margin:0 0 10px}
+.sub{color:var(--muted);margin:0 0 22px;max-width:780px}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;font-weight:600;text-decoration:none;border:1px solid var(--border);color:var(--text);background:var(--layer)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+.hero{padding-top:52px}
+.journey{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px}
+.stage{background:var(--layer);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);position:relative}
+.stage.final{border-color:var(--proven);box-shadow:0 0 0 1px var(--proven),var(--shadow)}
+.stage .kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.stage h3{margin:4px 0 14px;font-size:18px}
+.meter{margin:10px 0}
+.meter .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;color:var(--muted)}
+.meter .val{font-size:28px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.meter .val.ai{color:var(--covered)} .meter .val.pr{color:var(--proven)} .meter .val.lo{color:var(--weak)}
+.bar{height:8px;border-radius:99px;background:var(--layer-2);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;width:0;border-radius:99px;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+.bar i.ai{background:var(--covered)} .bar i.pr{background:var(--proven)} .bar i.lo{background:var(--weak)}
+.stage ul{margin:12px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+.stage li{margin:3px 0}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.kpi{background:var(--layer);border:1px solid var(--border);border-radius:12px;padding:16px}
+.kpi b{display:block;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--muted);font-size:13px}
+.flow{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;counter-reset:step}
+.step{background:var(--layer);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative}
+.step b{display:block;font-size:14px;letter-spacing:.04em}
+.step p{margin:6px 0 10px;font-size:13px;color:var(--muted)}
+.actor{font-size:11px;font-weight:700;border-radius:99px;padding:2px 8px;display:inline-block}
+.actor.bob{background:var(--bob-soft);color:var(--bob)} .actor.code{background:var(--accent-soft);color:var(--accent)} .actor.human{background:var(--human-soft);color:var(--human)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.chip{border:1px solid var(--border);background:var(--layer);color:var(--text);border-radius:99px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+table.matrix{width:100%;border-collapse:collapse;font-size:14px}
+.matrix th,.matrix td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+.matrix th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.matrix td.id{font-family:var(--mono);white-space:nowrap;font-weight:600}
+.matrix tr.row{cursor:pointer} .matrix tr.row:hover td{background:var(--layer)}
+.status{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:2px 9px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.s-proven{background:var(--proven-soft);color:var(--proven)} .s-covered{background:var(--covered-soft);color:var(--covered)}
+.s-weak{background:var(--weak-soft);color:var(--weak)} .s-unverified,.s-untested{background:var(--warn-soft);color:var(--warn)}
+.s-contradicts{background:var(--bad-soft);color:var(--bad)} .s-missing{background:var(--missing-soft);color:var(--missing)} .s-none{color:var(--muted)}
+.tag{font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:middle}
+.tag.new{background:var(--proven-soft);color:var(--proven)} .tag.changed{background:var(--warn-soft);color:var(--warn)}
+.tag.high{background:var(--bad-soft);color:var(--bad)} .tag.medium{background:var(--layer-2);color:var(--muted)}
+.detail td{background:var(--layer);padding:0}
+.detail .box{padding:18px 18px 22px}
+.detail h4{margin:16px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.detail h4:first-child{margin-top:0}
+.quote{border-left:3px solid var(--accent);padding:4px 12px;margin:0;color:var(--text)}
+.ev{display:flex;gap:10px;align-items:flex-start;margin:6px 0;font-size:13.5px}
+.ev code{font-family:var(--mono);font-size:12.5px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:2px 6px;overflow-wrap:anywhere;white-space:pre-wrap}
+.ev .loc{font-family:var(--mono);font-size:12.5px;color:var(--muted);white-space:nowrap}
+.ok{color:var(--proven);font-weight:700} .no{color:var(--bad);font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:var(--layer);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.card h3{margin:0 0 8px;font-size:17px}
+.verif{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.verif .card b{font-size:24px}
+.sessions{display:grid;gap:10px}
+.sess{display:grid;grid-template-columns:120px 1fr auto;gap:12px;align-items:center;background:var(--layer);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.sess .t{font-family:var(--mono);font-weight:700}
+.sess .meta{color:var(--muted);font-size:13px}
+.sess .cost{font-weight:700;color:var(--bob);white-space:nowrap}
+.shots{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.shots a{display:block;background:var(--layer);border:1px solid var(--border);border-radius:10px;overflow:hidden;text-decoration:none;color:var(--muted);font-size:12.5px}
+.shots img{display:block;width:100%;height:130px;object-fit:cover;object-position:top}
+.shots span{display:block;padding:8px 10px}
+.config li{margin:6px 0}
+.config code{font-family:var(--mono);font-size:13px}
+footer{border-top:1px solid var(--border);padding:28px 0 40px;color:var(--muted);font-size:14px}
+.muted{color:var(--muted)}
+.only-mobile{display:none}
+.small{font-size:13px}
+@media (max-width:1000px){ .flow{grid-template-columns:repeat(4,1fr)} .kpis{grid-template-columns:repeat(3,1fr)} .shots{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:760px){
+  section{padding:34px 0}
+  .journey,.two,.verif{grid-template-columns:1fr}
+  .flow{grid-template-columns:repeat(2,1fr)}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .shots{grid-template-columns:repeat(2,1fr)}
+  .matrix .col-req,.matrix .col-base,.matrix .col-r1{display:none}
+  .only-mobile{display:block}
+  .sess{grid-template-columns:1fr auto}
+  .sess .meta{grid-column:1 / -1}
+  .ev{flex-direction:column;gap:4px}
 }
-a { color: var(--ibm-blue); text-decoration: none; }
-a:hover { text-decoration: underline; }
-/* ── Layout ───────────────────────────────────────────────────────────────── */
-.page-wrap { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem 3rem; }
-/* ── Header ───────────────────────────────────────────────────────────────── */
-.site-header {
-  background: var(--bg-header);
-  border-bottom: 1px solid var(--border);
-  padding: 1.25rem 1.5rem;
-  position: sticky; top: 0; z-index: 100;
-}
-.header-inner {
-  max-width: 1200px; margin: 0 auto;
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  flex-wrap: wrap;
-}
-.logo { display: flex; align-items: center; gap: 0.75rem; }
-.logo-mark {
-  width: 36px; height: 36px; background: var(--ibm-blue);
-  border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 0.85rem; color: #fff; flex-shrink: 0;
-}
-.logo-text { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; }
-.logo-sub { font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: -2px; }
-.header-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-.ibm-badge {
-  background: var(--ibm-blue-dk); color: #fff;
-  padding: 0.3rem 0.85rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
-  white-space: nowrap;
-}
-.theme-btn {
-  background: none; border: 1px solid var(--border);
-  color: var(--text-muted); padding: 0.3rem 0.7rem;
-  border-radius: var(--radius); cursor: pointer; font-size: 0.8rem;
-}
-.theme-btn:hover { border-color: var(--ibm-blue); color: var(--ibm-blue); }
-/* ── Hero ─────────────────────────────────────────────────────────────────── */
-.hero {
-  padding: 3rem 0 2rem;
-  text-align: center;
-}
-.hero h1 {
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  font-weight: 700; margin-bottom: 0.5rem;
-  letter-spacing: -0.03em;
-}
-.hero h1 span { color: var(--ibm-blue); }
-.hero-sub { color: var(--text-muted); font-size: 1rem; margin-bottom: 2.5rem; }
-.score-compare {
-  display: flex; align-items: center; justify-content: center; gap: 1.5rem;
-  flex-wrap: wrap; margin-bottom: 2rem;
-}
-.score-box {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1.5rem 2rem; min-width: 160px;
-  box-shadow: var(--shadow);
-}
-.score-box .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
-.score-box .value {
-  font-size: 2.5rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1;
-}
-.score-box.before .value { color: var(--red); }
-.score-box.after  .value { color: var(--green); }
-.score-arrow { font-size: 2rem; color: var(--ibm-blue); }
-.progress-wrap { max-width: 600px; margin: 0 auto; }
-.progress-label {
-  display: flex; justify-content: space-between;
-  font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;
-}
-.progress-bar { height: 10px; background: var(--bg-card2); border-radius: 999px; overflow: hidden; }
-.progress-fill {
-  height: 100%; background: linear-gradient(90deg, var(--ibm-blue), var(--green));
-  border-radius: 999px; width: 0;
-  transition: width 1.4s cubic-bezier(.22,.68,0,1.2);
-}
-/* ── Stat Cards ───────────────────────────────────────────────────────────── */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem; margin: 2.5rem 0;
-}
-.stat-card {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1.25rem 1.5rem;
-  box-shadow: var(--shadow);
-  border-top: 3px solid var(--ibm-blue);
-}
-.stat-card .n {
-  font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
-  color: var(--ibm-blue); line-height: 1; margin-bottom: 0.3rem;
-}
-.stat-card .desc { font-size: 0.85rem; color: var(--text-muted); }
-/* ── Section ──────────────────────────────────────────────────────────────── */
-.section { margin: 2.5rem 0; }
-.section-title {
-  font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;
-  display: flex; align-items: center; gap: 0.5rem;
-}
-.section-title::before { content: ''; display: block; width: 4px; height: 1.2em; background: var(--ibm-blue); border-radius: 2px; }
-/* ── Pipeline Strip ───────────────────────────────────────────────────────── */
-.pipeline {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1.5rem; overflow-x: auto;
-  box-shadow: var(--shadow);
-}
-.pipeline-steps {
-  display: flex; align-items: center; gap: 0; min-width: max-content;
-}
-.pipeline-step {
-  display: flex; flex-direction: column; align-items: center;
-  text-align: center; min-width: 110px;
-}
-.step-icon {
-  width: 44px; height: 44px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; margin-bottom: 0.5rem;
-  border: 2px solid;
-}
-.step-icon.bob    { background: rgba(69,137,255,.15); border-color: var(--ibm-blue); color: var(--ibm-blue); }
-.step-icon.auto   { background: rgba(66,190,101,.15); border-color: var(--green); color: var(--green); }
-.step-icon.human  { background: rgba(241,194,27,.15); border-color: var(--amber); color: var(--amber); }
-.step-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-main); }
-.step-sub   { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; max-width: 100px; }
-.pipeline-arrow {
-  font-size: 1rem; color: var(--text-dim); margin: 0 0.25rem; padding-bottom: 1.5rem; flex-shrink: 0;
-}
-/* ── Matrix Table ─────────────────────────────────────────────────────────── */
-.filter-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-.filter-btn {
-  background: var(--bg-card); border: 1px solid var(--border);
-  color: var(--text-muted); padding: 0.3rem 0.9rem;
-  border-radius: 20px; cursor: pointer; font-size: 0.8rem; transition: var(--transition);
-}
-.filter-btn:hover { border-color: var(--ibm-blue); color: var(--ibm-blue); }
-.filter-btn.active { background: var(--ibm-blue); border-color: var(--ibm-blue); color: #fff; }
-.table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
-table {
-  width: 100%; border-collapse: collapse; font-size: 0.82rem;
-  background: var(--bg-card);
-}
-thead { background: var(--bg-card2); position: sticky; top: 60px; z-index: 10; }
-th {
-  padding: 0.7rem 1rem; text-align: left;
-  font-size: 0.72rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--text-muted); white-space: nowrap;
-  border-bottom: 1px solid var(--border);
-}
-td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: rgba(69,137,255,.04); }
-.badge {
-  display: inline-flex; align-items: center; gap: 0.3em;
-  padding: 0.18em 0.6em; border-radius: 20px;
-  font-size: 0.72rem; font-weight: 600; white-space: nowrap;
-}
-.badge-covered    { background: rgba(66,190,101,.15); color: var(--green); border: 1px solid rgba(66,190,101,.3); }
-.badge-untested   { background: rgba(241,194,27,.15); color: var(--amber); border: 1px solid rgba(241,194,27,.3); }
-.badge-contradicts{ background: rgba(250,77,86,.15);  color: var(--red);   border: 1px solid rgba(250,77,86,.3); }
-.badge-missing    { background: rgba(250,77,86,.15);  color: var(--red);   border: 1px solid rgba(250,77,86,.3); }
-.badge-new        { background: rgba(190,149,255,.15); color: var(--purple); border: 1px solid rgba(190,149,255,.3); }
-.badge-changed    { background: rgba(241,194,27,.15); color: var(--amber); border: 1px solid rgba(241,194,27,.3); }
-.badge-none       { background: var(--bg-card2); color: var(--text-dim); border: 1px solid var(--border); }
-.badge-high       { background: rgba(250,77,86,.12); color: var(--red); }
-.badge-medium     { background: rgba(241,194,27,.12); color: var(--amber); }
-.badge-low        { background: rgba(66,190,101,.12); color: var(--green); }
-.evidence-snippet {
-  background: var(--bg-card2); border: 1px solid var(--border);
-  border-radius: 4px; padding: 0.4rem 0.6rem;
-  font-family: 'IBM Plex Mono', 'Fira Code', monospace;
-  font-size: 0.72rem; color: var(--text-muted); white-space: pre-wrap;
-  margin-top: 0.3rem; max-height: 120px; overflow-y: auto;
-  display: none;
-}
-.ev-toggle {
-  background: none; border: 1px solid var(--border);
-  color: var(--text-muted); padding: 0.15rem 0.45rem;
-  border-radius: 4px; cursor: pointer; font-size: 0.7rem;
-  transition: var(--transition);
-}
-.ev-toggle:hover { border-color: var(--ibm-blue); color: var(--ibm-blue); }
-.test-list { display: flex; flex-direction: column; gap: 2px; }
-.test-item {
-  font-size: 0.72rem; color: var(--text-muted);
-  font-family: 'IBM Plex Mono', monospace;
-}
-/* ── Evidence Verifier Panel ─────────────────────────────────────────────── */
-.verifier-panel {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow);
-}
-.verifier-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1rem; margin-bottom: 1.5rem;
-}
-.verifier-stat {
-  background: var(--bg-card2); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1rem;
-}
-.verifier-stat .n { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.03em; }
-.verifier-stat.wrong .n { color: var(--red); }
-.verifier-stat.fixed .n { color: var(--green); }
-.verifier-stat.phantom .n { color: var(--amber); }
-.verifier-stat .d { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
-.verifier-note { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; }
-/* ── Footer ───────────────────────────────────────────────────────────────── */
-.site-footer {
-  border-top: 1px solid var(--border); padding: 1.5rem;
-  text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 3rem;
-}
-.site-footer a { color: var(--ibm-blue); }
-/* ── Responsive ───────────────────────────────────────────────────────────── */
-@media (max-width: 600px) {
-  .score-compare { gap: 1rem; }
-  .score-box .value { font-size: 2rem; }
-  th, td { padding: 0.5rem 0.6rem; }
-}
+@media (prefers-reduced-motion:reduce){ .bar i{transition:none} }
 </style>
 </head>
 <body>
-
-<!-- ── Header ─────────────────────────────────────────────────────────────── -->
-<header class="site-header">
-  <div class="header-inner">
-    <div class="logo">
-      <div class="logo-mark">ST</div>
-      <div>
-        <div class="logo-text">SoloTrace</div>
-        <span class="logo-sub">Requirements Traceability Auditor</span>
-      </div>
-    </div>
-    <div class="header-meta">
-      <span class="ibm-badge">Built with IBM Bob 2.0</span>
-      <button class="theme-btn" onclick="toggleTheme()">☀ / ☾</button>
-    </div>
-  </div>
-</header>
-
-<!-- ── Hero ───────────────────────────────────────────────────────────────── -->
-<div class="page-wrap">
-<section class="hero">
-  <h1>Every requirement, <span>proven.</span></h1>
-  <p class="hero-sub">Machine-verified traceability from specification to code to test.</p>
-
-  <div class="score-compare">
-    <div class="score-box before">
-      <div class="label">Before (v1.0 audit)</div>
-      <div class="value" id="score-before">33.3%</div>
-    </div>
-    <div class="score-arrow">→</div>
-    <div class="score-box after">
-      <div class="label">After (v2.0 fixed)</div>
-      <div class="value" id="score-after">100%</div>
-    </div>
-  </div>
-
-  <div class="progress-wrap">
-    <div class="progress-label">
-      <span>Compliance score</span>
-      <span id="pct-label">100%</span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="prog-fill" data-target="100"></div>
-    </div>
-  </div>
-</section>
-
-<!-- ── Stat Cards ──────────────────────────────────────────────────────────── -->
-<div class="stat-grid">
-  <div class="stat-card">
-    <div class="n">12</div>
-    <div class="desc">Requirements audited</div>
-  </div>
-  <div class="stat-card">
-    <div class="n">8</div>
-    <div class="desc">Gaps found &amp; fixed</div>
-  </div>
-  <div class="stat-card">
-    <div class="n">+36</div>
-    <div class="desc">Test functions added (16 → 52)</div>
-  </div>
-  <div class="stat-card">
-    <div class="n">57</div>
-    <div class="desc">Evidence entries machine-verified</div>
-  </div>
-</div>
-
-<!-- ── Pipeline Strip ─────────────────────────────────────────────────────── -->
-<section class="section">
-  <div class="section-title">Audit Pipeline</div>
-  <div class="pipeline">
-    <div class="pipeline-steps">
-      <div class="pipeline-step">
-        <div class="step-icon bob">📄</div>
-        <div class="step-label">READ</div>
-        <div class="step-sub">Document understanding<br><em>IBM Bob</em></div>
-      </div>
-      <div class="pipeline-arrow">›</div>
-      <div class="pipeline-step">
-        <div class="step-icon bob">🔍</div>
-        <div class="step-label">AUDIT</div>
-        <div class="step-sub">12 parallel subagents<br><em>IBM Bob</em></div>
-      </div>
-      <div class="pipeline-arrow">›</div>
-      <div class="pipeline-step">
-        <div class="step-icon human">✋</div>
-        <div class="step-label">HUMAN SIGN-OFF</div>
-        <div class="step-sub">Review verdicts<br>&amp; approve fixes</div>
-      </div>
-      <div class="pipeline-arrow">›</div>
-      <div class="pipeline-step">
-        <div class="step-icon bob">🔧</div>
-        <div class="step-label">FIX</div>
-        <div class="step-sub">Agent mode<br><em>IBM Bob</em></div>
-      </div>
-      <div class="pipeline-arrow">›</div>
-      <div class="pipeline-step">
-        <div class="step-icon auto">✅</div>
-        <div class="step-label">VERIFY</div>
-        <div class="step-sub">Anti-hallucination<br>evidence check</div>
-      </div>
-      <div class="pipeline-arrow">›</div>
-      <div class="pipeline-step">
-        <div class="step-icon auto">📊</div>
-        <div class="step-label">REPORT</div>
-        <div class="step-sub">Matrix + dashboard<br>generated</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ── Traceability Matrix ─────────────────────────────────────────────────── -->
-<section class="section">
-  <div class="section-title">Traceability Matrix</div>
-  <div class="filter-bar" id="filter-bar">
-    <button class="filter-btn active" data-filter="all" onclick="filterMatrix('all',this)">All (12)</button>
-    <button class="filter-btn" data-filter="covered" onclick="filterMatrix('covered',this)">✅ Covered (12)</button>
-    <button class="filter-btn" data-filter="untested" onclick="filterMatrix('untested',this)">⚠ Untested (0)</button>
-    <button class="filter-btn" data-filter="contradicts" onclick="filterMatrix('contradicts',this)">✗ Contradicts (0)</button>
-    <button class="filter-btn" data-filter="missing" onclick="filterMatrix('missing',this)">● Missing (0)</button>
-  </div>
-  <div class="table-wrap">
-    <table id="matrix-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Requirement</th>
-          <th>Risk</th>
-          <th>Change</th>
-          <th>Before</th>
-          <th>After</th>
-          <th>Code Evidence</th>
-          <th>Tests</th>
-        </tr>
-      </thead>
-      <tbody id="matrix-body">
-      </tbody>
+<noscript><p style="padding:20px">This dashboard needs JavaScript. The same results are in the audit report: AUDIT_REPORT.md in the repository.</p></noscript>
+<header class="top"><div class="wrap">
+  <a class="brand" href="#top"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>SoloTrace</a>
+  <span class="pill bob">Built with IBM Bob 2.0</span>
+  <span class="spacer"></span>
+  <button class="theme-btn" id="theme" type="button" aria-label="Switch colour theme">◐ Theme</button>
+</div></header>
+<main id="top">
+  <section class="hero"><div class="wrap" id="hero"></div></section>
+  <section><div class="wrap">
+    <h2>From "the AI says 100%" to "proven"</h2>
+    <p class="sub">Three audit rounds of the same payments API against the same spec. Green tests are not enough: SoloTrace only counts a requirement once its tests catch deliberate sabotage.</p>
+    <div class="journey" id="journey"></div>
+  </div></section>
+  <section><div class="wrap"><div class="kpis" id="kpis"></div></div></section>
+  <section><div class="wrap">
+    <h2>How an audit runs</h2>
+    <p class="sub">IBM Bob does the reading, auditing and fixing. SoloTrace's code checks every claim. A human signs off before any code changes.</p>
+    <div class="flow" id="flow"></div>
+  </div></section>
+  <section id="matrix-section"><div class="wrap">
+    <h2>Traceability matrix</h2>
+    <p class="sub">Select a requirement to see its text, acceptance criteria, verified code evidence, tests and the sabotage attempts its tests caught.</p>
+    <div class="chips" id="filters" role="group" aria-label="Filter requirements"></div>
+    <table class="matrix" aria-describedby="matrix-section">
+      <thead><tr><th>ID</th><th class="col-req">Requirement</th><th class="col-base">Baseline</th><th class="col-r1">Round 1</th><th>Final</th></tr></thead>
+      <tbody id="matrix"></tbody>
     </table>
-  </div>
-</section>
-
-<!-- ── Evidence Verifier Panel ───────────────────────────────────────────── -->
-<section class="section">
-  <div class="section-title">Evidence Verifier</div>
-  <div class="verifier-panel">
-    <div class="verifier-grid">
-      <div class="verifier-stat wrong">
-        <div class="n" id="vstat-wrong">23</div>
-        <div class="d">Wrong line numbers in baseline audit</div>
-      </div>
-      <div class="verifier-stat wrong">
-        <div class="n" id="vstat-paraphrase">11</div>
-        <div class="d">Paraphrased quotes (not real code)</div>
-      </div>
-      <div class="verifier-stat phantom">
-        <div class="n" id="vstat-phantom">4</div>
-        <div class="d">Phantom tests (not found in AST)</div>
-      </div>
-      <div class="verifier-stat fixed">
-        <div class="n" id="vstat-ok">57</div>
-        <div class="d">Evidence entries verified OK (after)</div>
-      </div>
+    <p class="muted small" id="empty" hidden>No requirement matches this filter.</p>
+  </div></section>
+  <section><div class="wrap">
+    <h2>The evidence verifier</h2>
+    <p class="sub">AI auditors cite code. SoloTrace re-finds every citation in the audited commit and rejects anything that is not really there.</p>
+    <div class="verif" id="verif"></div>
+  </div></section>
+  <section><div class="wrap">
+    <h2>How IBM Bob runs SoloTrace</h2>
+    <p class="sub">Every stage below ran inside IBM Bob IDE. Times, Bobcoins and subagent counts come from Bob's own task history.</p>
+    <div class="two">
+      <div class="card"><h3>Bob sessions</h3><div class="sessions" id="sessions"></div></div>
+      <div class="card config"><h3>Bob-native configuration</h3><ul id="config"></ul><h3 style="margin-top:18px">Human sign-offs</h3><ul id="signoffs"></ul></div>
     </div>
-    <p class="verifier-note">
-      The SoloTrace evidence verifier runs after every audit pass.  It parses each
-      cited source file at the cited line number, checks that the quoted snippet
-      actually appears there (±5 lines), and removes any <code>test_evidence</code>
-      entry whose function name cannot be found in the file's AST.  Numbers above
-      are read from <code>out-before/verification.json</code> vs
-      <code>out/verification.json</code>.
-    </p>
-  </div>
-</section>
-
-</div><!-- .page-wrap -->
-
-<!-- ── Footer ─────────────────────────────────────────────────────────────── -->
-<footer class="site-footer">
-  <a href="https://github.com/bano1397/solotrace" target="_blank" rel="noopener">GitHub: bano1397/solotrace</a>
-  &nbsp;·&nbsp;
-  <a href="AUDIT_REPORT.md" target="_blank">AUDIT_REPORT.md</a>
-  &nbsp;·&nbsp;
-  <span>Generated 2026-09-25 17:16 UTC</span>
-</footer>
-
-<!-- ── Embedded Data ───────────────────────────────────────────────────────── -->
+    <h3 style="margin:26px 0 10px">Task session summaries</h3>
+    <div class="shots" id="shots"></div>
+  </div></section>
+</main>
+<footer><div class="wrap" id="foot"></div></footer>
+<script id="data" type="application/json">{"version": "2.0.0", "generated_at": "2026-09-26T00:08:46+00:00", "repo_url": "https://github.com/bano1397/solotrace", "pages_url": "https://bano1397.github.io/solotrace/", "report_url": "https://github.com/bano1397/solotrace/blob/main/AUDIT_REPORT.md", "video_url": null, "spec": {"path": "demo-data/LedgerLite-Requirements-v2.0.pdf", "sha256": "cf06e0a2c238e7806ae6692702a6d4a713816333b83e22a8b2e7ff14007f9250", "version": "2.0", "requirements_in_spec": 12, "url": "https://github.com/bano1397/solotrace/blob/main/demo-data/LedgerLite-Requirements-v2.0.pdf"}, "stages": [{"key": "baseline", "label": "Baseline audit", "task": "task01", "auditor": "IBM Bob 2.0 — task 1 (Agent mode, 12 parallel subagents)", "audited_at": "2026-09-25T21:12:54+05:00", "commit": "b52c5e4", "total": 12, "ai_covered": 4, "evidence_ok": 3, "proven": null, "mutation_testing": false, "mutations_killed": null, "mutations_total": null, "citations_verified": 27, "citations_total": 36, "not_verbatim": 9, "too_short": 0, "tests_passed": 28, "tests_failed": 0, "statuses": {"REQ-01": "covered", "REQ-02": "covered", "REQ-03": "covered", "REQ-04": "unverified", "REQ-05": "contradicts", "REQ-06": "untested", "REQ-07": "untested", "REQ-08": "untested", "REQ-09": "missing", "REQ-10": "missing", "REQ-11": "missing", "REQ-12": "untested"}}, {"key": "round1", "label": "Round 1 — after Bob's fixes", "task": "task03", "auditor": "IBM Bob 2.0 — task 3 (SoloTrace Auditor mode, 12 parallel subagents)", "audited_at": "2026-09-25T21:52:11+05:00", "commit": "149d409", "total": 12, "ai_covered": 12, "evidence_ok": 6, "proven": 6, "mutation_testing": true, "mutations_killed": 23, "mutations_total": 34, "citations_verified": 55, "citations_total": 57, "not_verbatim": 0, "too_short": 2, "tests_passed": 58, "tests_failed": 0, "statuses": {"REQ-01": "proven", "REQ-02": "proven", "REQ-03": "proven", "REQ-04": "weak", "REQ-05": "weak", "REQ-06": "weak", "REQ-07": "proven", "REQ-08": "weak", "REQ-09": "weak", "REQ-10": "proven", "REQ-11": "proven", "REQ-12": "weak"}}, {"key": "final", "label": "Round 2 — final", "task": null, "auditor": "INTERIM — round-1 verdicts, to be replaced by the final IBM Bob audit", "audited_at": "2026-09-25T17:32:22+00:00", "commit": "f6a47e4", "total": 12, "ai_covered": 12, "evidence_ok": 0, "proven": 0, "mutation_testing": true, "mutations_killed": 43, "mutations_total": 43, "citations_verified": 24, "citations_total": 57, "not_verbatim": 31, "too_short": 2, "tests_passed": 119, "tests_failed": 0, "statuses": {"REQ-01": "untested", "REQ-02": "untested", "REQ-03": "untested", "REQ-04": "untested", "REQ-05": "untested", "REQ-06": "untested", "REQ-07": "untested", "REQ-08": "untested", "REQ-09": "untested", "REQ-10": "untested", "REQ-11": "untested", "REQ-12": "unverified"}}], "rows": [{"id": "REQ-01", "title": "Unique email and KYC gating", "text": "An account can only be created with a unique email address. An account may not send or receive money until its KYC status is verified.", "acceptance_criteria": ["Duplicate email is rejected.", "Any money movement on an unverified account is rejected."], "risk": "High", "change": "none", "ai_status": "covered", "status": "untested", "reason": "Unique email is enforced at account creation by querying for an existing Account with the same email before inserting (services.py:101). KYC gating is enforced by _require_kyc(), which raises HTTP 403 when kyc_status != 'verified' (services.py:86-87); this guard is called before every deposit, withdrawal, and transfer operation. All four gating paths and the duplicate-email path are each covered by a dedicated test.", "evidence": [{"file": "ledgerlite/services.py", "line": 101, "claimed_line": 101, "snippet": "    if db.query(Account).filter(Account.email == email).first():", "claimed_snippet": "    if db.query(Account).filter(Account.email == email).first():", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 86, "claimed_line": 86, "snippet": "def _require_kyc(account: Account) -\u003e None:", "claimed_snippet": "def _require_kyc(account: Account) -\u003e None:", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 106, "claimed_line": 87, "snippet": "    if account.kyc_status != \"verified\":", "claimed_snippet": "    if account.kyc_status != \"verified\":", "verified": true, "match": "relocated"}], "tests": [{"file": "ledgerlite/tests/test_spec1_accounts_kyc.py", "test_name": "test_duplicate_email_rejected", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec1_accounts_kyc.py", "test_name": "test_deposit_blocked_before_kyc", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec1_accounts_kyc.py", "test_name": "test_withdraw_blocked_before_kyc", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec1_accounts_kyc.py", "test_name": "test_transfer_sender_blocked_before_kyc", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec1_accounts_kyc.py", "test_name": "test_transfer_recipient_blocked_before_kyc", "exists": false, "passed": null}], "checks": {"citations_verified": 1, "citations_total": 3, "tests_passing": 0, "tests_cited": 5, "mutations": {"tried": 3, "killed": 3, "survived": 0, "proven": true}}, "history": [{"stage": "baseline", "status": "covered"}, {"stage": "round1", "status": "proven"}, {"stage": "final", "status": "untested"}], "mutations": [{"id": "REQ-01-M1", "description": "KYC gate never fires (unverified accounts can move money)", "file": "ledgerlite/services.py", "line": 106, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestKYCGating::test_deposit_blocked_before_kyc", "duration_s": 0.93}, {"id": "REQ-01-M2", "description": "skip the recipient KYC check on transfers", "file": "ledgerlite/services.py", "line": 271, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestKYCGating::test_transfer_recipient_blocked_before_kyc", "duration_s": 1.02}, {"id": "REQ-01-M3", "description": "make the unique-email check case-sensitive", "file": "ledgerlite/services.py", "line": 155, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestUniqueEmail::test_duplicate_email_is_case_insensitive", "duration_s": 0.79}]}, {"id": "REQ-02", "title": "Deposit amount limits", "text": "A deposit amount must be greater than 0 and at most 50,000.00 per transaction.", "acceptance_criteria": ["Deposits of 0 are rejected.", "Negative deposit amounts are rejected.", "A deposit of 50,000.01 is rejected.", "A deposit of 50,000.00 is accepted."], "risk": "Medium", "change": "none", "ai_status": "covered", "status": "untested", "reason": "Deposit validation enforces a lower bound (amount must be \u003e 0) and an upper bound (amount must not exceed 50 000.00) at the service layer. Six dedicated tests exercise zero, negative, boundary-exact-reject, boundary-exact-accept, a general positive value, and accumulation across multiple deposits.", "evidence": [{"file": "ledgerlite/services.py", "line": 19, "claimed_line": 19, "snippet": "_MAX_DEPOSIT = Decimal(\"50000.00\")", "claimed_snippet": "_MAX_DEPOSIT = Decimal(\"50000.00\")", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 111, "claimed_line": 135, "snippet": "    if amount \u003c= Decimal(\"0\"):", "claimed_snippet": "    if amount \u003c= Decimal(\"0\"):", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 136, "claimed_line": 136, "snippet": "        raise HTTPException(status_code=400, detail=\"Deposit amount must be greater than 0\")", "claimed_snippet": "        raise HTTPException(status_code=400, detail=\"Deposit amount must be greater than 0\")", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 137, "claimed_line": 137, "snippet": "    if amount \u003e _MAX_DEPOSIT:", "claimed_snippet": "    if amount \u003e _MAX_DEPOSIT:", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 138, "claimed_line": 138, "snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {_MAX_DEPOSIT}\")", "claimed_snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {_MAX_DEPOSIT}\")", "verified": false, "match": "not_found"}], "tests": [{"file": "ledgerlite/tests/test_spec2_deposit_limits.py", "test_name": "test_zero_rejected", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec2_deposit_limits.py", "test_name": "test_negative_rejected", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec2_deposit_limits.py", "test_name": "test_boundary_50000_01_rejected", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec2_deposit_limits.py", "test_name": "test_boundary_50000_accepted", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec2_deposit_limits.py", "test_name": "test_positive_amount_accepted", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec2_deposit_limits.py", "test_name": "test_multiple_deposits_accumulate", "exists": false, "passed": null}], "checks": {"citations_verified": 1, "citations_total": 5, "tests_passing": 0, "tests_cited": 6, "mutations": {"tried": 3, "killed": 3, "survived": 0, "proven": true}}, "history": [{"stage": "baseline", "status": "covered"}, {"stage": "round1", "status": "proven"}, {"stage": "final", "status": "untested"}], "mutations": [{"id": "REQ-02-M1", "description": "lower the deposit maximum by one cent", "file": "ledgerlite/services.py", "line": 28, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req02_deposit_limits.py::test_boundary_50000_accepted", "duration_s": 1.11}, {"id": "REQ-02-M2", "description": "allow a deposit of 50,000.01", "file": "ledgerlite/services.py", "line": 218, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req02_deposit_limits.py::test_boundary_50000_01_rejected", "duration_s": 1.13}, {"id": "REQ-02-M3", "description": "accept zero and negative deposits", "file": "ledgerlite/services.py", "line": 217, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req02_deposit_limits.py::test_zero_and_negative_rejected[0]", "duration_s": 1.05}]}, {"id": "REQ-03", "title": "Withdrawal floor — no negative balance", "text": "A withdrawal must never make the account balance negative.", "acceptance_criteria": ["Withdrawing more than the balance is rejected.", "The balance is unchanged after a rejected withdrawal."], "risk": "High", "change": "none", "ai_status": "covered", "status": "untested", "reason": "The withdrawal floor is enforced in services.py at lines 156-157: before applying any debit the service checks that the resulting balance would not be less than zero, and raises HTTP 400 with 'Insufficient funds' if it would. Line 159 then performs the actual debit only when that guard passes. Three tests cover the requirement: test_withdrawal_overdraft_rejected confirms a withdrawal of one cent above the balance is rejected with HTTP 400 and the 'Insufficient' message; test_balance_never_goes_negative drains the account to exactly 0.00 and then confirms a further withdrawal is rejected and the balance remains 0.00; test_withdrawal_exact_balance_allowed confirms that withdrawing exactly the full balance succeeds and leaves the balance at 0.00.", "evidence": [{"file": "ledgerlite/services.py", "line": 156, "claimed_line": 156, "snippet": "    if account.balance - amount \u003c Decimal(\"0\"):", "claimed_snippet": "    if account.balance - amount \u003c Decimal(\"0\"):", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 236, "claimed_line": 157, "snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")", "claimed_snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 159, "claimed_line": 159, "snippet": "    account.balance -= amount", "claimed_snippet": "    account.balance -= amount", "verified": false, "match": "not_found"}], "tests": [{"file": "ledgerlite/tests/test_spec3_withdrawals.py", "test_name": "test_withdrawal_overdraft_rejected", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec3_withdrawals.py", "test_name": "test_balance_never_goes_negative", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec3_withdrawals.py", "test_name": "test_withdrawal_exact_balance_allowed", "exists": false, "passed": null}], "checks": {"citations_verified": 1, "citations_total": 3, "tests_passing": 0, "tests_cited": 3, "mutations": {"tried": 2, "killed": 2, "survived": 0, "proven": true}}, "history": [{"stage": "baseline", "status": "covered"}, {"stage": "round1", "status": "proven"}, {"stage": "final", "status": "untested"}], "mutations": [{"id": "REQ-03-M1", "description": "debit without checking the balance", "file": "ledgerlite/services.py", "line": 119, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req03_withdrawals.py::test_overdraft_rejected_and_balance_unchanged", "duration_s": 1.23}, {"id": "REQ-03-M2", "description": "accept negative withdrawals (which increase the balance)", "file": "ledgerlite/services.py", "line": 232, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req03_withdrawals.py::test_zero_and_negative_withdrawals_rejected", "duration_s": 1.18}]}, {"id": "REQ-04", "title": "Atomic transfers", "text": "A transfer between two accounts is atomic: either both the debit and the credit happen, or neither does.", "acceptance_criteria": ["If the credit fails, the debit is rolled back."], "risk": "High", "change": "none", "ai_status": "covered", "status": "untested", "reason": "The transfer service wraps the balance mutation, Transfer insert, flush, and audit write inside a single try/except block (services.py:220-245). The debit is applied to sender.balance (line 221) and the credit to recipient.balance (line 223) before db.commit() is called (line 242). If any step raises — including the audit write — the except clause on line 243 calls db.rollback() (line 244) and re-raises, so neither balance change is ever persisted. test_transfer_rolls_back_on_db_error proves this by patching _write_audit to raise a RuntimeError after the debit and asserting both balances are unchanged after the 500 response. test_successful_transfer_debits_sender_credits_recipient proves the happy path commits both sides atomically.", "evidence": [{"file": "ledgerlite/services.py", "line": 220, "claimed_line": 220, "snippet": "    try:", "claimed_snippet": "    try:", "verified": false, "match": "too_short"}, {"file": "ledgerlite/services.py", "line": 221, "claimed_line": 221, "snippet": "        sender.balance -= amount", "claimed_snippet": "        sender.balance -= amount", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 223, "claimed_line": 223, "snippet": "            recipient.balance += amount", "claimed_snippet": "            recipient.balance += amount", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 239, "claimed_line": 242, "snippet": "    db.commit()", "claimed_snippet": "        db.commit()", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 313, "claimed_line": 243, "snippet": "    except Exception:", "claimed_snippet": "    except Exception:", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 235, "claimed_line": 244, "snippet": "        db.rollback()", "claimed_snippet": "        db.rollback()", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 245, "claimed_line": 245, "snippet": "        raise", "claimed_snippet": "        raise", "verified": false, "match": "too_short"}], "tests": [{"file": "ledgerlite/tests/test_spec4_transfer_atomicity.py", "test_name": "test_transfer_rolls_back_on_db_error", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec4_transfer_atomicity.py", "test_name": "test_successful_transfer_debits_sender_credits_recipient", "exists": false, "passed": null}], "checks": {"citations_verified": 3, "citations_total": 7, "tests_passing": 0, "tests_cited": 2, "mutations": {"tried": 2, "killed": 2, "survived": 0, "proven": true}}, "history": [{"stage": "baseline", "status": "unverified"}, {"stage": "round1", "status": "weak"}, {"stage": "final", "status": "untested"}], "mutations": [{"id": "REQ-04-M1", "description": "commit the debit before the credit (two transactions)", "file": "ledgerlite/services.py", "line": 289, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req04_transfer_atomicity.py::test_failed_credit_rolls_back_the_debit", "duration_s": 1.39}, {"id": "REQ-04-M2", "description": "credit the recipient even when the debit failed", "file": "ledgerlite/services.py", "line": 286, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req04_transfer_atomicity.py::test_insufficient_funds_rejected_without_side_effects", "duration_s": 1.28}]}, {"id": "REQ-05", "title": "Large-transfer pending approval threshold", "text": "A transfer of 5,000.00 or more must be held as pending_approval until a second, different user approves it. (v1.0 threshold was 10,000.00.)", "acceptance_criteria": ["A transfer of 5,000.00 is held as pending_approval, not completed immediately.", "The initiator cannot approve their own transfer."], "risk": "High", "change": "changed", "ai_status": "covered", "status": "untested", "reason": "The v2.0 threshold of 5,000.00 is correctly implemented. Transfers \u003e= 5,000.00 are set to pending_approval; transfers below that are completed immediately. This was fixed from the old v1.0 value of 10,000.00. All four boundary tests pass.", "evidence": [{"file": "ledgerlite/services.py", "line": 20, "claimed_line": 20, "snippet": "_LARGE_TRANSFER_THRESHOLD = Decimal(\"5000.00\")", "claimed_snippet": "_LARGE_TRANSFER_THRESHOLD = Decimal(\"5000.00\")", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 217, "claimed_line": 217, "snippet": "    large = amount \u003e= _LARGE_TRANSFER_THRESHOLD", "claimed_snippet": "    large = amount \u003e= _LARGE_TRANSFER_THRESHOLD", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 282, "claimed_line": 218, "snippet": "    status = \"pending_approval\" if large else \"completed\"", "claimed_snippet": "    status = \"pending_approval\" if large else \"completed\"", "verified": true, "match": "relocated"}], "tests": [{"file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py", "test_name": "test_transfer_below_threshold_completed", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py", "test_name": "test_transfer_at_threshold_pending", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py", "test_name": "test_transfer_above_threshold_pending", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py", "test_name": "test_transfer_just_below_threshold_completed", "exists": false, "passed": null}], "checks": {"citations_verified": 1, "citations_total": 3, "tests_passing": 0, "tests_cited": 4, "mutations": {"tried": 6, "killed": 6, "survived": 0, "proven": true}}, "history": [{"stage": "baseline", "status": "contradicts"}, {"stage": "round1", "status": "weak"}, {"stage": "final", "status": "untested"}], "mutations": [{"id": "REQ-05-M1", "description": "revert to the old v1.0 threshold of 10,000.00", "file": "ledgerlite/services.py", "line": 29, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_at_or_above_threshold_is_held[5000.00]", "duration_s": 1.53}, {"id": "REQ-05-M2", "description": "exactly 5,000.00 completes without approval", "file": "ledgerlite/services.py", "line": 281, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_at_or_above_threshold_is_held[5000.00]", "duration_s": 1.55}, {"id": "REQ-05-M3", "description": "let the initiator approve their own transfer", "file": "ledgerlite/services.py", "line": 328, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_initiator_cannot_approve_own_transfer", "duration_s": 1.89}, {"id": "REQ-05-M4", "description": "let the recipient approve the transfer", "file": "ledgerlite/services.py", "line": 330, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_recipient_cannot_approve", "duration_s": 1.9}, {"id": "REQ-05-M5", "description": "approve without the approver's PIN", "file": "ledgerlite/services.py", "line": 334, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_approver_needs_correct_pin", "duration_s": 1.92}, {"id": "REQ-05-M6", "description": "a transfer can be approved twice (recipient credited twice)", "file": "ledgerlite/services.py", "line": 326, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_double_approval_rejected_and_credits_once", "duration_s": 2.04}]}, {"id": "REQ-06", "title": "Audit log for every money movement", "text": "Every money movement (deposit, withdrawal, transfer, approval) writes an audit log entry containing actor, action, amount, account(s) and UTC timestamp. Audit entries cannot be edited.", "acceptance_criteria": ["Each money-movement operation adds exactly one audit log entry.", "No update endpoint exists for audit entries."], "risk": "High", "change": "none", "ai_status": "covered", "status": "untested", "reason": "_write_audit() is called in deposit() (line 141), withdraw() (line 160), create_transfer() (line 234), and approve_transfer() (line 269). No PATCH/DELETE endpoint for audit entries exists. All five criteria are asserted by named tests in test_spec6_audit_log.py.", "evidence": [{"file": "ledgerlite/services.py", "line": 52, "claimed_line": 40, "snippet": "def _write_audit(", "claimed_snippet": "def _write_audit(", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 222, "claimed_line": 141, "snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)", "claimed_snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 238, "claimed_line": 160, "snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)", "claimed_snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 258, "claimed_line": 234, "snippet": "        _write_audit(", "claimed_snippet": "        _write_audit(", "verified": true, "match": "relocated"}, {"file": "ledgerlite/main.py", "line": 95, "claimed_line": 95, "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])", "claimed_snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])", "verified": false, "match": "not_found"}], "tests": [{"file": "ledgerlite/tests/test_spec6_audit_log.py", "test_name": "test_audit_entry_written_on_deposit", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec6_audit_log.py", "test_name": "test_audit_entry_written_on_withdrawal", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec6_audit_log.py", "test_name": "test_audit_entry_written_on_transfer", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec6_audit_log.py", "test_name": "test_no_audit_delete_endpoint", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec6_audit_log.py", "test_name": "test_no_audit_patch_endpoint", "exists": false, "passed": null}], "checks": {"citations_verified": 4, "citations_total": 5, "tests_passing": 0, "tests_cited": 5, "mutations": {"tried": 6, "killed": 6, "survived": 0, "proven": true}}, "history": [{"stage": "baseline", "status": "untested"}, {"stage": "round1", "status": "weak"}, {"stage": "final", "status": "untested"}], "mutations": [{"id": "REQ-06-M1", "description": "deposits are not audited", "file": "ledgerlite/services.py", "line": 222, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_deposit_writes_exactly_one_entry", "duration_s": 2.12}, {"id": "REQ-06-M2", "description": "withdrawals write two audit entries", "file": "ledgerlite/services.py", "line": 238, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_withdrawal_writes_exactly_one_entry", "duration_s": 2.2}, {"id": "REQ-06-M3", "description": "approval entry records the wrong actor", "file": "ledgerlite/services.py", "line": 353, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_approval_writes_exactly_one_entry", "duration_s": 2.17}, {"id": "REQ-06-M4", "description": "audit timestamps lose their UTC marker", "file": "ledgerlite/schemas.py", "line": 59, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_deposit_writes_exactly_one_entry", "duration_s": 2.02}, {"id": "REQ-06-M5", "description": "add an endpoint that edits audit entries", "file": "ledgerlite/main.py", "line": 120, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_existing_entry_cannot_be_modified[PATCH]", "duration_s": 2.23}, {"id": "REQ-06-M6", "description": "deposit audit entry records the wrong actor", "file": "ledgerlite/services.py", "line": 222, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req01_accounts_kyc.py::TestKYCGating::test_deposit_allowed_after_kyc", "duration_s": 1.34}]}, {"id": "REQ-07", "title": "Account lockout after failed PIN attempts", "text": "An account is locked after 5 consecutive failed PIN attempts. A locked account cannot move money.", "acceptance_criteria": ["The 5th wrong PIN locks the account.", "A correct PIN entered before the 5th failure resets the counter."], "risk": "Medium", "change": "none", "ai_status": "covered", "status": "untested", "reason": "_check_pin() increments failed_pin_attempts on each wrong PIN; on the 5th failure (\u003e= _MAX_FAILED_PINS) it sets account.locked = True and raises HTTP 423. A subsequent correct PIN resets failed_pin_attempts to 0. Both acceptance criteria are asserted by dedicated tests.", "evidence": [{"file": "ledgerlite/services.py", "line": 21, "claimed_line": 21, "snippet": "_MAX_FAILED_PINS = 5", "claimed_snippet": "_MAX_FAILED_PINS = 5", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 85, "claimed_line": 70, "snippet": "    if account.locked:", "claimed_snippet": "    if account.locked:", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 86, "claimed_line": 71, "snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")", "claimed_snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 73, "claimed_line": 73, "snippet": "    if not verify_pin(pin, account.pin_hash):", "claimed_snippet": "    if not verify_pin(pin, account.pin_hash):", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 90, "claimed_line": 74, "snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter", "claimed_snippet": "        account.failed_pin_attempts += 1", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 75, "claimed_line": 75, "snippet": "        if account.failed_pin_attempts \u003e= _MAX_FAILED_PINS:", "claimed_snippet": "        if account.failed_pin_attempts \u003e= _MAX_FAILED_PINS:", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 97, "claimed_line": 76, "snippet": "        account.locked = True", "claimed_snippet": "            account.locked = True", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 90, "claimed_line": 83, "snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter", "claimed_snippet": "    account.failed_pin_attempts = 0", "verified": true, "match": "relocated"}], "tests": [{"file": "ledgerlite/tests/test_spec7_pin_lockout.py", "test_name": "test_fifth_wrong_pin_locks_account", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec7_pin_lockout.py", "test_name": "test_correct_pin_resets_counter", "exists": false, "passed": null}], "checks": {"citations_verified": 5, "citations_total": 8, "tests_passing": 0, "tests_cited": 2, "mutations": {"tried": 4, "killed": 4, "survived": 0, "proven": true}}, "history": [{"stage": "baseline", "status": "untested"}, {"stage": "round1", "status": "proven"}, {"stage": "final", "status": "untested"}], "mutations": [{"id": "REQ-07-M1", "description": "lock only after 6 failures", "file": "ledgerlite/services.py", "line": 30, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req07_pin_lockout.py::test_fifth_wrong_pin_locks_account", "duration_s": 2.33}, {"id": "REQ-07-M2", "description": "do not persist the failure counter (the original lockout bug)", "file": "ledgerlite/services.py", "line": 99, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req07_pin_lockout.py::test_failed_attempts_are_persisted_between_requests", "duration_s": 2.27}, {"id": "REQ-07-M3", "description": "a correct PIN no longer resets the counter", "file": "ledgerlite/services.py", "line": 90, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req07_pin_lockout.py::test_correct_pin_resets_counter", "duration_s": 2.27}, {"id": "REQ-07-M4", "description": "locked accounts can still move money", "file": "ledgerlite/services.py", "line": 85, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req07_pin_lockout.py::test_fifth_wrong_pin_locks_account", "duration_s": 2.16}]}, {"id": "REQ-08", "title": "Exact decimal arithmetic", "text": "All monetary values are stored and calculated as exact decimals (never floating point) and returned with exactly 2 decimal places.", "acceptance_criteria": ["0.10 + 0.20 equals 0.30 exactly.", "The API returns monetary values formatted as strings with exactly 2 decimal places (e.g. \"0.30\")."], "risk": "Medium", "change": "none", "ai_status": "covered", "status": "untested", "reason": "All monetary values are coerced through _to_decimal() (Decimal(str(value))) before arithmetic; the database column is Numeric(12,2); and balance is serialised as a 2dp string via @field_serializer. The critical 0.10+0.20==0.30 criterion is directly asserted by test_point_one_plus_point_two_equals_point_three.", "evidence": [{"file": "ledgerlite/models.py", "line": 24, "claimed_line": 24, "snippet": "    balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))", "claimed_snippet": "    balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 11, "claimed_line": 11, "snippet": "from decimal import Decimal, InvalidOperation", "claimed_snippet": "from decimal import Decimal, InvalidOperation", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 91, "claimed_line": 91, "snippet": "def _to_decimal(value) -\u003e Decimal:", "claimed_snippet": "def _to_decimal(value) -\u003e Decimal:", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 93, "claimed_line": 93, "snippet": "        return Decimal(str(value))", "claimed_snippet": "        return Decimal(str(value))", "verified": false, "match": "not_found"}, {"file": "ledgerlite/schemas.py", "line": 117, "claimed_line": 64, "snippet": "    @field_serializer(\"balance\")", "claimed_snippet": "    @field_serializer(\"balance\")", "verified": true, "match": "relocated"}, {"file": "ledgerlite/schemas.py", "line": 66, "claimed_line": 66, "snippet": "        return f\"{v:.2f}\"", "claimed_snippet": "        return f\"{v:.2f}\"", "verified": false, "match": "not_found"}], "tests": [{"file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py", "test_name": "test_point_one_plus_point_two_equals_point_three", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py", "test_name": "test_balance_serialised_as_two_decimal_places", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec2_deposit_limits.py", "test_name": "test_multiple_deposits_accumulate", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec2_deposit_limits.py", "test_name": "test_boundary_50000_accepted", "exists": false, "passed": null}], "checks": {"citations_verified": 1, "citations_total": 6, "tests_passing": 0, "tests_cited": 4, "mutations": {"tried": 3, "killed": 3, "survived": 0, "proven": true}}, "history": [{"stage": "baseline", "status": "untested"}, {"stage": "round1", "status": "weak"}, {"stage": "final", "status": "untested"}], "mutations": [{"id": "REQ-08-M1", "description": "store money as floating point (REAL)", "file": "ledgerlite/models.py", "line": 19, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req08_exact_decimals.py::test_money_is_stored_as_integer_cents_not_real", "duration_s": 2.32}, {"id": "REQ-08-M2", "description": "convert money through float", "file": "ledgerlite/models.py", "line": 28, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req08_exact_decimals.py::test_classic_float_traps_are_exact", "duration_s": 2.46}, {"id": "REQ-08-M3", "description": "silently round amounts with more than 2 decimals", "file": "ledgerlite/schemas.py", "line": 34, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req05_large_transfer_approval.py::test_sub_cent_amount_cannot_dodge_the_threshold", "duration_s": 1.61}]}, {"id": "REQ-09", "title": "Daily outgoing transfer cap", "text": "Total outgoing transfers per account must not exceed 20,000.00 per UTC calendar day.", "acceptance_criteria": ["A transfer that would take the day's total outgoing above 20,000.00 is rejected."], "risk": "High", "change": "new", "ai_status": "covered", "status": "untested", "reason": "The implementation introduces a hard cap of 20,000.00 in outgoing transfers per UTC calendar day. The constant _DAILY_TRANSFER_CAP is defined at module level and the check runs inside the transfer service before any balance mutation: it sums all transfers with status 'completed' or 'pending_approval' for the sender since today_start (UTC midnight), converts the aggregate to Decimal, and raises HTTP 400 when daily_total + amount \u003e _DAILY_TRANSFER_CAP. Three dedicated tests cover the boundary exactly (20,000.00 accepted), the first cent over the boundary (20,000.01 rejected), and a three-transfer scenario where the third transfer is blocked.", "evidence": [{"file": "ledgerlite/services.py", "line": 22, "claimed_line": 22, "snippet": "_DAILY_TRANSFER_CAP = Decimal(\"20000.00\")", "claimed_snippet": "_DAILY_TRANSFER_CAP = Decimal(\"20000.00\")", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 198, "claimed_line": 198, "snippet": "    today_utc = datetime.datetime.now(timezone.utc).date()", "claimed_snippet": "    today_utc = datetime.datetime.now(timezone.utc).date()", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 199, "claimed_line": 199, "snippet": "    today_start = datetime.datetime(today_utc.year, today_utc.month, today_utc.day, tzinfo=timezone.utc)", "claimed_snippet": "    today_start = datetime.datetime(today_utc.year, today_utc.month, today_utc.day, tzinfo=timezone.utc)", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 201, "claimed_line": 201, "snippet": "    daily_total_row = (", "claimed_snippet": "    daily_total_row = (", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 210, "claimed_line": 210, "snippet": "    daily_total = Decimal(str(daily_total_row[0]))", "claimed_snippet": "    daily_total = Decimal(str(daily_total_row[0]))", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 211, "claimed_line": 211, "snippet": "    if daily_total + amount \u003e _DAILY_TRANSFER_CAP:", "claimed_snippet": "    if daily_total + amount \u003e _DAILY_TRANSFER_CAP:", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 219, "claimed_line": 212, "snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {MAX_DEPOSIT}\")", "claimed_snippet": "        raise HTTPException(", "verified": true, "match": "relocated"}], "tests": [{"file": "ledgerlite/tests/test_spec9_daily_cap.py", "test_name": "test_daily_cap_exact_boundary_accepted", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec9_daily_cap.py", "test_name": "test_daily_cap_exceeded_rejected", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec9_daily_cap.py", "test_name": "test_daily_cap_three_transfers_third_blocked", "exists": false, "passed": null}], "checks": {"citations_verified": 1, "citations_total": 7, "tests_passing": 0, "tests_cited": 3, "mutations": {"tried": 5, "killed": 5, "survived": 0, "proven": true}}, "history": [{"stage": "baseline", "status": "missing"}, {"stage": "round1", "status": "weak"}, {"stage": "final", "status": "untested"}], "mutations": [{"id": "REQ-09-M1", "description": "raise the daily cap by one cent", "file": "ledgerlite/services.py", "line": 31, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req09_daily_cap.py::test_one_cent_over_the_cap_rejected", "duration_s": 2.78}, {"id": "REQ-09-M2", "description": "pending transfers no longer count toward the cap", "file": "ledgerlite/services.py", "line": 34, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req09_daily_cap.py::test_one_cent_over_the_cap_rejected", "duration_s": 2.76}, {"id": "REQ-09-M3", "description": "count yesterday's transfers too", "file": "ledgerlite/services.py", "line": 146, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req09_daily_cap.py::test_yesterdays_transfers_do_not_count", "duration_s": 2.89}, {"id": "REQ-09-M4", "description": "stop serialising transactions (concurrent transfers race the cap)", "file": "ledgerlite/db.py", "line": 51, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req03_withdrawals.py::test_concurrent_withdrawals_cannot_overdraw", "duration_s": 1.78}, {"id": "REQ-09-M5", "description": "drop the UTC-day window (cap becomes all-time)", "file": "ledgerlite/services.py", "line": 146, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req09_daily_cap.py::test_yesterdays_transfers_do_not_count", "duration_s": 2.84}]}, {"id": "REQ-10", "title": "Sanctions list blocking", "text": "Transfers to an account whose country code is on the sanctions list (KP, IR, SY, CU) are blocked and logged.", "acceptance_criteria": ["A transfer to a sanctioned country is rejected with reason \"sanctions\".", "An audit entry is written for the blocked transfer."], "risk": "High", "change": "new", "ai_status": "covered", "status": "untested", "reason": "Transfers where the sender or recipient has a country_code in {KP, IR, SY, CU} are rejected with HTTP 400 and detail 'sanctions'. A sanctions_blocked audit entry is written before rejection. All 9 test cases (4 sender-blocked, 4 recipient-blocked, 1 audit-entry) pass.", "evidence": [{"file": "ledgerlite/services.py", "line": 23, "claimed_line": 23, "snippet": "_SANCTIONED_COUNTRIES = {\"KP\", \"IR\", \"SY\", \"CU\"}", "claimed_snippet": "_SANCTIONED_COUNTRIES = {\"KP\", \"IR\", \"SY\", \"CU\"}", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 180, "claimed_line": 180, "snippet": "    if sender.country_code in _SANCTIONED_COUNTRIES or recipient.country_code in _SANCTIONED_COUNTRIES:", "claimed_snippet": "    if sender.country_code in _SANCTIONED_COUNTRIES or recipient.country_code in _SANCTIONED_COUNTRIES:", "verified": false, "match": "not_found"}, {"file": "ledgerlite/services.py", "line": 261, "claimed_line": 184, "snippet": "            action=\"sanctions_blocked\",", "claimed_snippet": "            action=\"sanctions_blocked\",", "verified": true, "match": "relocated"}, {"file": "ledgerlite/services.py", "line": 268, "claimed_line": 190, "snippet": "        raise HTTPException(status_code=400, detail=\"sanctions\")", "claimed_snippet": "        raise HTTPException(status_code=400, detail=\"sanctions\")", "verified": true, "match": "relocated"}], "tests": [{"file": "ledgerlite/tests/test_spec10_sanctions.py", "test_name": "test_sanctioned_sender_blocked[KP]", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec10_sanctions.py", "test_name": "test_sanctioned_sender_blocked[IR]", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec10_sanctions.py", "test_name": "test_sanctioned_sender_blocked[SY]", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec10_sanctions.py", "test_name": "test_sanctioned_sender_blocked[CU]", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec10_sanctions.py", "test_name": "test_sanctioned_recipient_blocked[KP]", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec10_sanctions.py", "test_name": "test_sanctioned_recipient_blocked[IR]", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec10_sanctions.py", "test_name": "test_sanctioned_recipient_blocked[SY]", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec10_sanctions.py", "test_name": "test_sanctioned_recipient_blocked[CU]", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec10_sanctions.py", "test_name": "test_audit_entry_written_for_sanctions_block", "exists": false, "passed": null}], "checks": {"citations_verified": 2, "citations_total": 4, "tests_passing": 0, "tests_cited": 9, "mutations": {"tried": 4, "killed": 4, "survived": 0, "proven": true}}, "history": [{"stage": "baseline", "status": "missing"}, {"stage": "round1", "status": "proven"}, {"stage": "final", "status": "untested"}], "mutations": [{"id": "REQ-10-M1", "description": "drop CU from the sanctions list", "file": "ledgerlite/services.py", "line": 32, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req10_sanctions.py::test_transfer_to_sanctioned_recipient_blocked_and_logged[CU]", "duration_s": 3.06}, {"id": "REQ-10-M2", "description": "screen only the sender, not the recipient", "file": "ledgerlite/services.py", "line": 255, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req10_sanctions.py::test_transfer_to_sanctioned_recipient_blocked_and_logged[KP]", "duration_s": 2.78}, {"id": "REQ-10-M3", "description": "log blocks under a different action name", "file": "ledgerlite/services.py", "line": 261, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req10_sanctions.py::test_transfer_to_sanctioned_recipient_blocked_and_logged[KP]", "duration_s": 2.77}, {"id": "REQ-10-M4", "description": "block the transfer but lose the audit entry", "file": "ledgerlite/services.py", "line": 267, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req10_sanctions.py::test_transfer_to_sanctioned_recipient_blocked_and_logged[KP]", "duration_s": 2.77}]}, {"id": "REQ-11", "title": "Masked account numbers in statements", "text": "Account statements must mask account numbers, showing only the last 4 digits (e.g. ****1234).", "acceptance_criteria": ["No full account number appears in any statement response.", "Account numbers in statements are masked, showing only the last 4 digits."], "risk": "Medium", "change": "new", "ai_status": "covered", "status": "untested", "reason": "StatementAccountResponse overrides the account_number serializer to emit '******' + last-4 digits. The statement route uses StatementResponse (which embeds StatementAccountResponse) as its response_model, so every GET /accounts/{id}/statement response has a masked account number. The detail endpoint continues to use the unmasked AccountResponse. Three tests cover the requirement: pattern format, last-4 preservation, and detail-endpoint passthrough.", "evidence": [{"file": "ledgerlite/schemas.py", "line": 165, "claimed_line": 103, "snippet": "class StatementAccountResponse(AccountResponse):", "claimed_snippet": "class StatementAccountResponse(AccountResponse):", "verified": true, "match": "relocated"}, {"file": "ledgerlite/schemas.py", "line": 169, "claimed_line": 107, "snippet": "    def serialize_account_number(self, v: str) -\u003e str:", "claimed_snippet": "    def serialize_account_number(self, v: str) -\u003e str:", "verified": true, "match": "relocated"}, {"file": "ledgerlite/schemas.py", "line": 108, "claimed_line": 108, "snippet": "        return \"******\" + v[-4:]", "claimed_snippet": "        return \"******\" + v[-4:]", "verified": false, "match": "not_found"}, {"file": "ledgerlite/main.py", "line": 82, "claimed_line": 49, "snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)", "claimed_snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)", "verified": true, "match": "relocated"}, {"file": "ledgerlite/main.py", "line": 85, "claimed_line": 60, "snippet": "    return StatementResponse(account=account, transactions=transactions)", "claimed_snippet": "    return StatementResponse(account=account, transactions=transactions)", "verified": true, "match": "relocated"}], "tests": [{"file": "ledgerlite/tests/test_spec11_statement_masking.py", "test_name": "test_statement_masks_account_number", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec11_statement_masking.py", "test_name": "test_statement_mask_preserves_last4", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec11_statement_masking.py", "test_name": "test_account_detail_endpoint_not_masked", "exists": false, "passed": null}], "checks": {"citations_verified": 4, "citations_total": 5, "tests_passing": 0, "tests_cited": 3, "mutations": {"tried": 3, "killed": 3, "survived": 0, "proven": true}}, "history": [{"stage": "baseline", "status": "missing"}, {"stage": "round1", "status": "proven"}, {"stage": "final", "status": "untested"}], "mutations": [{"id": "REQ-11-M1", "description": "mask with 6 stars instead of the spec's ****", "file": "ledgerlite/schemas.py", "line": 64, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req11_statement_masking.py::test_statement_masks_account_number_like_the_spec_example", "duration_s": 3.14}, {"id": "REQ-11-M2", "description": "statements show the full account number", "file": "ledgerlite/schemas.py", "line": 174, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req11_statement_masking.py::test_statement_masks_account_number_like_the_spec_example", "duration_s": 3.13}, {"id": "REQ-11-M3", "description": "reveal 5 digits instead of 4", "file": "ledgerlite/schemas.py", "line": 64, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req11_statement_masking.py::test_statement_masks_account_number_like_the_spec_example", "duration_s": 2.88}]}, {"id": "REQ-12", "title": "Audit log retention — no deletion", "text": "Audit log entries must never be deleted through the API (7-year retention).", "acceptance_criteria": ["No delete endpoint exists for audit entries.", "A DELETE request to audit entries returns HTTP 405 or 404."], "risk": "Medium", "change": "none", "ai_status": "covered", "status": "unverified", "reason": "No DELETE /audit route is defined in main.py, making audit log deletion impossible at the API level. The GET /audit route at line 95 is the only audit endpoint. Tests confirm that DELETE requests to /audit and /audit/{id} both return 405 Method Not Allowed.", "evidence": [{"file": "ledgerlite/main.py", "line": 95, "claimed_line": 95, "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])", "claimed_snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])", "verified": false, "match": "not_found"}], "tests": [{"file": "ledgerlite/tests/test_spec12_audit_retention.py", "test_name": "test_delete_audit_returns_405", "exists": false, "passed": null}, {"file": "ledgerlite/tests/test_spec12_audit_retention.py", "test_name": "test_delete_audit_entry_returns_405", "exists": false, "passed": null}], "checks": {"citations_verified": 0, "citations_total": 1, "tests_passing": 0, "tests_cited": 2, "mutations": {"tried": 2, "killed": 2, "survived": 0, "proven": true}}, "history": [{"stage": "baseline", "status": "untested"}, {"stage": "round1", "status": "weak"}, {"stage": "final", "status": "unverified"}], "mutations": [{"id": "REQ-12-M1", "description": "add an endpoint that deletes audit entries", "file": "ledgerlite/main.py", "line": 120, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_existing_entry_cannot_be_modified[DELETE]", "duration_s": 2.01}, {"id": "REQ-12-M2", "description": "add an endpoint that purges the whole audit log", "file": "ledgerlite/main.py", "line": 120, "outcome": "killed", "killed_by": "ledgerlite/tests/test_req06_audit_log.py::test_audit_collection_cannot_be_modified[DELETE]", "duration_s": 1.91}]}], "tests_functions": {"before": 28, "after": 87}, "sessions": [{"task": "task01", "task_id": "7f673db17540c741e3cfac47706df035", "title": "Create a new Python project called \"solotrace\" in this folder with this layout:", "started_at": "2026-09-25T20:08:10+05:00", "finished_at": "2026-09-25T21:19:55+05:00", "duration_min": 71.7, "bobcoins": 15.44, "context_tokens": 150848, "subagents": {"count": 12, "parallel_wall_clock_s": 112.7, "sum_of_durations_s": 1021.0, "bobcoins": 0.89, "started_at": "2026-09-25T21:12:54+05:00"}, "screenshot": "solotrace_task01_summary_P0-P4_setup_app_mode_read_audit.png"}, {"task": "task02", "task_id": "fa8f670b6d46ec7f9e183bed51f47384", "title": "Build the SoloTrace CLI (python -m solotrace) in the solotrace package. Standard library only.", "started_at": "2026-09-25T21:26:20+05:00", "finished_at": "2026-09-25T21:38:11+05:00", "duration_min": 11.8, "bobcoins": 3.14, "context_tokens": 59110, "subagents": {"count": 0, "parallel_wall_clock_s": null, "sum_of_durations_s": null, "bobcoins": 0, "started_at": null}, "screenshot": "solotrace_task02_summary_P5_cli_evidence_verifier.png"}, {"task": "task03", "task_id": "61e43b678068235330a1f66e8e439254", "title": "Stage 3 — FIX. Act as the SoloTrace Auditor and follow .bob/rules-solotrace strictly.", "started_at": "2026-09-25T21:42:07+05:00", "finished_at": "2026-09-25T21:57:17+05:00", "duration_min": 15.2, "bobcoins": 5.53, "context_tokens": 77787, "subagents": {"count": 12, "parallel_wall_clock_s": 37.5, "sum_of_durations_s": 323.6, "bobcoins": 1.35, "started_at": "2026-09-25T21:52:11+05:00"}, "screenshot": "solotrace_task03_summary_P6_fix_and_reaudit.png"}, {"task": "task04", "task_id": "be4871b6a8936ac2e60ddbbfdb63a4d8", "title": "Polish SoloTrace and build the public demo dashboard.", "started_at": "2026-09-25T22:04:12+05:00", "finished_at": "2026-09-25T22:18:01+05:00", "duration_min": 13.8, "bobcoins": 7.48, "context_tokens": 97816, "subagents": {"count": 0, "parallel_wall_clock_s": null, "sum_of_durations_s": null, "bobcoins": 0, "started_at": null}, "screenshot": "solotrace_task04_summary_P7_dashboard_pages.png"}], "subagents_total": 24, "bobcoins_total": 31.59, "signoffs": [{"task": "task03", "approved_at": "2026-09-25T21:46:52+05:00", "statement": "Approved — compliance sign-off by Shehar Bano"}], "bob_config": [{"path": ".bob/custom_modes.yaml", "what": "SoloTrace Auditor custom mode: auditor role, tool groups, subagents", "url": "https://github.com/bano1397/solotrace/blob/main/.bob/custom_modes.yaml"}, {"path": ".bob/rules-solotrace/01-audit-rules.md", "what": "Evidence rules: cite file:line, four verdicts, no edits during an audit", "url": "https://github.com/bano1397/solotrace/blob/main/.bob/rules-solotrace/01-audit-rules.md"}, {"path": ".bob/skills/solotrace-audit/SKILL.md", "what": "Reusable skill: Read → Audit → Prove → Report on any repo and spec", "url": "https://github.com/bano1397/solotrace/blob/main/.bob/skills/solotrace-audit/SKILL.md"}, {"path": "AGENTS.md", "what": "Project map loaded automatically by every Bob task", "url": "https://github.com/bano1397/solotrace/blob/main/AGENTS.md"}], "screenshots": [{"src": "assets/bob/solotrace_all_tasks_overview.png", "caption": "all tasks overview"}, {"src": "assets/bob/solotrace_task01_session_P3_read_requirements.png", "caption": "task01 session P3 read requirements"}, {"src": "assets/bob/solotrace_task01_summary_P0-P4_setup_app_mode_read_audit.png", "caption": "task01 summary P0-P4 setup app mode read audit"}, {"src": "assets/bob/solotrace_task02_summary_P5_cli_evidence_verifier.png", "caption": "task02 summary P5 cli evidence verifier"}, {"src": "assets/bob/solotrace_task03_session_P6_before_after_table.png", "caption": "task03 session P6 before after table"}, {"src": "assets/bob/solotrace_task03_session_P6_fix_plan_human_approval.png", "caption": "task03 session P6 fix plan human approval"}, {"src": "assets/bob/solotrace_task03_summary_P6_fix_and_reaudit.png", "caption": "task03 summary P6 fix and reaudit"}, {"src": "assets/bob/solotrace_task04_session_P7_dashboard_results.png", "caption": "task04 session P7 dashboard results"}, {"src": "assets/bob/solotrace_task04_summary_P7_dashboard_pages.png", "caption": "task04 summary P7 dashboard pages"}]}</script>
 <script>
-const MATRIX_DATA = {"rows": [{"id": "REQ-01", "title": "Unique email and KYC gating", "risk": "High", "change": "none", "status": "covered", "reason": "Unique email is enforced at account creation by querying for an existing Account with the same email before inserting (services.py:101). KYC gating is enforced by _require_kyc(), which raises HTTP 403 when kyc_status != 'verified' (services.py:86-87); this guard is called before every deposit, withdrawal, and transfer operation. All four gating paths and the duplicate-email path are each covered by a dedicated test.", "evidence": ["ledgerlite/services.py:101      if db.query(Account).filter(Account.email == email).first():", "ledgerlite/services.py:86  def _require_kyc(account: Account) -> None:", "ledgerlite/services.py:87      if account.kyc_status != \"verified\":"], "tests": ["test_duplicate_email_rejected (ledgerlite/tests/test_spec1_accounts_kyc.py)", "test_deposit_blocked_before_kyc (ledgerlite/tests/test_spec1_accounts_kyc.py)", "test_withdraw_blocked_before_kyc (ledgerlite/tests/test_spec1_accounts_kyc.py)", "test_transfer_sender_blocked_before_kyc (ledgerlite/tests/test_spec1_accounts_kyc.py)", "test_transfer_recipient_blocked_before_kyc (ledgerlite/tests/test_spec1_accounts_kyc.py)"]}, {"id": "REQ-02", "title": "Deposit amount limits", "risk": "Medium", "change": "none", "status": "covered", "reason": "Deposit validation enforces a lower bound (amount must be > 0) and an upper bound (amount must not exceed 50 000.00) at the service layer. Six dedicated tests exercise zero, negative, boundary-exact-reject, boundary-exact-accept, a general positive value, and accumulation across multiple deposits.", "evidence": ["ledgerlite/services.py:19  _MAX_DEPOSIT = Decimal(\"50000.00\")", "ledgerlite/services.py:135      if amount <= Decimal(\"0\"):", "ledgerlite/services.py:136          raise HTTPException(status_code=400, detail=\"Deposit amount must be greater than 0\")", "ledgerlite/services.py:137      if amount > _MAX_DEPOSIT:", "ledgerlite/services.py:138          raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {_MAX_DEPOSIT}\")"], "tests": ["test_zero_rejected (ledgerlite/tests/test_spec2_deposit_limits.py)", "test_negative_rejected (ledgerlite/tests/test_spec2_deposit_limits.py)", "test_boundary_50000_01_rejected (ledgerlite/tests/test_spec2_deposit_limits.py)", "test_boundary_50000_accepted (ledgerlite/tests/test_spec2_deposit_limits.py)", "test_positive_amount_accepted (ledgerlite/tests/test_spec2_deposit_limits.py)", "test_multiple_deposits_accumulate (ledgerlite/tests/test_spec2_deposit_limits.py)"]}, {"id": "REQ-03", "title": "Withdrawal floor \u2014 no negative balance", "risk": "High", "change": "none", "status": "covered", "reason": "The withdrawal floor is enforced in services.py at lines 156-157: before applying any debit the service checks that the resulting balance would not be less than zero, and raises HTTP 400 with 'Insufficient funds' if it would. Line 159 then performs the actual debit only when that guard passes. Three tests cover the requirement: test_withdrawal_overdraft_rejected confirms a withdrawal of one cent above the balance is rejected with HTTP 400 and the 'Insufficient' message; test_balance_never_goes_negative drains the account to exactly 0.00 and then confirms a further withdrawal is rejected and the balance remains 0.00; test_withdrawal_exact_balance_allowed confirms that withdrawing exactly the full balance succeeds and leaves the balance at 0.00.", "evidence": ["ledgerlite/services.py:156      if account.balance - amount < Decimal(\"0\"):", "ledgerlite/services.py:157          raise HTTPException(status_code=400, detail=\"Insufficient funds\")", "ledgerlite/services.py:159      account.balance -= amount"], "tests": ["test_withdrawal_overdraft_rejected (ledgerlite/tests/test_spec3_withdrawals.py)", "test_balance_never_goes_negative (ledgerlite/tests/test_spec3_withdrawals.py)", "test_withdrawal_exact_balance_allowed (ledgerlite/tests/test_spec3_withdrawals.py)"]}, {"id": "REQ-04", "title": "Atomic transfers", "risk": "High", "change": "none", "status": "covered", "reason": "The transfer service wraps the balance mutation, Transfer insert, flush, and audit write inside a single try/except block (services.py:220-245). The debit is applied to sender.balance (line 221) and the credit to recipient.balance (line 223) before db.commit() is called (line 242). If any step raises \u2014 including the audit write \u2014 the except clause on line 243 calls db.rollback() (line 244) and re-raises, so neither balance change is ever persisted. test_transfer_rolls_back_on_db_error proves this by patching _write_audit to raise a RuntimeError after the debit and asserting both balances are unchanged after the 500 response. test_successful_transfer_debits_sender_credits_recipient proves the happy path commits both sides atomically.", "evidence": ["ledgerlite/services.py:220      try:", "ledgerlite/services.py:221          sender.balance -= amount", "ledgerlite/services.py:223              recipient.balance += amount", "ledgerlite/services.py:242          db.commit()", "ledgerlite/services.py:243      except Exception:", "ledgerlite/services.py:244          db.rollback()", "ledgerlite/services.py:245          raise"], "tests": ["test_transfer_rolls_back_on_db_error (ledgerlite/tests/test_spec4_transfer_atomicity.py)", "test_successful_transfer_debits_sender_credits_recipient (ledgerlite/tests/test_spec4_transfer_atomicity.py)"]}, {"id": "REQ-05", "title": "Large-transfer pending approval threshold", "risk": "High", "change": "changed", "status": "covered", "reason": "The v2.0 threshold of 5,000.00 is correctly implemented. Transfers >= 5,000.00 are set to pending_approval; transfers below that are completed immediately. This was fixed from the old v1.0 value of 10,000.00. All four boundary tests pass.", "evidence": ["ledgerlite/services.py:20  _LARGE_TRANSFER_THRESHOLD = Decimal(\"5000.00\")", "ledgerlite/services.py:217      large = amount >= _LARGE_TRANSFER_THRESHOLD", "ledgerlite/services.py:218      status = \"pending_approval\" if large else \"completed\""], "tests": ["test_transfer_below_threshold_completed (ledgerlite/tests/test_spec5_large_transfer_threshold.py)", "test_transfer_at_threshold_pending (ledgerlite/tests/test_spec5_large_transfer_threshold.py)", "test_transfer_above_threshold_pending (ledgerlite/tests/test_spec5_large_transfer_threshold.py)", "test_transfer_just_below_threshold_completed (ledgerlite/tests/test_spec5_large_transfer_threshold.py)"]}, {"id": "REQ-06", "title": "Audit log for every money movement", "risk": "High", "change": "none", "status": "covered", "reason": "_write_audit() is called in deposit() (line 141), withdraw() (line 160), create_transfer() (line 234), and approve_transfer() (line 269). No PATCH/DELETE endpoint for audit entries exists. All five criteria are asserted by named tests in test_spec6_audit_log.py.", "evidence": ["ledgerlite/services.py:40  def _write_audit(", "ledgerlite/services.py:141      _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)", "ledgerlite/services.py:160      _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)", "ledgerlite/services.py:234          _write_audit(", "ledgerlite/main.py:95  @app.get(\"/audit\", response_model=list[AuditEntryResponse])"], "tests": ["test_audit_entry_written_on_deposit (ledgerlite/tests/test_spec6_audit_log.py)", "test_audit_entry_written_on_withdrawal (ledgerlite/tests/test_spec6_audit_log.py)", "test_audit_entry_written_on_transfer (ledgerlite/tests/test_spec6_audit_log.py)", "test_no_audit_delete_endpoint (ledgerlite/tests/test_spec6_audit_log.py)", "test_no_audit_patch_endpoint (ledgerlite/tests/test_spec6_audit_log.py)"]}, {"id": "REQ-07", "title": "Account lockout after failed PIN attempts", "risk": "Medium", "change": "none", "status": "covered", "reason": "_check_pin() increments failed_pin_attempts on each wrong PIN; on the 5th failure (>= _MAX_FAILED_PINS) it sets account.locked = True and raises HTTP 423. A subsequent correct PIN resets failed_pin_attempts to 0. Both acceptance criteria are asserted by dedicated tests.", "evidence": ["ledgerlite/services.py:21  _MAX_FAILED_PINS = 5", "ledgerlite/services.py:70      if account.locked:", "ledgerlite/services.py:71          raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")", "ledgerlite/services.py:73      if not verify_pin(pin, account.pin_hash):", "ledgerlite/services.py:74          account.failed_pin_attempts += 1", "ledgerlite/services.py:75          if account.failed_pin_attempts >= _MAX_FAILED_PINS:", "ledgerlite/services.py:76              account.locked = True", "ledgerlite/services.py:83      account.failed_pin_attempts = 0"], "tests": ["test_fifth_wrong_pin_locks_account (ledgerlite/tests/test_spec7_pin_lockout.py)", "test_correct_pin_resets_counter (ledgerlite/tests/test_spec7_pin_lockout.py)"]}, {"id": "REQ-08", "title": "Exact decimal arithmetic", "risk": "Medium", "change": "none", "status": "covered", "reason": "All monetary values are coerced through _to_decimal() (Decimal(str(value))) before arithmetic; the database column is Numeric(12,2); and balance is serialised as a 2dp string via @field_serializer. The critical 0.10+0.20==0.30 criterion is directly asserted by test_point_one_plus_point_two_equals_point_three.", "evidence": ["ledgerlite/models.py:24      balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))", "ledgerlite/services.py:11  from decimal import Decimal, InvalidOperation", "ledgerlite/services.py:91  def _to_decimal(value) -> Decimal:", "ledgerlite/services.py:93          return Decimal(str(value))", "ledgerlite/schemas.py:64      @field_serializer(\"balance\")", "ledgerlite/schemas.py:66          return f\"{v:.2f}\""], "tests": ["test_point_one_plus_point_two_equals_point_three (ledgerlite/tests/test_spec8_decimal_arithmetic.py)", "test_balance_serialised_as_two_decimal_places (ledgerlite/tests/test_spec8_decimal_arithmetic.py)", "test_multiple_deposits_accumulate (ledgerlite/tests/test_spec2_deposit_limits.py)", "test_boundary_50000_accepted (ledgerlite/tests/test_spec2_deposit_limits.py)"]}, {"id": "REQ-09", "title": "Daily outgoing transfer cap", "risk": "High", "change": "new", "status": "covered", "reason": "The implementation introduces a hard cap of 20,000.00 in outgoing transfers per UTC calendar day. The constant _DAILY_TRANSFER_CAP is defined at module level and the check runs inside the transfer service before any balance mutation: it sums all transfers with status 'completed' or 'pending_approval' for the sender since today_start (UTC midnight), converts the aggregate to Decimal, and raises HTTP 400 when daily_total + amount > _DAILY_TRANSFER_CAP. Three dedicated tests cover the boundary exactly (20,000.00 accepted), the first cent over the boundary (20,000.01 rejected), and a three-transfer scenario where the third transfer is blocked.", "evidence": ["ledgerlite/services.py:22  _DAILY_TRANSFER_CAP = Decimal(\"20000.00\")", "ledgerlite/services.py:198      today_utc = datetime.datetime.now(timezone.utc).date()", "ledgerlite/services.py:199      today_start = datetime.datetime(today_utc.year, today_utc.month, today_utc.day, tzinfo=timezone.utc)", "ledgerlite/services.py:201      daily_total_row = (", "ledgerlite/services.py:210      daily_total = Decimal(str(daily_total_row[0]))", "ledgerlite/services.py:211      if daily_total + amount > _DAILY_TRANSFER_CAP:", "ledgerlite/services.py:212          raise HTTPException("], "tests": ["test_daily_cap_exact_boundary_accepted (ledgerlite/tests/test_spec9_daily_cap.py)", "test_daily_cap_exceeded_rejected (ledgerlite/tests/test_spec9_daily_cap.py)", "test_daily_cap_three_transfers_third_blocked (ledgerlite/tests/test_spec9_daily_cap.py)"]}, {"id": "REQ-10", "title": "Sanctions list blocking", "risk": "High", "change": "new", "status": "covered", "reason": "Transfers where the sender or recipient has a country_code in {KP, IR, SY, CU} are rejected with HTTP 400 and detail 'sanctions'. A sanctions_blocked audit entry is written before rejection. All 9 test cases (4 sender-blocked, 4 recipient-blocked, 1 audit-entry) pass.", "evidence": ["ledgerlite/services.py:23  _SANCTIONED_COUNTRIES = {\"KP\", \"IR\", \"SY\", \"CU\"}", "ledgerlite/services.py:180      if sender.country_code in _SANCTIONED_COUNTRIES or recipient.country_code in _SANCTIONED_COUNTRIES:", "ledgerlite/services.py:184              action=\"sanctions_blocked\",", "ledgerlite/services.py:190          raise HTTPException(status_code=400, detail=\"sanctions\")"], "tests": ["test_sanctioned_sender_blocked[KP] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_sender_blocked[IR] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_sender_blocked[SY] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_sender_blocked[CU] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_recipient_blocked[KP] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_recipient_blocked[IR] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_recipient_blocked[SY] (ledgerlite/tests/test_spec10_sanctions.py)", "test_sanctioned_recipient_blocked[CU] (ledgerlite/tests/test_spec10_sanctions.py)", "test_audit_entry_written_for_sanctions_block (ledgerlite/tests/test_spec10_sanctions.py)"]}, {"id": "REQ-11", "title": "Masked account numbers in statements", "risk": "Medium", "change": "new", "status": "covered", "reason": "StatementAccountResponse overrides the account_number serializer to emit '******' + last-4 digits. The statement route uses StatementResponse (which embeds StatementAccountResponse) as its response_model, so every GET /accounts/{id}/statement response has a masked account number. The detail endpoint continues to use the unmasked AccountResponse. Three tests cover the requirement: pattern format, last-4 preservation, and detail-endpoint passthrough.", "evidence": ["ledgerlite/schemas.py:103  class StatementAccountResponse(AccountResponse):", "ledgerlite/schemas.py:107      def serialize_account_number(self, v: str) -> str:", "ledgerlite/schemas.py:108          return \"******\" + v[-4:]", "ledgerlite/main.py:49  @app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)", "ledgerlite/main.py:60      return StatementResponse(account=account, transactions=transactions)"], "tests": ["test_statement_masks_account_number (ledgerlite/tests/test_spec11_statement_masking.py)", "test_statement_mask_preserves_last4 (ledgerlite/tests/test_spec11_statement_masking.py)", "test_account_detail_endpoint_not_masked (ledgerlite/tests/test_spec11_statement_masking.py)"]}, {"id": "REQ-12", "title": "Audit log retention \u2014 no deletion", "risk": "Medium", "change": "none", "status": "covered", "reason": "No DELETE /audit route is defined in main.py, making audit log deletion impossible at the API level. The GET /audit route at line 95 is the only audit endpoint. Tests confirm that DELETE requests to /audit and /audit/{id} both return 405 Method Not Allowed.", "evidence": ["ledgerlite/main.py:95  @app.get(\"/audit\", response_model=list[AuditEntryResponse])"], "tests": ["test_delete_audit_returns_405 (ledgerlite/tests/test_spec12_audit_retention.py)", "test_delete_audit_entry_returns_405 (ledgerlite/tests/test_spec12_audit_retention.py)"]}], "summary": {"total": 12, "covered": 12, "untested": 0, "contradicts": 0, "missing": 0, "score_percent": 100.0}};
-const BEFORE_MAP  = {"REQ-01": "covered", "REQ-02": "covered", "REQ-03": "covered", "REQ-04": "covered", "REQ-05": "contradicts", "REQ-06": "untested", "REQ-07": "untested", "REQ-08": "untested", "REQ-09": "missing", "REQ-10": "missing", "REQ-11": "missing", "REQ-12": "untested"};
+(function () {
+  "use strict";
+  var D = JSON.parse(document.getElementById("data").textContent);
+  var LABEL = {proven:"Proven", covered:"Covered", weak:"Weak tests", unverified:"Unverified", untested:"Untested", contradicts:"Contradicts spec", missing:"Missing"};
+  var ICON = {proven:"✓", covered:"✓", weak:"!", unverified:"?", untested:"!", contradicts:"✕", missing:"–"};
 
-function statusBadge(s) {
-  const m = {
-    covered:    ['badge-covered',    '✅ covered'],
-    untested:   ['badge-untested',   '⚠ untested'],
-    contradicts:['badge-contradicts','✗ contradicts'],
-    missing:    ['badge-missing',    '● missing'],
-  };
-  const [cls, label] = m[s] || ['', s];
-  return `<span class="badge ${cls}">${label}</span>`;
-}
-function changeBadge(c) {
-  const m = { new:'badge-new', changed:'badge-changed', none:'badge-none' };
-  return `<span class="badge ${m[c]||'badge-none'}">${c}</span>`;
-}
-function riskBadge(r) {
-  const m = { High:'badge-high', Medium:'badge-medium', Low:'badge-low' };
-  return `<span class="badge ${m[r]||''}">${r}</span>`;
-}
+  function h(tag, attrs, kids) {
+    var el = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === "class") el.className = attrs[k];
+      else if (k === "text") el.textContent = attrs[k];
+      else if (attrs[k] !== null && attrs[k] !== undefined) el.setAttribute(k, attrs[k]);
+    }
+    (kids || []).forEach(function (c) { if (c !== null && c !== undefined) el.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return el;
+  }
+  function pct(n, d) { return d ? Math.round(n / d * 100) : 0; }
+  function status(s) { return h("span", {class: "status s-" + (s || "none"), text: s ? ICON[s] + " " + LABEL[s] : "—"}); }
+  function link(text, href, cls) { return h("a", {class: cls || null, href: href, target: "_blank", rel: "noopener"}, [text]); }
 
-function buildMatrix(filter) {
-  const tbody = document.getElementById('matrix-body');
-  const rows  = MATRIX_DATA.rows;
-  const html  = [];
-  rows.forEach((row, i) => {
-    if (filter !== 'all' && row.status !== filter) return;
-    const beforeStatus = BEFORE_MAP[row.id] || 'missing';
-    const ev = row.evidence || [];
-    const evId = `ev-${i}`;
-    const evHtml = ev.length
-      ? `<button class="ev-toggle" onclick="toggleEvidence('${evId}')">Show ${ev.length}</button>
-         <div class="evidence-snippet" id="${evId}">${ev.map(e=>escHtml(e)).join('\n')}</div>`
-      : '<span style="color:var(--text-dim)">—</span>';
+  // theme
+  var root = document.documentElement, btn = document.getElementById("theme");
+  try { var saved = localStorage.getItem("solotrace-theme"); if (saved) root.setAttribute("data-theme", saved); } catch (e) {}
+  function current() { var t = root.getAttribute("data-theme"); if (t === "auto") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; return t; }
+  function label() { btn.textContent = current() === "dark" ? "☀ Light" : "☾ Dark"; }
+  btn.addEventListener("click", function () { var n = current() === "dark" ? "light" : "dark"; root.setAttribute("data-theme", n); try { localStorage.setItem("solotrace-theme", n); } catch (e) {} label(); });
+  label();
 
-    const tests = row.tests || [];
-    const testHtml = tests.length
-      ? `<div class="test-list">${tests.map(t => `<span class="test-item">${escHtml(t.split(' (')[0])}</span>`).join('')}</div>`
-      : '<span style="color:var(--text-dim)">—</span>';
+  var stages = D.stages, final = stages[stages.length - 1];
 
-    html.push(`<tr data-status="${row.status}">
-      <td><strong>${row.id}</strong></td>
-      <td>${escHtml(row.title)}</td>
-      <td>${riskBadge(row.risk)}</td>
-      <td>${changeBadge(row.change)}</td>
-      <td>${statusBadge(beforeStatus)}</td>
-      <td>${statusBadge(row.status)}</td>
-      <td>${evHtml}</td>
-      <td>${testHtml}</td>
-    </tr>`);
+  // hero
+  var hero = document.getElementById("hero");
+  hero.appendChild(h("h1", null, ["Every requirement, ", h("span", {class: "hl", text: "proven."})]));
+  hero.appendChild(h("p", {class: "lede", text: "SoloTrace turns IBM Bob into a compliance auditor. It reads your requirements document, proves each requirement in code and tests with verified file:line evidence, and does not trust green tests until they catch deliberate sabotage."}));
+  hero.appendChild(h("p", {class: "sub", text: "Built for engineering and compliance teams in banking, insurance and healthcare, who must show auditors that every written requirement is implemented and tested before each release."}));
+  var cta = h("div", {class: "cta"});
+  if (D.video_url) cta.appendChild(link("▶ Watch the 3-minute demo", D.video_url, "btn primary"));
+  cta.appendChild(link("Read the audit report", D.report_url, D.video_url ? "btn" : "btn primary"));
+  cta.appendChild(link("Requirements spec (PDF)", D.spec.url, "btn"));
+  cta.appendChild(link("Source on GitHub", D.repo_url, "btn"));
+  hero.appendChild(cta);
+
+  // journey
+  var bars = [];
+  var journey = document.getElementById("journey");
+  stages.forEach(function (s) {
+    var card = h("div", {class: "stage" + (s.key === "final" ? " final" : "")});
+    card.appendChild(h("div", {class: "kicker", text: (s.task ? "IBM Bob " + s.task.replace("task0", "task ") : "") + (s.commit ? " · commit " + s.commit : "")}));
+    card.appendChild(h("h3", {text: s.label}));
+    function meter(name, value, total, cls, note) {
+      var i = h("i", {class: cls});
+      bars.push([i, pct(value, total)]);
+      return h("div", {class: "meter"}, [
+        h("div", {class: "row"}, [h("span", {text: name}), h("span", {class: "val " + cls, text: pct(value, total) + "%"})]),
+        h("div", {class: "bar", role: "img", "aria-label": name + ": " + value + " of " + total}, [i]),
+        note ? h("div", {class: "muted small", text: note}) : null
+      ]);
+    }
+    card.appendChild(meter("AI verdicts say covered", s.ai_covered, s.total, "ai", s.ai_covered + " of " + s.total + " requirements"));
+    if (s.mutation_testing) {
+      card.appendChild(meter("SoloTrace proves", s.proven, s.total, s.proven === s.total ? "pr" : "lo", s.proven + " of " + s.total + " requirements"));
+    } else {
+      card.appendChild(meter("Evidence verified", s.evidence_ok, s.total, "lo", "no mutation testing yet"));
+    }
+    var facts = [];
+    facts.push(s.citations_verified + " of " + s.citations_total + " code citations verified");
+    if (s.not_verbatim) facts.push(s.not_verbatim + " citations were not real code (paraphrased or abridged)");
+    if (s.tests_passed !== null && s.tests_passed !== undefined) facts.push(s.tests_passed + " tests passing" + (s.tests_failed ? ", " + s.tests_failed + " failing" : ""));
+    if (s.mutation_testing) facts.push(s.mutations_killed + " of " + s.mutations_total + " sabotage attempts caught" + (s.mutations_total - s.mutations_killed ? " — " + (s.mutations_total - s.mutations_killed) + " slipped through" : ""));
+    card.appendChild(h("ul", null, facts.map(function (f) { return h("li", {text: f}); })));
+    journey.appendChild(card);
   });
-  tbody.innerHTML = html.join('');
-}
 
-function filterMatrix(filter, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  buildMatrix(filter);
-}
+  // KPIs
+  var tf = D.tests_functions || {};
+  var kpis = [
+    [final.total, "requirements traced"],
+    [final.citations_verified + "/" + final.citations_total, "code citations verified"],
+    [final.mutations_total ? final.mutations_killed + "/" + final.mutations_total : "—", "sabotage attempts caught"],
+    [final.tests_passed, "tests passing" + (tf.before && tf.after ? " (" + tf.before + " → " + tf.after + " test functions)" : "")],
+    [D.subagents_total, "Bob subagents run in parallel"],
+    [D.bobcoins_total, "Bobcoins, whole build"]
+  ];
+  var kbox = document.getElementById("kpis");
+  kpis.forEach(function (k) { kbox.appendChild(h("div", {class: "kpi"}, [h("b", {text: String(k[0])}), h("span", {text: k[1]})])); });
 
-function toggleEvidence(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.style.display = el.style.display === 'block' ? 'none' : 'block';
-}
+  // flow
+  var steps = [
+    ["READ", "Bob reads the spec PDF and extracts requirements with acceptance criteria.", "bob", "IBM Bob"],
+    ["AUDIT", "12 subagents, one per requirement, in parallel, each citing file:line evidence.", "bob", "IBM Bob"],
+    ["VERIFY", "Every citation is re-found in the audited commit; paraphrases and unsafe paths are rejected.", "code", "SoloTrace"],
+    ["SIGN-OFF", "A compliance officer approves the fix plan before any code changes.", "human", "Human"],
+    ["FIX", "Bob writes a failing test for each gap, then the fix, then runs the whole suite.", "bob", "IBM Bob"],
+    ["PROVE", "Each requirement is sabotaged on purpose; its tests must catch every attempt.", "code", "SoloTrace"],
+    ["REPORT", "Traceability matrix, audit report and this dashboard.", "code", "SoloTrace"]
+  ];
+  var flow = document.getElementById("flow");
+  steps.forEach(function (s, i) { flow.appendChild(h("div", {class: "step"}, [h("b", {text: (i + 1) + " · " + s[0]}), h("p", {text: s[1]}), h("span", {class: "actor " + s[2], text: s[3]})])); });
 
-function escHtml(s) {
-  return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
-}
+  // matrix
+  var filters = [
+    ["all", "All"], ["proven", "Proven"], ["new", "New in v2.0"], ["changed", "Changed in v2.0"], ["weak-before", "Weak in round 1"]
+  ];
+  var active = "all", tbody = document.getElementById("matrix"), empty = document.getElementById("empty");
+  var fbox = document.getElementById("filters");
+  filters.forEach(function (f) {
+    var b = h("button", {class: "chip", type: "button", "aria-pressed": f[0] === active ? "true" : "false", text: f[1]});
+    b.addEventListener("click", function () { active = f[0]; Array.prototype.forEach.call(fbox.children, function (c) { c.setAttribute("aria-pressed", "false"); }); b.setAttribute("aria-pressed", "true"); draw(); });
+    fbox.appendChild(b);
+  });
+  function histStatus(r, key) { var x = (r.history || []).filter(function (e) { return e.stage === key; })[0]; return x ? x.status : null; }
+  function match(r) {
+    if (active === "all") return true;
+    if (active === "proven") return r.status === "proven";
+    if (active === "new" || active === "changed") return r.change === active;
+    if (active === "weak-before") return histStatus(r, "round1") === "weak";
+    return true;
+  }
+  function detail(r) {
+    var box = h("div", {class: "box"});
+    box.appendChild(h("h4", {text: "Requirement"}));
+    box.appendChild(h("p", {class: "quote", text: r.text}));
+    box.appendChild(h("h4", {text: "Acceptance criteria"}));
+    box.appendChild(h("ul", null, r.acceptance_criteria.map(function (a) { return h("li", {text: a}); })));
+    box.appendChild(h("h4", {text: "Auditor's reasoning"}));
+    box.appendChild(h("p", {text: r.reason}));
+    box.appendChild(h("h4", {text: "Code evidence (" + r.checks.citations_verified + "/" + r.checks.citations_total + " verified)"}));
+    r.evidence.forEach(function (e) {
+      box.appendChild(h("div", {class: "ev"}, [
+        h("span", {class: e.verified ? "ok" : "no", text: e.verified ? "✓" : "✕", "aria-label": e.verified ? "verified" : "not verified"}),
+        h("span", {class: "loc", text: e.file + ":" + e.line}),
+        h("code", {text: String(e.snippet).trim()})
+      ]));
+    });
+    box.appendChild(h("h4", {text: "Tests (" + r.checks.tests_passing + "/" + r.checks.tests_cited + " passing)"}));
+    r.tests.forEach(function (t) {
+      box.appendChild(h("div", {class: "ev"}, [
+        h("span", {class: t.passed ? "ok" : "no", text: t.passed ? "✓" : "✕"}),
+        h("code", {text: t.test_name}),
+        h("span", {class: "loc", text: t.file})
+      ]));
+    });
+    if (r.mutations && r.mutations.length) {
+      box.appendChild(h("h4", {text: "Sabotage attempts (" + r.mutations.filter(function (m) { return m.outcome === "killed"; }).length + "/" + r.mutations.length + " caught)"}));
+      r.mutations.forEach(function (m) {
+        var caught = m.outcome === "killed";
+        var by = m.killed_by ? m.killed_by.split("::").pop() : "";
+        box.appendChild(h("div", {class: "ev"}, [
+          h("span", {class: caught ? "ok" : "no", text: caught ? "✓" : "✕"}),
+          h("span", {text: m.description + (caught ? " — caught by " : " — NOT caught")}),
+          by ? h("code", {text: by}) : null
+        ]));
+      });
+    }
+    return box;
+  }
+  function draw() {
+    tbody.textContent = "";
+    var shown = 0;
+    D.rows.forEach(function (r) {
+      if (!match(r)) return;
+      shown++;
+      var id = "d-" + r.id;
+      var titleCell = h("td", {class: "col-req"}, [r.title,
+        r.change !== "none" ? h("span", {class: "tag " + r.change, text: r.change.toUpperCase()}) : null,
+        h("span", {class: "tag " + r.risk.toLowerCase(), text: r.risk})]);
+      var idCell = h("td", {class: "id"}, [h("button", {class: "chip", type: "button", "aria-expanded": "false", "aria-controls": id, text: r.id})]);
+      var tr = h("tr", {class: "row"}, [idCell, titleCell,
+        h("td", {class: "col-base"}, [status(histStatus(r, "baseline"))]),
+        h("td", {class: "col-r1"}, [status(histStatus(r, "round1"))]),
+        h("td", null, [status(r.status), h("div", {class: "muted small only-mobile", text: r.title})])]);
+      var dr = h("tr", {class: "detail", id: id, hidden: ""}, [h("td", {colspan: "5"}, [detail(r)])]);
+      function toggle() {
+        var open = dr.hasAttribute("hidden");
+        if (open) dr.removeAttribute("hidden"); else dr.setAttribute("hidden", "");
+        idCell.firstChild.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+      tr.addEventListener("click", toggle);
+      tbody.appendChild(tr); tbody.appendChild(dr);
+    });
+    empty.hidden = shown !== 0;
+  }
+  draw();
 
-function toggleTheme() {
-  const html = document.documentElement;
-  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
-}
+  // verifier
+  var vbox = document.getElementById("verif");
+  stages.forEach(function (s) {
+    var bad = s.citations_total - s.citations_verified;
+    vbox.appendChild(h("div", {class: "card"}, [
+      h("div", {class: "muted small", text: s.label}),
+      h("b", {text: s.citations_verified + " / " + s.citations_total}),
+      h("div", {text: "code citations verified in commit " + s.commit}),
+      h("div", {class: "muted small", text: bad ? bad + " rejected: " + (s.not_verbatim ? s.not_verbatim + " not real code" : "") + (s.not_verbatim && s.too_short ? ", " : "") + (s.too_short ? s.too_short + " too short to prove anything" : "") : "no citation rejected"})
+    ]));
+  });
 
-// Animate progress bar on load
-window.addEventListener('load', () => {
-  buildMatrix('all');
-  setTimeout(() => {
-    const fill = document.getElementById('prog-fill');
-    if (fill) fill.style.width = fill.dataset.target + '%';
-  }, 300);
-});
+  // Bob sessions
+  var sbox = document.getElementById("sessions");
+  D.sessions.forEach(function (s) {
+    var sub = s.subagents.count ? " · " + s.subagents.count + " parallel subagents (" + s.subagents.parallel_wall_clock_s + " s)" : "";
+    sbox.appendChild(h("div", {class: "sess"}, [
+      h("span", {class: "t", text: s.task.replace("task0", "Task ")}),
+      h("span", {class: "meta", text: s.title}),
+      h("span", {class: "cost", text: s.bobcoins + " coins"}),
+      h("span", {class: "meta", text: s.started_at.replace("T", " ").slice(0, 16) + " PKT · " + s.duration_min + " min" + sub})
+    ]));
+  });
+  var cfg = document.getElementById("config");
+  D.bob_config.forEach(function (c) { cfg.appendChild(h("li", null, [link(c.path, c.url), h("div", {class: "muted small", text: c.what})])); });
+  var so = document.getElementById("signoffs");
+  if (!D.signoffs.length) so.appendChild(h("li", {class: "muted", text: "No sign-off recorded yet."}));
+  D.signoffs.forEach(function (s) { so.appendChild(h("li", null, [h("b", {text: "“" + s.statement + "”"}), h("div", {class: "muted small", text: s.approved_at.replace("T", " ").slice(0, 19) + " PKT · IBM Bob " + s.task.replace("task0", "task ")})])); });
+  var shots = document.getElementById("shots");
+  D.screenshots.forEach(function (s) {
+    shots.appendChild(h("a", {href: s.src, target: "_blank", rel: "noopener"}, [h("img", {src: s.src, alt: "IBM Bob " + s.caption, loading: "lazy"}), h("span", {text: s.caption})]));
+  });
+
+  // footer
+  var foot = document.getElementById("foot");
+  foot.appendChild(h("p", null, ["SoloTrace " + D.version + " · built for the lablab.ai IBM Bob 2.0 Hackathon (September 2026) · MIT licence · ",
+    link("GitHub", D.repo_url), " · ", link("Audit report", D.report_url)]));
+  foot.appendChild(h("p", {class: "small", text: "Spec " + (D.spec.path || "") + " · SHA-256 " + (D.spec.sha256 || "n/a").slice(0, 16) + "… · generated " + D.generated_at}));
+
+  // animate bars
+  requestAnimationFrame(function () { bars.forEach(function (b) { b[0].style.width = b[1] + "%"; }); });
+})();
 </script>
 </body>
 </html>

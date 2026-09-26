@@ -7,57 +7,78 @@
       "file": "ledgerlite/services.py",
       "line": 19,
       "snippet": "_MAX_DEPOSIT = Decimal(\"50000.00\")",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": ""
     },
     {
       "file": "ledgerlite/services.py",
       "line": 135,
       "snippet": "    if amount <= Decimal(\"0\"):",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 111,
+      "actual_snippet": "    if amount <= Decimal(\"0\"):"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 136,
       "snippet": "        raise HTTPException(status_code=400, detail=\"Deposit amount must be greater than 0\")",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "    day = moment.astimezone(datetime.timezone.utc).date()"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 137,
       "snippet": "    if amount > _MAX_DEPOSIT:",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "    return datetime.datetime(day.year, day.month, day.day, tzinfo=datetime.timezone.utc)"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 138,
       "snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {_MAX_DEPOSIT}\")",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": ""
     }
   ],
   "test_evidence": [
     {
       "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_zero_rejected"
+      "test_name": "test_zero_rejected",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_negative_rejected"
+      "test_name": "test_negative_rejected",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_boundary_50000_01_rejected"
+      "test_name": "test_boundary_50000_01_rejected",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_boundary_50000_accepted"
+      "test_name": "test_boundary_50000_accepted",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_positive_amount_accepted"
+      "test_name": "test_positive_amount_accepted",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-      "test_name": "test_multiple_deposits_accumulate"
+      "test_name": "test_multiple_deposits_accumulate",
+      "exists": false
     }
   ]
 }

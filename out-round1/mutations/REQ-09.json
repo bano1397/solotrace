@@ -1,0 +1,26 @@
+{
+  "requirement": "REQ-09",
+  "mutations": [
+    {
+      "id": "REQ-09-M09a",
+      "file": "ledgerlite/services.py",
+      "find": "_DAILY_TRANSFER_CAP = Decimal(\"20000.00\")",
+      "replace": "_DAILY_TRANSFER_CAP = Decimal(\"20000.01\")",
+      "description": "daily cap 20000.01"
+    },
+    {
+      "id": "REQ-09-M09b",
+      "file": "ledgerlite/services.py",
+      "find": "            Transfer.created_at >= today_start,\n",
+      "replace": "",
+      "description": "drop the UTC-day window (cap becomes all-time)"
+    },
+    {
+      "id": "REQ-09-M09c",
+      "file": "ledgerlite/services.py",
+      "find": "Transfer.status.in_([\"completed\", \"pending_approval\"])",
+      "replace": "Transfer.status.in_([\"completed\"])",
+      "description": "only count completed transfers toward cap"
+    }
+  ]
+}

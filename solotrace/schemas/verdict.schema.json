@@ -1,10 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/solotrace/schemas/verdict.schema.json",
+  "$id": "https://github.com/bano1397/solotrace/blob/main/solotrace/schemas/verdict.schema.json",
   "title": "Verdict",
   "description": "Audit verdict for a single requirement.",
   "type": "object",
-  "required": ["id", "status", "reason", "code_evidence", "test_evidence"],
+  "required": [
+    "id",
+    "status",
+    "reason",
+    "code_evidence",
+    "test_evidence"
+  ],
   "additionalProperties": false,
   "properties": {
     "id": {
@@ -14,7 +20,12 @@
     },
     "status": {
       "type": "string",
-      "enum": ["covered", "untested", "contradicts", "missing"],
+      "enum": [
+        "covered",
+        "untested",
+        "contradicts",
+        "missing"
+      ],
       "description": "Audit outcome for the requirement."
     },
     "reason": {
@@ -26,13 +37,54 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["file", "line", "snippet"],
+        "required": [
+          "file",
+          "line",
+          "snippet"
+        ],
         "additionalProperties": false,
         "properties": {
-          "file": { "type": "string", "minLength": 1 },
-          "line": { "type": "integer", "minimum": 1 },
-          "snippet": { "type": "string", "minLength": 1 },
-          "verified": { "type": "boolean" }
+          "file": {
+            "type": "string",
+            "minLength": 1
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "snippet": {
+            "type": "string",
+            "minLength": 1
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "Added by `solotrace verify`: the quote was found in the audited source."
+          },
+          "match": {
+            "enum": [
+              "exact",
+              "relocated",
+              "not_found",
+              "too_short",
+              "invalid_path",
+              "missing_file"
+            ],
+            "description": "Added by `solotrace verify`."
+          },
+          "actual_line": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Added by `solotrace verify`: where the quote really is."
+          },
+          "actual_snippet": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Added by `solotrace verify`: the real source line."
+          }
         }
       },
       "description": "Zero or more code locations that support the verdict."
@@ -41,11 +93,35 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["file", "test_name"],
+        "required": [
+          "file",
+          "test_name"
+        ],
         "additionalProperties": false,
         "properties": {
-          "file": { "type": "string", "minLength": 1 },
-          "test_name": { "type": "string", "minLength": 1 }
+          "file": {
+            "type": "string",
+            "minLength": 1
+          },
+          "test_name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "test_x, test_x[param], TestClass::test_x or TestClass.test_x"
+          },
+          "exists": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "Added by `solotrace verify`: the test function exists."
+          },
+          "passed": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "Optional: whether the test passed."
+          }
         }
       },
       "description": "Zero or more test locations that cover the requirement."

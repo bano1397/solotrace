@@ -7,45 +7,63 @@
       "file": "ledgerlite/schemas.py",
       "line": 103,
       "snippet": "class StatementAccountResponse(AccountResponse):",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 165,
+      "actual_snippet": "class StatementAccountResponse(AccountResponse):"
     },
     {
       "file": "ledgerlite/schemas.py",
       "line": 107,
       "snippet": "    def serialize_account_number(self, v: str) -> str:",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 169,
+      "actual_snippet": "    def serialize_account_number(self, v: str) -> str:"
     },
     {
       "file": "ledgerlite/schemas.py",
       "line": 108,
       "snippet": "        return \"******\" + v[-4:]",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "    id: int"
     },
     {
       "file": "ledgerlite/main.py",
       "line": 49,
       "snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 82,
+      "actual_snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)"
     },
     {
       "file": "ledgerlite/main.py",
       "line": 60,
       "snippet": "    return StatementResponse(account=account, transactions=transactions)",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 85,
+      "actual_snippet": "    return StatementResponse(account=account, transactions=transactions)"
     }
   ],
   "test_evidence": [
     {
       "file": "ledgerlite/tests/test_spec11_statement_masking.py",
-      "test_name": "test_statement_masks_account_number"
+      "test_name": "test_statement_masks_account_number",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec11_statement_masking.py",
-      "test_name": "test_statement_mask_preserves_last4"
+      "test_name": "test_statement_mask_preserves_last4",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec11_statement_masking.py",
-      "test_name": "test_account_detail_endpoint_not_masked"
+      "test_name": "test_account_detail_endpoint_not_masked",
+      "exists": false
     }
   ]
 }

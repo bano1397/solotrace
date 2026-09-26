@@ -1,0 +1,26 @@
+name: Tests and compliance gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Install
+        run: pip install -r requirements.txt
+      - name: Test suite (LedgerLite + SoloTrace)
+        run: python -m pytest -q
+      - name: Every audit citation still points at real code
+        run: python -m solotrace verify --out out --check
+      - name: Every requirement's tests still catch every sabotage
+        run: python -m solotrace prove --out out --workers 4

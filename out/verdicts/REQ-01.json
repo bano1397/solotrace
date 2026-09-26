@@ -7,41 +7,55 @@
       "file": "ledgerlite/services.py",
       "line": 101,
       "snippet": "    if db.query(Account).filter(Account.email == email).first():",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "        raise HTTPException(status_code=423, detail=\"Account locked after too many failed PIN attempts\")"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 86,
       "snippet": "def _require_kyc(account: Account) -> None:",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 87,
       "snippet": "    if account.kyc_status != \"verified\":",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 106,
+      "actual_snippet": "    if account.kyc_status != \"verified\":"
     }
   ],
   "test_evidence": [
     {
       "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
-      "test_name": "test_duplicate_email_rejected"
+      "test_name": "test_duplicate_email_rejected",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
-      "test_name": "test_deposit_blocked_before_kyc"
+      "test_name": "test_deposit_blocked_before_kyc",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
-      "test_name": "test_withdraw_blocked_before_kyc"
+      "test_name": "test_withdraw_blocked_before_kyc",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
-      "test_name": "test_transfer_sender_blocked_before_kyc"
+      "test_name": "test_transfer_sender_blocked_before_kyc",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
-      "test_name": "test_transfer_recipient_blocked_before_kyc"
+      "test_name": "test_transfer_recipient_blocked_before_kyc",
+      "exists": false
     }
   ]
 }

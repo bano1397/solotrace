@@ -1,0 +1,83 @@
+{
+  "id": "REQ-08",
+  "status": "covered",
+  "reason": "All monetary values are coerced through _to_decimal() (Decimal(str(value))) before arithmetic; the database column is Numeric(12,2); and balance is serialised as a 2dp string via @field_serializer. The critical 0.10+0.20==0.30 criterion is directly asserted by test_point_one_plus_point_two_equals_point_three.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/models.py",
+      "line": 24,
+      "snippet": "    balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 24,
+      "actual_snippet": "    balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 11,
+      "snippet": "from decimal import Decimal, InvalidOperation",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 11,
+      "actual_snippet": "from decimal import Decimal, InvalidOperation"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 91,
+      "snippet": "def _to_decimal(value) -> Decimal:",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 91,
+      "actual_snippet": "def _to_decimal(value) -> Decimal:"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 93,
+      "snippet": "        return Decimal(str(value))",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 93,
+      "actual_snippet": "        return Decimal(str(value))"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 64,
+      "snippet": "    @field_serializer(\"balance\")",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 64,
+      "actual_snippet": "    @field_serializer(\"balance\")"
+    },
+    {
+      "file": "ledgerlite/schemas.py",
+      "line": 66,
+      "snippet": "        return f\"{v:.2f}\"",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 66,
+      "actual_snippet": "        return f\"{v:.2f}\""
+    }
+  ],
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py",
+      "test_name": "test_point_one_plus_point_two_equals_point_three",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py",
+      "test_name": "test_balance_serialised_as_two_decimal_places",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
+      "test_name": "test_multiple_deposits_accumulate",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
+      "test_name": "test_boundary_50000_accepted",
+      "exists": true
+    }
+  ]
+}

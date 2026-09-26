@@ -7,53 +7,73 @@
       "file": "ledgerlite/services.py",
       "line": 40,
       "snippet": "def _write_audit(",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 52,
+      "actual_snippet": "def _write_audit("
     },
     {
       "file": "ledgerlite/services.py",
       "line": 141,
       "snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 222,
+      "actual_snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 160,
       "snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 238,
+      "actual_snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 234,
       "snippet": "        _write_audit(",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 258,
+      "actual_snippet": "        _write_audit("
     },
     {
       "file": "ledgerlite/main.py",
       "line": 95,
       "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "@app.post(\"/accounts/{account_id}/withdraw\", response_model=AccountResponse)"
     }
   ],
   "test_evidence": [
     {
       "file": "ledgerlite/tests/test_spec6_audit_log.py",
-      "test_name": "test_audit_entry_written_on_deposit"
+      "test_name": "test_audit_entry_written_on_deposit",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec6_audit_log.py",
-      "test_name": "test_audit_entry_written_on_withdrawal"
+      "test_name": "test_audit_entry_written_on_withdrawal",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec6_audit_log.py",
-      "test_name": "test_audit_entry_written_on_transfer"
+      "test_name": "test_audit_entry_written_on_transfer",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec6_audit_log.py",
-      "test_name": "test_no_audit_delete_endpoint"
+      "test_name": "test_no_audit_delete_endpoint",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec6_audit_log.py",
-      "test_name": "test_no_audit_patch_endpoint"
+      "test_name": "test_no_audit_patch_endpoint",
+      "exists": false
     }
   ]
 }

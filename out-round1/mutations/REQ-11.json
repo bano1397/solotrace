@@ -1,0 +1,12 @@
+{
+  "requirement": "REQ-11",
+  "mutations": [
+    {
+      "id": "REQ-11-M11a",
+      "file": "ledgerlite/schemas.py",
+      "find": "        return \"******\" + v[-4:]",
+      "replace": "        return v",
+      "description": "stop masking"
+    }
+  ]
+}

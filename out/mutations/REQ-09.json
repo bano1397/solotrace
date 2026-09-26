@@ -1,0 +1,40 @@
+{
+  "requirement": "REQ-09",
+  "mutations": [
+    {
+      "id": "REQ-09-M1",
+      "file": "ledgerlite/services.py",
+      "find": "DAILY_TRANSFER_CAP = Decimal(\"20000.00\")",
+      "replace": "DAILY_TRANSFER_CAP = Decimal(\"20000.01\")",
+      "description": "raise the daily cap by one cent"
+    },
+    {
+      "id": "REQ-09-M2",
+      "file": "ledgerlite/services.py",
+      "find": "_COUNTED_STATUSES = (\"completed\", \"pending_approval\")",
+      "replace": "_COUNTED_STATUSES = (\"completed\",)",
+      "description": "pending transfers no longer count toward the cap"
+    },
+    {
+      "id": "REQ-09-M3",
+      "file": "ledgerlite/services.py",
+      "find": "            Transfer.created_at >= _utc_day_start(now),",
+      "replace": "            Transfer.created_at >= _utc_day_start(now) - datetime.timedelta(days=1),",
+      "description": "count yesterday's transfers too"
+    },
+    {
+      "id": "REQ-09-M4",
+      "file": "ledgerlite/db.py",
+      "find": "        connection.exec_driver_sql(\"BEGIN IMMEDIATE\")",
+      "replace": "        connection.exec_driver_sql(\"BEGIN\")",
+      "description": "stop serialising transactions (concurrent transfers race the cap)"
+    },
+    {
+      "id": "REQ-09-M5",
+      "file": "ledgerlite/services.py",
+      "find": "            Transfer.created_at >= _utc_day_start(now),\n",
+      "replace": "",
+      "description": "drop the UTC-day window (cap becomes all-time)"
+    }
+  ]
+}

@@ -7,17 +7,22 @@
       "file": "ledgerlite/main.py",
       "line": 95,
       "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "@app.post(\"/accounts/{account_id}/withdraw\", response_model=AccountResponse)"
     }
   ],
   "test_evidence": [
     {
       "file": "ledgerlite/tests/test_spec12_audit_retention.py",
-      "test_name": "test_delete_audit_returns_405"
+      "test_name": "test_delete_audit_returns_405",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec12_audit_retention.py",
-      "test_name": "test_delete_audit_entry_returns_405"
+      "test_name": "test_delete_audit_entry_returns_405",
+      "exists": false
     }
   ]
 }

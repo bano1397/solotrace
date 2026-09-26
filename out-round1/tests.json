@@ -1,0 +1,483 @@
+{
+  "tool": "solotrace test",
+  "version": "2.0.0",
+  "generated_at": "2026-09-25T23:53:27+00:00",
+  "commit": "149d4098a3665e9f81f62d2c2d2ae0bcf0418ff2",
+  "dirty": false,
+  "command": "python -m pytest ledgerlite/tests",
+  "exit_code": 0,
+  "duration_s": 6.3,
+  "total": 58,
+  "passed": 58,
+  "failed": 0,
+  "skipped": 0,
+  "tail": [
+    "58 passed, 14 warnings in 5.75s"
+  ],
+  "cases": [
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "class": null,
+      "name": "test_sanctioned_sender_blocked[KP]",
+      "base": "test_sanctioned_sender_blocked",
+      "outcome": "passed",
+      "time": 0.106
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "class": null,
+      "name": "test_sanctioned_sender_blocked[IR]",
+      "base": "test_sanctioned_sender_blocked",
+      "outcome": "passed",
+      "time": 0.097
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "class": null,
+      "name": "test_sanctioned_sender_blocked[SY]",
+      "base": "test_sanctioned_sender_blocked",
+      "outcome": "passed",
+      "time": 0.096
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "class": null,
+      "name": "test_sanctioned_sender_blocked[CU]",
+      "base": "test_sanctioned_sender_blocked",
+      "outcome": "passed",
+      "time": 0.097
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "class": null,
+      "name": "test_sanctioned_recipient_blocked[KP]",
+      "base": "test_sanctioned_recipient_blocked",
+      "outcome": "passed",
+      "time": 0.099
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "class": null,
+      "name": "test_sanctioned_recipient_blocked[IR]",
+      "base": "test_sanctioned_recipient_blocked",
+      "outcome": "passed",
+      "time": 0.098
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "class": null,
+      "name": "test_sanctioned_recipient_blocked[SY]",
+      "base": "test_sanctioned_recipient_blocked",
+      "outcome": "passed",
+      "time": 0.104
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "class": null,
+      "name": "test_sanctioned_recipient_blocked[CU]",
+      "base": "test_sanctioned_recipient_blocked",
+      "outcome": "passed",
+      "time": 0.128
+    },
+    {
+      "file": "ledgerlite/tests/test_spec10_sanctions.py",
+      "class": null,
+      "name": "test_audit_entry_written_for_sanctions_block",
+      "base": "test_audit_entry_written_for_sanctions_block",
+      "outcome": "passed",
+      "time": 0.178
+    },
+    {
+      "file": "ledgerlite/tests/test_spec11_statement_masking.py",
+      "class": null,
+      "name": "test_statement_masks_account_number",
+      "base": "test_statement_masks_account_number",
+      "outcome": "passed",
+      "time": 0.093
+    },
+    {
+      "file": "ledgerlite/tests/test_spec11_statement_masking.py",
+      "class": null,
+      "name": "test_statement_mask_preserves_last4",
+      "base": "test_statement_mask_preserves_last4",
+      "outcome": "passed",
+      "time": 0.093
+    },
+    {
+      "file": "ledgerlite/tests/test_spec11_statement_masking.py",
+      "class": null,
+      "name": "test_account_detail_endpoint_not_masked",
+      "base": "test_account_detail_endpoint_not_masked",
+      "outcome": "passed",
+      "time": 0.047
+    },
+    {
+      "file": "ledgerlite/tests/test_spec12_audit_retention.py",
+      "class": null,
+      "name": "test_delete_audit_returns_405",
+      "base": "test_delete_audit_returns_405",
+      "outcome": "passed",
+      "time": 0.005
+    },
+    {
+      "file": "ledgerlite/tests/test_spec12_audit_retention.py",
+      "class": null,
+      "name": "test_delete_audit_entry_returns_405",
+      "base": "test_delete_audit_entry_returns_405",
+      "outcome": "passed",
+      "time": 0.007
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "class": "TestAccountCreation",
+      "name": "test_create_account_success",
+      "base": "test_create_account_success",
+      "outcome": "passed",
+      "time": 0.045
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "class": "TestAccountCreation",
+      "name": "test_duplicate_email_rejected",
+      "base": "test_duplicate_email_rejected",
+      "outcome": "passed",
+      "time": 0.05
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "class": "TestAccountCreation",
+      "name": "test_invalid_country_code_rejected",
+      "base": "test_invalid_country_code_rejected",
+      "outcome": "passed",
+      "time": 0.005
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "class": "TestAccountCreation",
+      "name": "test_country_code_normalised_to_uppercase",
+      "base": "test_country_code_normalised_to_uppercase",
+      "outcome": "passed",
+      "time": 0.042
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "class": "TestKYCGating",
+      "name": "test_deposit_blocked_before_kyc",
+      "base": "test_deposit_blocked_before_kyc",
+      "outcome": "passed",
+      "time": 0.081
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "class": "TestKYCGating",
+      "name": "test_deposit_allowed_after_kyc",
+      "base": "test_deposit_allowed_after_kyc",
+      "outcome": "passed",
+      "time": 0.085
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "class": "TestKYCGating",
+      "name": "test_withdraw_blocked_before_kyc",
+      "base": "test_withdraw_blocked_before_kyc",
+      "outcome": "passed",
+      "time": 0.091
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "class": "TestKYCGating",
+      "name": "test_transfer_sender_blocked_before_kyc",
+      "base": "test_transfer_sender_blocked_before_kyc",
+      "outcome": "passed",
+      "time": 0.114
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "class": "TestKYCGating",
+      "name": "test_transfer_recipient_blocked_before_kyc",
+      "base": "test_transfer_recipient_blocked_before_kyc",
+      "outcome": "passed",
+      "time": 0.167
+    },
+    {
+      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
+      "class": "TestDepositValidation",
+      "name": "test_positive_amount_accepted",
+      "base": "test_positive_amount_accepted",
+      "outcome": "passed",
+      "time": 0.081
+    },
+    {
+      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
+      "class": "TestDepositValidation",
+      "name": "test_zero_rejected",
+      "base": "test_zero_rejected",
+      "outcome": "passed",
+      "time": 0.084
+    },
+    {
+      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
+      "class": "TestDepositValidation",
+      "name": "test_negative_rejected",
+      "base": "test_negative_rejected",
+      "outcome": "passed",
+      "time": 0.091
+    },
+    {
+      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
+      "class": "TestDepositValidation",
+      "name": "test_boundary_50000_accepted",
+      "base": "test_boundary_50000_accepted",
+      "outcome": "passed",
+      "time": 0.149
+    },
+    {
+      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
+      "class": "TestDepositValidation",
+      "name": "test_boundary_50000_01_rejected",
+      "base": "test_boundary_50000_01_rejected",
+      "outcome": "passed",
+      "time": 0.141
+    },
+    {
+      "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
+      "class": "TestDepositValidation",
+      "name": "test_multiple_deposits_accumulate",
+      "base": "test_multiple_deposits_accumulate",
+      "outcome": "passed",
+      "time": 0.158
+    },
+    {
+      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "class": "TestWithdrawal",
+      "name": "test_withdrawal_reduces_balance",
+      "base": "test_withdrawal_reduces_balance",
+      "outcome": "passed",
+      "time": 0.151
+    },
+    {
+      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "class": "TestWithdrawal",
+      "name": "test_withdrawal_exact_balance_allowed",
+      "base": "test_withdrawal_exact_balance_allowed",
+      "outcome": "passed",
+      "time": 0.266
+    },
+    {
+      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "class": "TestWithdrawal",
+      "name": "test_withdrawal_overdraft_rejected",
+      "base": "test_withdrawal_overdraft_rejected",
+      "outcome": "passed",
+      "time": 0.186
+    },
+    {
+      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "class": "TestWithdrawal",
+      "name": "test_withdrawal_zero_rejected",
+      "base": "test_withdrawal_zero_rejected",
+      "outcome": "passed",
+      "time": 0.15
+    },
+    {
+      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "class": "TestWithdrawal",
+      "name": "test_withdrawal_negative_rejected",
+      "base": "test_withdrawal_negative_rejected",
+      "outcome": "passed",
+      "time": 0.099
+    },
+    {
+      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "class": "TestWithdrawal",
+      "name": "test_balance_never_goes_negative",
+      "base": "test_balance_never_goes_negative",
+      "outcome": "passed",
+      "time": 0.116
+    },
+    {
+      "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
+      "class": "TestTransferAtomicity",
+      "name": "test_successful_transfer_debits_sender_credits_recipient",
+      "base": "test_successful_transfer_debits_sender_credits_recipient",
+      "outcome": "passed",
+      "time": 0.121
+    },
+    {
+      "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
+      "class": "TestTransferAtomicity",
+      "name": "test_insufficient_funds_rejected",
+      "base": "test_insufficient_funds_rejected",
+      "outcome": "passed",
+      "time": 0.126
+    },
+    {
+      "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
+      "class": "TestTransferAtomicity",
+      "name": "test_transfer_zero_rejected",
+      "base": "test_transfer_zero_rejected",
+      "outcome": "passed",
+      "time": 0.11
+    },
+    {
+      "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
+      "class": "TestTransferAtomicity",
+      "name": "test_transfer_negative_rejected",
+      "base": "test_transfer_negative_rejected",
+      "outcome": "passed",
+      "time": 0.1
+    },
+    {
+      "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
+      "class": "TestTransferAtomicity",
+      "name": "test_transfer_rolls_back_on_db_error",
+      "base": "test_transfer_rolls_back_on_db_error",
+      "outcome": "passed",
+      "time": 0.101
+    },
+    {
+      "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
+      "class": "TestTransferAtomicity",
+      "name": "test_non_existent_sender_returns_404",
+      "base": "test_non_existent_sender_returns_404",
+      "outcome": "passed",
+      "time": 0.075
+    },
+    {
+      "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
+      "class": "TestTransferAtomicity",
+      "name": "test_non_existent_recipient_returns_404",
+      "base": "test_non_existent_recipient_returns_404",
+      "outcome": "passed",
+      "time": 0.078
+    },
+    {
+      "file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py",
+      "class": null,
+      "name": "test_transfer_below_threshold_completed",
+      "base": "test_transfer_below_threshold_completed",
+      "outcome": "passed",
+      "time": 0.095
+    },
+    {
+      "file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py",
+      "class": null,
+      "name": "test_transfer_at_threshold_pending",
+      "base": "test_transfer_at_threshold_pending",
+      "outcome": "passed",
+      "time": 0.09
+    },
+    {
+      "file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py",
+      "class": null,
+      "name": "test_transfer_above_threshold_pending",
+      "base": "test_transfer_above_threshold_pending",
+      "outcome": "passed",
+      "time": 0.09
+    },
+    {
+      "file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py",
+      "class": null,
+      "name": "test_transfer_just_below_threshold_completed",
+      "base": "test_transfer_just_below_threshold_completed",
+      "outcome": "passed",
+      "time": 0.088
+    },
+    {
+      "file": "ledgerlite/tests/test_spec6_audit_log.py",
+      "class": null,
+      "name": "test_audit_entry_written_on_deposit",
+      "base": "test_audit_entry_written_on_deposit",
+      "outcome": "passed",
+      "time": 0.047
+    },
+    {
+      "file": "ledgerlite/tests/test_spec6_audit_log.py",
+      "class": null,
+      "name": "test_audit_entry_written_on_withdrawal",
+      "base": "test_audit_entry_written_on_withdrawal",
+      "outcome": "passed",
+      "time": 0.067
+    },
+    {
+      "file": "ledgerlite/tests/test_spec6_audit_log.py",
+      "class": null,
+      "name": "test_audit_entry_written_on_transfer",
+      "base": "test_audit_entry_written_on_transfer",
+      "outcome": "passed",
+      "time": 0.092
+    },
+    {
+      "file": "ledgerlite/tests/test_spec6_audit_log.py",
+      "class": null,
+      "name": "test_no_audit_delete_endpoint",
+      "base": "test_no_audit_delete_endpoint",
+      "outcome": "passed",
+      "time": 0.002
+    },
+    {
+      "file": "ledgerlite/tests/test_spec6_audit_log.py",
+      "class": null,
+      "name": "test_no_audit_patch_endpoint",
+      "base": "test_no_audit_patch_endpoint",
+      "outcome": "passed",
+      "time": 0.002
+    },
+    {
+      "file": "ledgerlite/tests/test_spec7_pin_lockout.py",
+      "class": null,
+      "name": "test_fifth_wrong_pin_locks_account",
+      "base": "test_fifth_wrong_pin_locks_account",
+      "outcome": "passed",
+      "time": 0.157
+    },
+    {
+      "file": "ledgerlite/tests/test_spec7_pin_lockout.py",
+      "class": null,
+      "name": "test_correct_pin_resets_counter",
+      "base": "test_correct_pin_resets_counter",
+      "outcome": "passed",
+      "time": 0.152
+    },
+    {
+      "file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py",
+      "class": null,
+      "name": "test_point_one_plus_point_two_equals_point_three",
+      "base": "test_point_one_plus_point_two_equals_point_three",
+      "outcome": "passed",
+      "time": 0.07
+    },
+    {
+      "file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py",
+      "class": null,
+      "name": "test_balance_serialised_as_two_decimal_places",
+      "base": "test_balance_serialised_as_two_decimal_places",
+      "outcome": "passed",
+      "time": 0.047
+    },
+    {
+      "file": "ledgerlite/tests/test_spec9_daily_cap.py",
+      "class": null,
+      "name": "test_daily_cap_exact_boundary_accepted",
+      "base": "test_daily_cap_exact_boundary_accepted",
+      "outcome": "passed",
+      "time": 0.11
+    },
+    {
+      "file": "ledgerlite/tests/test_spec9_daily_cap.py",
+      "class": null,
+      "name": "test_daily_cap_exceeded_rejected",
+      "base": "test_daily_cap_exceeded_rejected",
+      "outcome": "passed",
+      "time": 0.129
+    },
+    {
+      "file": "ledgerlite/tests/test_spec9_daily_cap.py",
+      "class": null,
+      "name": "test_daily_cap_three_transfers_third_blocked",
+      "base": "test_daily_cap_three_transfers_third_blocked",
+      "outcome": "passed",
+      "time": 0.138
+    }
+  ]
+}

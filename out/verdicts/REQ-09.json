@@ -7,57 +7,81 @@
       "file": "ledgerlite/services.py",
       "line": 22,
       "snippet": "_DAILY_TRANSFER_CAP = Decimal(\"20000.00\")",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "from sqlalchemy.exc import IntegrityError"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 198,
       "snippet": "    today_utc = datetime.datetime.now(timezone.utc).date()",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "    transactions = db.scalars("
     },
     {
       "file": "ledgerlite/services.py",
       "line": 199,
       "snippet": "    today_start = datetime.datetime(today_utc.year, today_utc.month, today_utc.day, tzinfo=timezone.utc)",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "        select(Transfer)"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 201,
       "snippet": "    daily_total_row = (",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "        .order_by(Transfer.created_at.desc(), Transfer.id.desc())"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 210,
       "snippet": "    daily_total = Decimal(str(daily_total_row[0]))",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "# ── money movement ────────────────────────────────────────────────────────────"
     },
     {
       "file": "ledgerlite/services.py",
       "line": 211,
       "snippet": "    if daily_total + amount > _DAILY_TRANSFER_CAP:",
-      "verified": true
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": ""
     },
     {
       "file": "ledgerlite/services.py",
       "line": 212,
       "snippet": "        raise HTTPException(",
-      "verified": true
+      "verified": true,
+      "match": "relocated",
+      "actual_line": 219,
+      "actual_snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {MAX_DEPOSIT}\")"
     }
   ],
   "test_evidence": [
     {
       "file": "ledgerlite/tests/test_spec9_daily_cap.py",
-      "test_name": "test_daily_cap_exact_boundary_accepted"
+      "test_name": "test_daily_cap_exact_boundary_accepted",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec9_daily_cap.py",
-      "test_name": "test_daily_cap_exceeded_rejected"
+      "test_name": "test_daily_cap_exceeded_rejected",
+      "exists": false
     },
     {
       "file": "ledgerlite/tests/test_spec9_daily_cap.py",
-      "test_name": "test_daily_cap_three_transfers_third_blocked"
+      "test_name": "test_daily_cap_three_transfers_third_blocked",
+      "exists": false
     }
   ],
   "suggested_fix": ""

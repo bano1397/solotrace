@@ -1,0 +1,33 @@
+{
+  "requirement": "REQ-10",
+  "mutations": [
+    {
+      "id": "REQ-10-M1",
+      "file": "ledgerlite/services.py",
+      "find": "SANCTIONED_COUNTRIES = frozenset({\"KP\", \"IR\", \"SY\", \"CU\"})",
+      "replace": "SANCTIONED_COUNTRIES = frozenset({\"KP\", \"IR\", \"SY\"})",
+      "description": "drop CU from the sanctions list"
+    },
+    {
+      "id": "REQ-10-M2",
+      "file": "ledgerlite/services.py",
+      "find": "        {c for c in (sender.country_code, recipient.country_code) if c in SANCTIONED_COUNTRIES}",
+      "replace": "        {c for c in (sender.country_code,) if c in SANCTIONED_COUNTRIES}",
+      "description": "screen only the sender, not the recipient"
+    },
+    {
+      "id": "REQ-10-M3",
+      "file": "ledgerlite/services.py",
+      "find": "            action=\"sanctions_blocked\",",
+      "replace": "            action=\"transfer_blocked\",",
+      "description": "log blocks under a different action name"
+    },
+    {
+      "id": "REQ-10-M4",
+      "file": "ledgerlite/services.py",
+      "find": "        db.commit()\n        raise HTTPException(status_code=400, detail=\"sanctions\")",
+      "replace": "        raise HTTPException(status_code=400, detail=\"sanctions\")",
+      "description": "block the transfer but lose the audit entry"
+    }
+  ]
+}

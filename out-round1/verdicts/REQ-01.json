@@ -1,0 +1,61 @@
+{
+  "id": "REQ-01",
+  "status": "covered",
+  "reason": "Unique email is enforced at account creation by querying for an existing Account with the same email before inserting (services.py:101). KYC gating is enforced by _require_kyc(), which raises HTTP 403 when kyc_status != 'verified' (services.py:86-87); this guard is called before every deposit, withdrawal, and transfer operation. All four gating paths and the duplicate-email path are each covered by a dedicated test.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/services.py",
+      "line": 101,
+      "snippet": "    if db.query(Account).filter(Account.email == email).first():",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 101,
+      "actual_snippet": "    if db.query(Account).filter(Account.email == email).first():"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 86,
+      "snippet": "def _require_kyc(account: Account) -> None:",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 86,
+      "actual_snippet": "def _require_kyc(account: Account) -> None:"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 87,
+      "snippet": "    if account.kyc_status != \"verified\":",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 87,
+      "actual_snippet": "    if account.kyc_status != \"verified\":"
+    }
+  ],
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "test_name": "test_duplicate_email_rejected",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "test_name": "test_deposit_blocked_before_kyc",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "test_name": "test_withdraw_blocked_before_kyc",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "test_name": "test_transfer_sender_blocked_before_kyc",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+      "test_name": "test_transfer_recipient_blocked_before_kyc",
+      "exists": true
+    }
+  ]
+}

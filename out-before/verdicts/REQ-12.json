@@ -6,8 +6,11 @@
     {
       "file": "ledgerlite/main.py",
       "line": 95,
-      "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])",
-      "verified": false
+      "snippet": "GET /audit  — only GET is registered; no DELETE /audit or DELETE /audit/{id} route exists anywhere in the route list.",
+      "verified": false,
+      "match": "not_found",
+      "actual_line": null,
+      "actual_snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])"
     }
   ],
   "test_evidence": [],

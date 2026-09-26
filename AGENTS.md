@@ -1,108 +1,55 @@
 # AGENTS.md
 
-## What is SoloTrace?
+Loaded automatically by every IBM Bob task in this workspace.
 
-SoloTrace is a requirements-traceability auditor for regulated software.
-It reads a specification document, searches the codebase for each requirement's
-implementation and test coverage, and produces machine-readable verdicts that
-prove — or disprove — compliance.
+## What this repository is
 
-Designed for domains where traceability is mandatory: banking, insurance, healthcare.
+**SoloTrace** audits a codebase against a requirements document and proves every requirement.
+IBM Bob does the judgement work (read the spec, audit each requirement with a subagent, fix after
+a human sign-off); the `solotrace` Python package checks everything Bob produces.
 
----
+**LedgerLite** (`ledgerlite/`) is the audit target: a small FastAPI + SQLite payments API that
+must meet `demo-data/LedgerLite-Requirements-v2.0.pdf` (12 requirements, REQ-01 … REQ-12).
 
-## Repository layout
+## Layout
 
 ```
-.
-├── solotrace/                  # SoloTrace auditing tool (Python package)
-│   ├── __init__.py
-│   ├── schemas.py              # stdlib-only validators for requirement/verdict JSON
-│   ├── schemas/
-│   │   ├── requirement.schema.json   # JSON Schema (draft 2020-12)
-│   │   └── verdict.schema.json
-│   └── tests/
-│       └── test_schemas.py
-├── ledgerlite/                 # Sample banking API audited by SoloTrace
-│   ├── main.py                 # FastAPI app + routes
-│   ├── db.py                   # SQLAlchemy engine / session
-│   ├── models.py               # Account, Transfer, AuditEntry
-│   ├── schemas.py              # Pydantic I/O models
-│   ├── security.py             # PBKDF2-HMAC-SHA256 PIN hashing
-│   ├── services.py             # Business logic
-│   └── tests/
-│       ├── conftest.py
-│       ├── test_spec1_accounts_kyc.py
-│       ├── test_spec2_deposit_limits.py
-│       ├── test_spec3_withdrawals.py
-│       └── test_spec4_transfer_atomicity.py
-├── demo-data/                  # Specification documents (PDF)
-├── out/                        # SoloTrace outputs
-│   ├── requirements.json       # Extracted requirements (generated)
-│   ├── matrix.json             # Traceability matrix (generated)
-│   └── verdicts/               # One JSON file per requirement (generated)
-├── docs/                       # Static dashboard (GitHub Pages)
-├── bob_sessions/               # PNG screenshots of Bob task session summaries
-├── .bob/
-│   ├── custom_modes.yaml       # SoloTrace Auditor custom mode
-│   ├── rules-solotrace/        # Mode-specific audit rules
-│   │   └── 01-audit-rules.md
-│   └── skills/
-│       └── solotrace-audit/    # Reusable Bob skill
-│           ├── SKILL.md
-│           ├── requirement.schema.json
-│           ├── verdict.schema.json
-│           └── audit-checklist.md
-├── requirements.txt
-├── README.md
-├── LICENSE
-└── AGENTS.md                   # This file
+.bob/
+  custom_modes.yaml             SoloTrace Auditor mode (slug: solotrace)
+  rules-solotrace/              evidence, verdict, mutation and sign-off rules
+  skills/solotrace-audit/       reusable skill: READ → AUDIT → PROVE → SIGN-OFF/FIX
+ledgerlite/                     the audited payments API
+  services.py                   business rules (limits, sanctions, lockout, approvals)
+  models.py · schemas.py · db.py · security.py · main.py
+  tests/test_reqNN_*.py         one test module per requirement
+solotrace/                      the auditor's deterministic engine
+  verify.py    evidence verifier (re-finds every quote in the audited commit)
+  testrun.py   runs the test suite, records every result
+  prove.py     mutation testing (sabotage must be caught by the tests)
+  matrix.py    evidence-based scoring        report.py   AUDIT_REPORT.md
+  dashboard.py docs/index.html               pipeline.py `python -m solotrace run`
+demo-data/                      the requirements PDF
+out/          final audit: requirements.json, verdicts/, mutations/, results
+out-round1/   round 1 (after Bob's first fixes)     out-before/  baseline audit
+bob_sessions/ IBM Bob task session summaries, sessions.json, signoffs.json
+scripts/      export_bob_sessions.py, rebuild_history.py
+docs/         GitHub Pages dashboard
 ```
 
----
-
-## Running the tests
+## Commands
 
 ```bash
-# All tests (LedgerLite API + SoloTrace schema validators)
-.venv/bin/pytest -q
-
-# LedgerLite only
-.venv/bin/pytest ledgerlite/tests/ -q
-
-# SoloTrace only
-.venv/bin/pytest solotrace/tests/ -q
+.venv/bin/pytest -q                                   # all tests (LedgerLite + SoloTrace)
+.venv/bin/python -m solotrace run --auditor "<who wrote the verdicts>"   # full evidence pipeline
+.venv/bin/python -m solotrace verify --out out --check                  # read-only citation check
+.venv/bin/python -m solotrace prove --out out                          # mutation testing only
+LEDGERLITE_ADMIN_TOKEN=dev .venv/bin/uvicorn ledgerlite.main:app --port 8000   # run the API
 ```
 
-All tests must pass before any commit.
+## Rules for agents
 
----
-
-## Running LedgerLite
-
-```bash
-source .venv/bin/activate
-uvicorn ledgerlite.main:app --reload --port 8000
-# Docs: http://localhost:8000/docs
-```
-
----
-
-## Audit rules summary
-
-| Rule | Description |
-|------|-------------|
-| **Cite everything** | Every verdict must include `code_evidence` (file, line, snippet). |
-| **Four statuses** | `covered` · `untested` · `contradicts` · `missing` — see definitions in `.bob/rules-solotrace/01-audit-rules.md`. |
-| **No audit-time edits** | Application code and tests are read-only during an audit pass. |
-| **Fix workflow** | Write failing test → fix code → full suite green → no test weakened. |
-| **Validated output** | All JSON output passes `validate_requirement()` / `validate_verdict()` before being written. |
-
----
-
-## Bob custom mode
-
-Switch to the **SoloTrace Auditor** mode in Bob to activate the audit rules automatically.
-The mode slug is `solotrace`; rules are loaded from `.bob/rules-solotrace/`.
-
-To run a full audit, activate the **solotrace-audit** skill.
+- In an audit, never change application code or tests; quote code verbatim.
+- Fix only after the human answers "Approve these fixes? (compliance sign-off)".
+- A requirement is done only when `python -m solotrace run` reports it **proven**.
+- Test data is synthetic: use `@example.com` emails, no real people or client data.
+- Never write credentials into the repository.

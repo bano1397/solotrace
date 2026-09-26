@@ -1,0 +1,51 @@
+{
+  "id": "REQ-03",
+  "status": "covered",
+  "reason": "The withdrawal floor is enforced in services.py at lines 156-157: before applying any debit the service checks that the resulting balance would not be less than zero, and raises HTTP 400 with 'Insufficient funds' if it would. Line 159 then performs the actual debit only when that guard passes. Three tests cover the requirement: test_withdrawal_overdraft_rejected confirms a withdrawal of one cent above the balance is rejected with HTTP 400 and the 'Insufficient' message; test_balance_never_goes_negative drains the account to exactly 0.00 and then confirms a further withdrawal is rejected and the balance remains 0.00; test_withdrawal_exact_balance_allowed confirms that withdrawing exactly the full balance succeeds and leaves the balance at 0.00.",
+  "code_evidence": [
+    {
+      "file": "ledgerlite/services.py",
+      "line": 156,
+      "snippet": "    if account.balance - amount < Decimal(\"0\"):",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 156,
+      "actual_snippet": "    if account.balance - amount < Decimal(\"0\"):"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 157,
+      "snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 157,
+      "actual_snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")"
+    },
+    {
+      "file": "ledgerlite/services.py",
+      "line": 159,
+      "snippet": "    account.balance -= amount",
+      "verified": true,
+      "match": "exact",
+      "actual_line": 159,
+      "actual_snippet": "    account.balance -= amount"
+    }
+  ],
+  "test_evidence": [
+    {
+      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "test_name": "test_withdrawal_overdraft_rejected",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "test_name": "test_balance_never_goes_negative",
+      "exists": true
+    },
+    {
+      "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+      "test_name": "test_withdrawal_exact_balance_allowed",
+      "exists": true
+    }
+  ]
+}

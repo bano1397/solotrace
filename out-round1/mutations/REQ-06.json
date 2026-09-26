@@ -1,0 +1,40 @@
+{
+  "requirement": "REQ-06",
+  "mutations": [
+    {
+      "id": "REQ-06-M06a",
+      "file": "ledgerlite/services.py",
+      "find": "        _write_audit(\n            db,\n            actor_id=approver_id,\n            action=\"transfer_approved\",\n            amount=transfer.amount,\n            account_id=transfer.sender_id,\n            related_account_id=transfer.recipient_id,\n        )\n",
+      "replace": "",
+      "description": "remove audit write on approval"
+    },
+    {
+      "id": "REQ-06-M06b",
+      "file": "ledgerlite/services.py",
+      "find": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)\n",
+      "replace": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)\n    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)\n",
+      "description": "deposit writes TWO audit entries (violates 'exactly one')"
+    },
+    {
+      "id": "REQ-06-M06c",
+      "file": "ledgerlite/main.py",
+      "find": "    return db.query(AuditEntry).order_by(AuditEntry.timestamp.asc()).all()\n",
+      "replace": "    return db.query(AuditEntry).order_by(AuditEntry.timestamp.asc()).all()\n\n\n@app.patch(\"/audit/{entry_id}\", response_model=AuditEntryResponse)\ndef edit_audit_entry(entry_id: int, body: dict, db: Session = Depends(get_db)):\n    from fastapi import HTTPException\n    from ledgerlite.models import AuditEntry\n    entry = db.get(AuditEntry, entry_id)\n    if entry is None:\n        raise HTTPException(status_code=404, detail=\"Audit entry not found\")\n    for k, v in body.items():\n        setattr(entry, k, v)\n    db.commit()\n    db.refresh(entry)\n    return entry\n",
+      "description": "add PATCH /audit/{entry_id} edit endpoint"
+    },
+    {
+      "id": "REQ-06-M06d",
+      "file": "ledgerlite/services.py",
+      "find": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)\n",
+      "replace": "",
+      "description": "remove audit write on deposit"
+    },
+    {
+      "id": "REQ-06-M06e",
+      "file": "ledgerlite/services.py",
+      "find": "    _write_audit(db, actor_id=account_id, action=\"deposit\"",
+      "replace": "    _write_audit(db, actor_id=0, action=\"deposit\"",
+      "description": "deposit audit entry records wrong actor (actor_id=0)"
+    }
+  ]
+}

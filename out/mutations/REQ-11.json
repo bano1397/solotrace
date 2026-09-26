@@ -1,0 +1,26 @@
+{
+  "requirement": "REQ-11",
+  "mutations": [
+    {
+      "id": "REQ-11-M1",
+      "file": "ledgerlite/schemas.py",
+      "find": "    return \"****\" + number[-4:]",
+      "replace": "    return \"******\" + number[-4:]",
+      "description": "mask with 6 stars instead of the spec's ****"
+    },
+    {
+      "id": "REQ-11-M2",
+      "file": "ledgerlite/schemas.py",
+      "find": "    account: StatementAccountResponse",
+      "replace": "    account: AccountResponse",
+      "description": "statements show the full account number"
+    },
+    {
+      "id": "REQ-11-M3",
+      "file": "ledgerlite/schemas.py",
+      "find": "    return \"****\" + number[-4:]",
+      "replace": "    return \"****\" + number[-5:]",
+      "description": "reveal 5 digits instead of 4"
+    }
+  ]
+}

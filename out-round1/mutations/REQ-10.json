@@ -1,0 +1,33 @@
+{
+  "requirement": "REQ-10",
+  "mutations": [
+    {
+      "id": "REQ-10-M10a",
+      "file": "ledgerlite/services.py",
+      "find": "    if sender.country_code in _SANCTIONED_COUNTRIES or recipient.country_code in _SANCTIONED_COUNTRIES:",
+      "replace": "    if False:",
+      "description": "remove sanctions check"
+    },
+    {
+      "id": "REQ-10-M10b",
+      "file": "ledgerlite/services.py",
+      "find": "        _write_audit(\n            db,\n            actor_id=sender_id,\n            action=\"sanctions_blocked\",\n            amount=amount,\n            account_id=sender_id,\n            related_account_id=recipient_id,\n        )\n        db.commit()\n        raise HTTPException(status_code=400, detail=\"sanctions\")",
+      "replace": "        raise HTTPException(status_code=400, detail=\"sanctions\")",
+      "description": "sanctions block no longer audited (audit write removed)"
+    },
+    {
+      "id": "REQ-10-M10c",
+      "file": "ledgerlite/services.py",
+      "find": "            related_account_id=recipient_id,\n        )\n        db.commit()\n        raise HTTPException(status_code=400, detail=\"sanctions\")",
+      "replace": "            related_account_id=recipient_id,\n        )\n        raise HTTPException(status_code=400, detail=\"sanctions\")",
+      "description": "sanctions audit entry not committed before raise"
+    },
+    {
+      "id": "REQ-10-M10d",
+      "file": "ledgerlite/services.py",
+      "find": "_SANCTIONED_COUNTRIES = {\"KP\", \"IR\", \"SY\", \"CU\"}",
+      "replace": "_SANCTIONED_COUNTRIES = {\"KP\", \"IR\", \"SY\"}",
+      "description": "drop CU from sanctions list"
+    }
+  ]
+}
