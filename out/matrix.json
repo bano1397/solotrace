@@ -5,12 +5,12 @@
     "project": "LedgerLite Payments API",
     "label": "Round 2 — final",
     "description": "Final audit of LedgerLite against spec v2.0.",
-    "auditor": "INTERIM — round-1 verdicts, to be replaced by the final IBM Bob audit",
-    "bob_task": null,
-    "audited_at": "2026-09-26T00:45:31+00:00",
-    "verdicts_sha256": "e917b534533da700005e6d7fc8f391813fe7b808638b528e897590221e488c27",
-    "code_commit": "faf3ba60141d1b4533df05185d901b1b626f7922",
-    "dirty": true,
+    "auditor": "IBM Bob 2.0 — task 5 (SoloTrace Auditor mode, 12 parallel subagents; 11 finished before the 40-Bobcoin budget ran out, the REQ-12 verdict was reformatted to the schema unchanged, and this pipeline was run locally)",
+    "bob_task": "task05",
+    "audited_at": "2026-09-26T02:07:02+00:00",
+    "verdicts_sha256": "cad9137afb84d9f6b83f5cd297009050541f47d1536fff3d0334b589e675a581",
+    "code_commit": "08a08b04147ec6935476a4d41752a69cd80887c4",
+    "dirty": false,
     "spec": {
       "path": "demo-data/LedgerLite-Requirements-v2.0.pdf",
       "sha256": "cf06e0a2c238e7806ae6692702a6d4a713816333b83e22a8b2e7ff14007f9250",
@@ -32,27 +32,27 @@
       "score_percent": 100.0
     },
     "statuses": {
-      "proven": 0,
+      "proven": 11,
       "covered": 0,
-      "weak": 0,
-      "unverified": 3,
-      "untested": 9,
+      "weak": 1,
+      "unverified": 0,
+      "untested": 0,
       "contradicts": 0,
       "missing": 0
     },
-    "evidence_score_percent": 0.0,
-    "proven_percent": 0.0,
-    "citations_verified": 18,
-    "citations_total": 57,
+    "evidence_score_percent": 91.7,
+    "proven_percent": 91.7,
+    "citations_verified": 82,
+    "citations_total": 85,
     "mutation_testing": true,
-    "mutations_killed": 88,
-    "mutations_total": 88,
+    "mutations_killed": 98,
+    "mutations_total": 99,
     "tests_run": {
       "total": 161,
       "passed": 161,
       "failed": 0,
       "skipped": 0,
-      "commit": "faf3ba60141d1b4533df05185d901b1b626f7922"
+      "commit": "08a08b04147ec6935476a4d41752a69cd80887c4"
     }
   },
   "rows": [
@@ -67,78 +67,111 @@
       "risk": "High",
       "change": "none",
       "ai_status": "covered",
-      "status": "untested",
-      "reason": "Unique email is enforced at account creation by querying for an existing Account with the same email before inserting (services.py:101). KYC gating is enforced by _require_kyc(), which raises HTTP 403 when kyc_status != 'verified' (services.py:86-87); this guard is called before every deposit, withdrawal, and transfer operation. All four gating paths and the duplicate-email path are each covered by a dedicated test.",
+      "status": "proven",
+      "reason": "Both acceptance criteria are fully guarded by production code and exercised by dedicated tests. AC1 (duplicate email rejected): services.py normalises the email to lowercase (line 167) then queries for an existing account with that email (line 168) and raises HTTP 409 if found (line 169); tests assert the 409 for an exact-duplicate and for a case-variant. AC2 (money movement blocked until KYC verified): _require_kyc (lines 118-119) raises HTTP 403 for any account whose kyc_status is not 'verified'; it is called before every deposit (lines 238-239), withdrawal (line 256), and on both sender and recipient for transfers (lines 297-298); tests cover deposit, withdrawal, sender-unverified transfer, recipient-unverified transfer, and the held-transfer path.",
       "suggested_fix": "",
       "evidence": [
         {
           "file": "ledgerlite/services.py",
-          "line": 101,
-          "claimed_line": 101,
-          "snippet": "    if db.query(Account).filter(Account.email == email).first():",
-          "claimed_snippet": "    if db.query(Account).filter(Account.email == email).first():",
-          "verified": false,
-          "match": "not_found"
+          "line": 167,
+          "claimed_line": 167,
+          "snippet": "    email = email.strip().lower()",
+          "claimed_snippet": "    email = email.strip().lower()",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 86,
-          "claimed_line": 86,
-          "snippet": "def _require_kyc(account: Account) -> None:",
-          "claimed_snippet": "def _require_kyc(account: Account) -> None:",
-          "verified": false,
-          "match": "not_found"
+          "line": 168,
+          "claimed_line": 168,
+          "snippet": "    if db.scalar(select(Account.id).where(Account.email == email)) is not None:",
+          "claimed_snippet": "    if db.scalar(select(Account.id).where(Account.email == email)) is not None:",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 169,
+          "claimed_line": 169,
+          "snippet": "        raise HTTPException(status_code=409, detail=\"Email already registered\")",
+          "claimed_snippet": "        raise HTTPException(status_code=409, detail=\"Email already registered\")",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
           "line": 118,
-          "claimed_line": 87,
+          "claimed_line": 118,
           "snippet": "    if account.kyc_status != \"verified\":",
           "claimed_snippet": "    if account.kyc_status != \"verified\":",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 119,
+          "claimed_line": 119,
+          "snippet": "        raise HTTPException(status_code=403, detail=f\"{role} KYC is not verified\")",
+          "claimed_snippet": "        raise HTTPException(status_code=403, detail=f\"{role} KYC is not verified\")",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 296,
+          "claimed_line": 297,
+          "snippet": "    _require_kyc(sender, \"Sender\")",
+          "claimed_snippet": "    _require_kyc(sender, \"Sender\")",
           "verified": true,
           "match": "relocated"
         }
       ],
       "tests": [
         {
-          "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+          "file": "ledgerlite/tests/test_req01_accounts_kyc.py",
           "test_name": "test_duplicate_email_rejected",
-          "exists": false,
-          "passed": null
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+          "file": "ledgerlite/tests/test_req01_accounts_kyc.py",
+          "test_name": "test_duplicate_email_is_case_insensitive",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req01_accounts_kyc.py",
           "test_name": "test_deposit_blocked_before_kyc",
-          "exists": false,
-          "passed": null
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+          "file": "ledgerlite/tests/test_req01_accounts_kyc.py",
           "test_name": "test_withdraw_blocked_before_kyc",
-          "exists": false,
-          "passed": null
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+          "file": "ledgerlite/tests/test_req01_accounts_kyc.py",
           "test_name": "test_transfer_sender_blocked_before_kyc",
-          "exists": false,
-          "passed": null
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec1_accounts_kyc.py",
+          "file": "ledgerlite/tests/test_req01_accounts_kyc.py",
           "test_name": "test_transfer_recipient_blocked_before_kyc",
-          "exists": false,
-          "passed": null
+          "exists": true,
+          "passed": true
         }
       ],
       "checks": {
-        "citations_verified": 1,
-        "citations_total": 3,
-        "tests_passing": 0,
-        "tests_cited": 5,
+        "citations_verified": 6,
+        "citations_total": 6,
+        "tests_passing": 6,
+        "tests_cited": 6,
         "mutations": {
-          "tried": 7,
-          "killed": 7,
+          "tried": 8,
+          "killed": 8,
           "survived": 0,
           "proven": true
         }
@@ -157,102 +190,105 @@
       "risk": "Medium",
       "change": "none",
       "ai_status": "covered",
-      "status": "untested",
-      "reason": "Deposit validation enforces a lower bound (amount must be > 0) and an upper bound (amount must not exceed 50 000.00) at the service layer. Six dedicated tests exercise zero, negative, boundary-exact-reject, boundary-exact-accept, a general positive value, and accumulation across multiple deposits.",
+      "status": "proven",
+      "reason": "All four acceptance criteria are exercised by dedicated tests. (1) Deposits of 0 are rejected: test_zero_and_negative_rejected is parametrized over '0' and '0.00', asserting HTTP 400 with 'greater than 0'. (2) Negative deposits are rejected: same parametrized test covers '-0.00' and '-1.00'. (3) A deposit of 50,000.01 is rejected: test_boundary_50000_01_rejected asserts HTTP 400 and balance unchanged. (4) A deposit of 50,000.00 is accepted: test_boundary_50000_accepted asserts HTTP 200 and correct balance. Enforcement is backed by _require_positive (lines 122-124) checking amount <= 0, and the MAX_DEPOSIT guard (lines 242-243) checking amount > MAX_DEPOSIT where MAX_DEPOSIT = Decimal('50000.00') (line 28).",
       "suggested_fix": "",
       "evidence": [
         {
           "file": "ledgerlite/services.py",
-          "line": 19,
-          "claimed_line": 19,
-          "snippet": "_MAX_DEPOSIT = Decimal(\"50000.00\")",
-          "claimed_snippet": "_MAX_DEPOSIT = Decimal(\"50000.00\")",
-          "verified": false,
-          "match": "not_found"
+          "line": 28,
+          "claimed_line": 28,
+          "snippet": "MAX_DEPOSIT = Decimal(\"50000.00\")                 # REQ-02",
+          "claimed_snippet": "MAX_DEPOSIT = Decimal(\"50000.00\")                 # REQ-02",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 122,
+          "claimed_line": 122,
+          "snippet": "def _require_positive(amount: Decimal, what: str) -> None:",
+          "claimed_snippet": "def _require_positive(amount: Decimal, what: str) -> None:",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
           "line": 123,
-          "claimed_line": 135,
+          "claimed_line": 123,
           "snippet": "    if amount <= Decimal(\"0\"):",
           "claimed_snippet": "    if amount <= Decimal(\"0\"):",
           "verified": true,
-          "match": "relocated"
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 136,
-          "claimed_line": 136,
-          "snippet": "        raise HTTPException(status_code=400, detail=\"Deposit amount must be greater than 0\")",
-          "claimed_snippet": "        raise HTTPException(status_code=400, detail=\"Deposit amount must be greater than 0\")",
-          "verified": false,
-          "match": "not_found"
+          "line": 241,
+          "claimed_line": 241,
+          "snippet": "    _require_positive(amount, \"Deposit\")",
+          "claimed_snippet": "    _require_positive(amount, \"Deposit\")",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 137,
-          "claimed_line": 137,
-          "snippet": "    if amount > _MAX_DEPOSIT:",
-          "claimed_snippet": "    if amount > _MAX_DEPOSIT:",
-          "verified": false,
-          "match": "not_found"
+          "line": 242,
+          "claimed_line": 242,
+          "snippet": "    if amount > MAX_DEPOSIT:",
+          "claimed_snippet": "    if amount > MAX_DEPOSIT:",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 138,
-          "claimed_line": 138,
-          "snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {_MAX_DEPOSIT}\")",
-          "claimed_snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {_MAX_DEPOSIT}\")",
-          "verified": false,
-          "match": "not_found"
+          "line": 243,
+          "claimed_line": 243,
+          "snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {MAX_DEPOSIT}\")",
+          "claimed_snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {MAX_DEPOSIT}\")",
+          "verified": true,
+          "match": "exact"
         }
       ],
       "tests": [
         {
-          "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-          "test_name": "test_zero_rejected",
-          "exists": false,
-          "passed": null
-        },
-        {
-          "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-          "test_name": "test_negative_rejected",
-          "exists": false,
-          "passed": null
-        },
-        {
-          "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-          "test_name": "test_boundary_50000_01_rejected",
-          "exists": false,
-          "passed": null
-        },
-        {
-          "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-          "test_name": "test_boundary_50000_accepted",
-          "exists": false,
-          "passed": null
-        },
-        {
-          "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
+          "file": "ledgerlite/tests/test_req02_deposit_limits.py",
           "test_name": "test_positive_amount_accepted",
-          "exists": false,
-          "passed": null
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-          "test_name": "test_multiple_deposits_accumulate",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req02_deposit_limits.py",
+          "test_name": "test_zero_and_negative_rejected",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req02_deposit_limits.py",
+          "test_name": "test_boundary_50000_accepted",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req02_deposit_limits.py",
+          "test_name": "test_boundary_50000_01_rejected",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req02_deposit_limits.py",
+          "test_name": "test_limit_is_per_transaction_not_per_balance",
+          "exists": true,
+          "passed": true
         }
       ],
       "checks": {
-        "citations_verified": 1,
-        "citations_total": 5,
-        "tests_passing": 0,
-        "tests_cited": 6,
+        "citations_verified": 6,
+        "citations_total": 6,
+        "tests_passing": 5,
+        "tests_cited": 5,
         "mutations": {
-          "tried": 7,
-          "killed": 7,
+          "tried": 8,
+          "killed": 8,
           "survived": 0,
           "proven": true
         }
@@ -269,66 +305,102 @@
       "risk": "High",
       "change": "none",
       "ai_status": "covered",
-      "status": "unverified",
-      "reason": "The withdrawal floor is enforced in services.py at lines 156-157: before applying any debit the service checks that the resulting balance would not be less than zero, and raises HTTP 400 with 'Insufficient funds' if it would. Line 159 then performs the actual debit only when that guard passes. Three tests cover the requirement: test_withdrawal_overdraft_rejected confirms a withdrawal of one cent above the balance is rejected with HTTP 400 and the 'Insufficient' message; test_balance_never_goes_negative drains the account to exactly 0.00 and then confirms a further withdrawal is rejected and the balance remains 0.00; test_withdrawal_exact_balance_allowed confirms that withdrawing exactly the full balance succeeds and leaves the balance at 0.00.",
+      "status": "proven",
+      "reason": "The withdrawal floor is enforced atomically in _debit() (services.py:131) via a SQL WHERE clause that requires Account.balance >= amount before subtracting; if the row does not match (balance too low) rowcount is 0 and the function returns False (line 135). The withdraw() caller at line 259 treats a False return as an error: it rolls back the transaction and raises HTTP 400 'Insufficient funds' (lines 260-261), leaving the balance unchanged. Both acceptance criteria are exercised: test_overdraft_rejected_and_balance_unchanged confirms a withdrawal above the balance is rejected with 400 and the balance is unchanged; test_balance_never_goes_negative confirms the balance cannot go below zero; test_withdrawal_exact_balance_allowed confirms equality is permitted; and test_concurrent_withdrawals_cannot_overdraw proves the atomic WHERE guard holds under concurrency.",
       "suggested_fix": "",
       "evidence": [
         {
           "file": "ledgerlite/services.py",
-          "line": 156,
-          "claimed_line": 156,
-          "snippet": "    if account.balance - amount < Decimal(\"0\"):",
-          "claimed_snippet": "    if account.balance - amount < Decimal(\"0\"):",
-          "verified": false,
-          "match": "not_found"
+          "line": 131,
+          "claimed_line": 131,
+          "snippet": "        .where(Account.id == account_id, Account.balance >= amount)",
+          "claimed_snippet": "        .where(Account.id == account_id, Account.balance >= amount)",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 157,
-          "claimed_line": 157,
+          "line": 135,
+          "claimed_line": 135,
+          "snippet": "    return result.rowcount == 1",
+          "claimed_snippet": "    return result.rowcount == 1",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 259,
+          "claimed_line": 259,
+          "snippet": "    if not _debit(db, account_id, amount):  # REQ-03: never below zero, even under concurrency",
+          "claimed_snippet": "    if not _debit(db, account_id, amount):  # REQ-03: never below zero, even under concurrency",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 260,
+          "claimed_line": 260,
+          "snippet": "        db.rollback()",
+          "claimed_snippet": "        db.rollback()",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 261,
+          "claimed_line": 261,
           "snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")",
           "claimed_snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")",
-          "verified": false,
-          "match": "ambiguous"
-        },
-        {
-          "file": "ledgerlite/services.py",
-          "line": 159,
-          "claimed_line": 159,
-          "snippet": "    account.balance -= amount",
-          "claimed_snippet": "    account.balance -= amount",
-          "verified": false,
-          "match": "not_found"
+          "verified": true,
+          "match": "exact"
         }
       ],
       "tests": [
         {
-          "file": "ledgerlite/tests/test_spec3_withdrawals.py",
-          "test_name": "test_withdrawal_overdraft_rejected",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req03_withdrawals.py",
+          "test_name": "test_overdraft_rejected_and_balance_unchanged",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+          "file": "ledgerlite/tests/test_req03_withdrawals.py",
           "test_name": "test_balance_never_goes_negative",
-          "exists": false,
-          "passed": null
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec3_withdrawals.py",
+          "file": "ledgerlite/tests/test_req03_withdrawals.py",
           "test_name": "test_withdrawal_exact_balance_allowed",
-          "exists": false,
-          "passed": null
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req03_withdrawals.py",
+          "test_name": "test_concurrent_withdrawals_cannot_overdraw",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req03_withdrawals.py",
+          "test_name": "test_withdrawal_reduces_balance",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req03_withdrawals.py",
+          "test_name": "test_zero_and_negative_withdrawals_rejected",
+          "exists": true,
+          "passed": true
         }
       ],
       "checks": {
-        "citations_verified": 0,
-        "citations_total": 3,
-        "tests_passing": 0,
-        "tests_cited": 3,
+        "citations_verified": 5,
+        "citations_total": 5,
+        "tests_passing": 6,
+        "tests_cited": 6,
         "mutations": {
-          "tried": 6,
-          "killed": 6,
+          "tried": 7,
+          "killed": 7,
           "survived": 0,
           "proven": true
         }
@@ -344,14 +416,14 @@
       "risk": "High",
       "change": "none",
       "ai_status": "covered",
-      "status": "untested",
-      "reason": "The transfer service wraps the balance mutation, Transfer insert, flush, and audit write inside a single try/except block (services.py:220-245). The debit is applied to sender.balance (line 221) and the credit to recipient.balance (line 223) before db.commit() is called (line 242). If any step raises — including the audit write — the except clause on line 243 calls db.rollback() (line 244) and re-raises, so neither balance change is ever persisted. test_transfer_rolls_back_on_db_error proves this by patching _write_audit to raise a RuntimeError after the debit and asserting both balances are unchanged after the 500 response. test_successful_transfer_debits_sender_credits_recipient proves the happy path commits both sides atomically.",
+      "status": "weak",
+      "reason": "The create_transfer function in services.py (lines 310-341) wraps all mutations — debit, credit, Transfer row insert, flush, and audit write — inside a single try/except block. db.commit() is called only after every step succeeds (line 336). If any step raises (including a credit failure), the except Exception handler at line 339 calls db.rollback() (line 340) and re-raises, guaranteeing no partial state is persisted. The approve_transfer function (lines 368-394) applies the same pattern for the large-transfer approval path: the status update, credit, and audit write are all covered by the same rollback-on-exception guard (lines 392-394). Four dedicated test functions in test_req04_transfer_atomicity.py exercise both the happy path and every failure mode: credit failure rolls back the debit (test_failed_credit_rolls_back_the_debit), audit-write failure rolls back both balance changes (test_failed_audit_write_rolls_back_everything), and approval-time credit failure leaves the transfer in pending_approval state (test_failed_credit_during_approval_rolls_back).",
       "suggested_fix": "",
       "evidence": [
         {
           "file": "ledgerlite/services.py",
-          "line": 220,
-          "claimed_line": 220,
+          "line": 310,
+          "claimed_line": 310,
           "snippet": "    try:",
           "claimed_snippet": "    try:",
           "verified": false,
@@ -359,83 +431,131 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 221,
-          "claimed_line": 221,
-          "snippet": "        sender.balance -= amount",
-          "claimed_snippet": "        sender.balance -= amount",
-          "verified": false,
-          "match": "not_found"
-        },
-        {
-          "file": "ledgerlite/services.py",
-          "line": 223,
-          "claimed_line": 223,
-          "snippet": "            recipient.balance += amount",
-          "claimed_snippet": "            recipient.balance += amount",
-          "verified": false,
-          "match": "not_found"
-        },
-        {
-          "file": "ledgerlite/services.py",
-          "line": 247,
-          "claimed_line": 242,
-          "snippet": "    db.commit()",
-          "claimed_snippet": "        db.commit()",
-          "verified": true,
-          "match": "relocated"
-        },
-        {
-          "file": "ledgerlite/services.py",
-          "line": 243,
-          "claimed_line": 243,
-          "snippet": "    except Exception:",
-          "claimed_snippet": "    except Exception:",
-          "verified": false,
-          "match": "ambiguous"
-        },
-        {
-          "file": "ledgerlite/services.py",
-          "line": 244,
-          "claimed_line": 244,
-          "snippet": "        db.rollback()",
-          "claimed_snippet": "        db.rollback()",
-          "verified": false,
-          "match": "ambiguous"
-        },
-        {
-          "file": "ledgerlite/services.py",
-          "line": 245,
-          "claimed_line": 245,
-          "snippet": "        raise",
-          "claimed_snippet": "        raise",
+          "line": 311,
+          "claimed_line": 311,
+          "snippet": "        # REQ-04: debit, credit, transfer row and audit entry commit together or not at all.",
+          "claimed_snippet": "        # REQ-04: debit, credit, transfer row and audit entry commit together or not at all.",
           "verified": false,
           "match": "too_short"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 312,
+          "claimed_line": 312,
+          "snippet": "        if not _debit(db, sender_id, amount):",
+          "claimed_snippet": "        if not _debit(db, sender_id, amount):",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 313,
+          "claimed_line": 313,
+          "snippet": "            db.rollback()",
+          "claimed_snippet": "            db.rollback()",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 316,
+          "claimed_line": 316,
+          "snippet": "            _credit(db, recipient_id, amount)",
+          "claimed_snippet": "            _credit(db, recipient_id, amount)",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 336,
+          "claimed_line": 336,
+          "snippet": "        db.commit()",
+          "claimed_snippet": "        db.commit()",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 339,
+          "claimed_line": 339,
+          "snippet": "    except Exception:",
+          "claimed_snippet": "    except Exception:",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 340,
+          "claimed_line": 340,
+          "snippet": "        db.rollback()",
+          "claimed_snippet": "        db.rollback()",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 379,
+          "claimed_line": 379,
+          "snippet": "        _credit(db, transfer.recipient_id, transfer.amount)",
+          "claimed_snippet": "        _credit(db, transfer.recipient_id, transfer.amount)",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 389,
+          "claimed_line": 389,
+          "snippet": "        db.commit()",
+          "claimed_snippet": "        db.commit()",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 393,
+          "claimed_line": 393,
+          "snippet": "        db.rollback()",
+          "claimed_snippet": "        db.rollback()",
+          "verified": true,
+          "match": "exact"
         }
       ],
       "tests": [
         {
-          "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
-          "test_name": "test_transfer_rolls_back_on_db_error",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req04_transfer_atomicity.py",
+          "test_name": "test_successful_transfer_debits_sender_and_credits_recipient",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec4_transfer_atomicity.py",
-          "test_name": "test_successful_transfer_debits_sender_credits_recipient",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req04_transfer_atomicity.py",
+          "test_name": "test_failed_credit_rolls_back_the_debit",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req04_transfer_atomicity.py",
+          "test_name": "test_failed_audit_write_rolls_back_everything",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req04_transfer_atomicity.py",
+          "test_name": "test_failed_credit_during_approval_rolls_back",
+          "exists": true,
+          "passed": true
         }
       ],
       "checks": {
-        "citations_verified": 1,
-        "citations_total": 7,
-        "tests_passing": 0,
-        "tests_cited": 2,
+        "citations_verified": 9,
+        "citations_total": 11,
+        "tests_passing": 4,
+        "tests_cited": 4,
         "mutations": {
-          "tried": 6,
+          "tried": 7,
           "killed": 6,
-          "survived": 0,
-          "proven": true
+          "survived": 1,
+          "proven": false
         }
       }
     },
@@ -450,72 +570,78 @@
       "risk": "High",
       "change": "changed",
       "ai_status": "covered",
-      "status": "untested",
-      "reason": "The v2.0 threshold of 5,000.00 is correctly implemented. Transfers >= 5,000.00 are set to pending_approval; transfers below that are completed immediately. This was fixed from the old v1.0 value of 10,000.00. All four boundary tests pass.",
+      "status": "proven",
+      "reason": "Both acceptance criteria are fully implemented and tested. AC1: the threshold constant is set to 5,000.00 (services.py:29), the comparison uses >= so exactly 5,000.00 triggers pending_approval (services.py:307-308), and test_at_or_above_threshold_is_held parametrises over [\"5000.00\", \"5000.01\", \"10000.00\"] asserting status == \"pending_approval\" and recipient balance unchanged. AC2: the initiator-cannot-approve guard is present at services.py:355-356, and test_initiator_cannot_approve_own_transfer grants the initiator the approver role then asserts a 403 with \"Initiator\" in the detail and recipient balance still 0.00.",
       "suggested_fix": "",
       "evidence": [
         {
           "file": "ledgerlite/services.py",
-          "line": 20,
-          "claimed_line": 20,
-          "snippet": "_LARGE_TRANSFER_THRESHOLD = Decimal(\"5000.00\")",
-          "claimed_snippet": "_LARGE_TRANSFER_THRESHOLD = Decimal(\"5000.00\")",
-          "verified": false,
-          "match": "not_found"
+          "line": 29,
+          "claimed_line": 29,
+          "snippet": "LARGE_TRANSFER_THRESHOLD = Decimal(\"5000.00\")     # REQ-05 (v2.0; was 10,000.00 in v1.0)",
+          "claimed_snippet": "LARGE_TRANSFER_THRESHOLD = Decimal(\"5000.00\")     # REQ-05 (v2.0; was 10,000.00 in v1.0)",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 217,
-          "claimed_line": 217,
-          "snippet": "    large = amount >= _LARGE_TRANSFER_THRESHOLD",
-          "claimed_snippet": "    large = amount >= _LARGE_TRANSFER_THRESHOLD",
-          "verified": false,
-          "match": "not_found"
+          "line": 307,
+          "claimed_line": 307,
+          "snippet": "    large = amount >= LARGE_TRANSFER_THRESHOLD  # REQ-05",
+          "claimed_snippet": "    large = amount >= LARGE_TRANSFER_THRESHOLD  # REQ-05",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
           "line": 308,
-          "claimed_line": 218,
+          "claimed_line": 308,
           "snippet": "    status = \"pending_approval\" if large else \"completed\"",
           "claimed_snippet": "    status = \"pending_approval\" if large else \"completed\"",
           "verified": true,
-          "match": "relocated"
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 355,
+          "claimed_line": 355,
+          "snippet": "    if approver_id == transfer.sender_id:",
+          "claimed_snippet": "    if approver_id == transfer.sender_id:",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 356,
+          "claimed_line": 356,
+          "snippet": "        raise HTTPException(status_code=403, detail=\"Initiator cannot approve their own transfer\")",
+          "claimed_snippet": "        raise HTTPException(status_code=403, detail=\"Initiator cannot approve their own transfer\")",
+          "verified": true,
+          "match": "exact"
         }
       ],
       "tests": [
         {
-          "file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py",
-          "test_name": "test_transfer_below_threshold_completed",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req05_large_transfer_approval.py",
+          "test_name": "test_at_or_above_threshold_is_held",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py",
-          "test_name": "test_transfer_at_threshold_pending",
-          "exists": false,
-          "passed": null
-        },
-        {
-          "file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py",
-          "test_name": "test_transfer_above_threshold_pending",
-          "exists": false,
-          "passed": null
-        },
-        {
-          "file": "ledgerlite/tests/test_spec5_large_transfer_threshold.py",
-          "test_name": "test_transfer_just_below_threshold_completed",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req05_large_transfer_approval.py",
+          "test_name": "test_initiator_cannot_approve_own_transfer",
+          "exists": true,
+          "passed": true
         }
       ],
       "checks": {
-        "citations_verified": 1,
-        "citations_total": 3,
-        "tests_passing": 0,
-        "tests_cited": 4,
+        "citations_verified": 5,
+        "citations_total": 5,
+        "tests_passing": 2,
+        "tests_cited": 2,
         "mutations": {
-          "tried": 10,
-          "killed": 10,
+          "tried": 11,
+          "killed": 11,
           "survived": 0,
           "proven": true
         }
@@ -532,96 +658,171 @@
       "risk": "High",
       "change": "none",
       "ai_status": "covered",
-      "status": "untested",
-      "reason": "_write_audit() is called in deposit() (line 141), withdraw() (line 160), create_transfer() (line 234), and approve_transfer() (line 269). No PATCH/DELETE endpoint for audit entries exists. All five criteria are asserted by named tests in test_spec6_audit_log.py.",
+      "status": "proven",
+      "reason": "Every money-movement operation calls _write_audit (services.py:52-73) which appends exactly one AuditEntry carrying actor_id, action, amount, account_id/related_account_id and a UTC timestamp from _now(). Deposit calls it at line 246, withdrawal at line 263, create_transfer at lines 327-335 (action=transfer_initiated), and approve_transfer at lines 380-388 (action=transfer_approved). The only audit HTTP route is GET /audit (main.py:149); no PUT/PATCH/POST/DELETE route exists, asserted directly by test_no_route_can_change_audit_entries. Both acceptance criteria are guarded by dedicated tests.",
       "suggested_fix": "",
       "evidence": [
         {
           "file": "ledgerlite/services.py",
           "line": 52,
-          "claimed_line": 40,
+          "claimed_line": 52,
           "snippet": "def _write_audit(",
           "claimed_snippet": "def _write_audit(",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 62,
+          "claimed_line": 62,
+          "snippet": "    \"\"\"Append one audit entry (REQ-06). Entries are never updated or deleted.\"\"\"",
+          "claimed_snippet": "    \"\"\"Append one audit entry (REQ-06). Entries are never updated or deleted.\"\"\"",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 39,
+          "claimed_line": 37,
+          "snippet": "    return datetime.datetime.now(datetime.timezone.utc)",
+          "claimed_snippet": "    return datetime.datetime.now(datetime.timezone.utc)",
           "verified": true,
           "match": "relocated"
         },
         {
           "file": "ledgerlite/services.py",
           "line": 246,
-          "claimed_line": 141,
+          "claimed_line": 246,
           "snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
           "claimed_snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
           "verified": true,
-          "match": "relocated"
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
           "line": 263,
-          "claimed_line": 160,
+          "claimed_line": 263,
           "snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)",
           "claimed_snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)",
           "verified": true,
-          "match": "relocated"
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 234,
-          "claimed_line": 234,
+          "line": 327,
+          "claimed_line": 327,
           "snippet": "        _write_audit(",
           "claimed_snippet": "        _write_audit(",
-          "verified": false,
-          "match": "ambiguous"
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 330,
+          "claimed_line": 330,
+          "snippet": "            action=\"transfer_initiated\",",
+          "claimed_snippet": "            action=\"transfer_initiated\",",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 380,
+          "claimed_line": 380,
+          "snippet": "        _write_audit(",
+          "claimed_snippet": "        _write_audit(",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 383,
+          "claimed_line": 383,
+          "snippet": "            action=\"transfer_approved\",",
+          "claimed_snippet": "            action=\"transfer_approved\",",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/main.py",
-          "line": 95,
-          "claimed_line": 95,
-          "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])",
-          "claimed_snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])",
-          "verified": false,
-          "match": "not_found"
+          "line": 149,
+          "claimed_line": 149,
+          "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+          "claimed_snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+          "verified": true,
+          "match": "exact"
         }
       ],
       "tests": [
         {
-          "file": "ledgerlite/tests/test_spec6_audit_log.py",
-          "test_name": "test_audit_entry_written_on_deposit",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req06_audit_log.py",
+          "test_name": "test_deposit_writes_exactly_one_entry",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec6_audit_log.py",
-          "test_name": "test_audit_entry_written_on_withdrawal",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req06_audit_log.py",
+          "test_name": "test_withdrawal_writes_exactly_one_entry",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec6_audit_log.py",
-          "test_name": "test_audit_entry_written_on_transfer",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req06_audit_log.py",
+          "test_name": "test_transfer_writes_exactly_one_entry",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec6_audit_log.py",
-          "test_name": "test_no_audit_delete_endpoint",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req06_audit_log.py",
+          "test_name": "test_approval_writes_exactly_one_entry",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec6_audit_log.py",
-          "test_name": "test_no_audit_patch_endpoint",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req06_audit_log.py",
+          "test_name": "test_held_transfer_writes_exactly_one_entry",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req06_audit_log.py",
+          "test_name": "test_audit_collection_cannot_be_modified",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req06_audit_log.py",
+          "test_name": "test_existing_entry_cannot_be_modified",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req06_audit_log.py",
+          "test_name": "test_no_route_can_change_audit_entries",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req06_audit_log.py",
+          "test_name": "test_audit_timestamps_are_real_utc_even_on_a_non_utc_server",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req06_audit_log.py",
+          "test_name": "test_rejected_operations_write_no_money_movement_entry",
+          "exists": true,
+          "passed": true
         }
       ],
       "checks": {
-        "citations_verified": 3,
-        "citations_total": 5,
-        "tests_passing": 0,
-        "tests_cited": 5,
+        "citations_verified": 10,
+        "citations_total": 10,
+        "tests_passing": 10,
+        "tests_cited": 10,
         "mutations": {
-          "tried": 10,
-          "killed": 10,
+          "tried": 11,
+          "killed": 11,
           "survived": 0,
           "proven": true
         }
@@ -638,105 +839,144 @@
       "risk": "Medium",
       "change": "none",
       "ai_status": "covered",
-      "status": "untested",
-      "reason": "_check_pin() increments failed_pin_attempts on each wrong PIN; on the 5th failure (>= _MAX_FAILED_PINS) it sets account.locked = True and raises HTTP 423. A subsequent correct PIN resets failed_pin_attempts to 0. Both acceptance criteria are asserted by dedicated tests.",
+      "status": "proven",
+      "reason": "The implementation in _check_pin() (services.py:95-114) enforces all acceptance criteria. On each failed PIN attempt the counter is incremented and committed immediately (lines 106, 111); on the 5th failure (>= MAX_FAILED_PINS=5, line 107) account.locked is set to True and HTTP 423 is raised (lines 108-113). A correct PIN resets failed_pin_attempts to 0 and commits (lines 101-103). Every call site routes through _check_pin so a locked account always receives HTTP 423 before any money movement occurs. The test suite covers AC1 (test_fifth_wrong_pin_locks_account), AC2 (test_correct_pin_resets_counter), persistence across requests, brute-force stopping, and all four PIN-protected endpoints.",
       "suggested_fix": "",
       "evidence": [
         {
           "file": "ledgerlite/services.py",
-          "line": 21,
-          "claimed_line": 21,
-          "snippet": "_MAX_FAILED_PINS = 5",
-          "claimed_snippet": "_MAX_FAILED_PINS = 5",
-          "verified": false,
-          "match": "not_found"
+          "line": 30,
+          "claimed_line": 30,
+          "snippet": "MAX_FAILED_PINS = 5                               # REQ-07",
+          "claimed_snippet": "MAX_FAILED_PINS = 5                               # REQ-07",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
           "line": 97,
-          "claimed_line": 70,
+          "claimed_line": 97,
           "snippet": "    if account.locked:",
           "claimed_snippet": "    if account.locked:",
           "verified": true,
-          "match": "relocated"
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
           "line": 98,
-          "claimed_line": 71,
+          "claimed_line": 98,
           "snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")",
           "claimed_snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")",
           "verified": true,
-          "match": "relocated"
-        },
-        {
-          "file": "ledgerlite/services.py",
-          "line": 73,
-          "claimed_line": 73,
-          "snippet": "    if not verify_pin(pin, account.pin_hash):",
-          "claimed_snippet": "    if not verify_pin(pin, account.pin_hash):",
-          "verified": false,
-          "match": "not_found"
-        },
-        {
-          "file": "ledgerlite/services.py",
-          "line": 74,
-          "claimed_line": 74,
-          "snippet": "        account.failed_pin_attempts += 1",
-          "claimed_snippet": "        account.failed_pin_attempts += 1",
-          "verified": false,
-          "match": "ambiguous"
-        },
-        {
-          "file": "ledgerlite/services.py",
-          "line": 75,
-          "claimed_line": 75,
-          "snippet": "        if account.failed_pin_attempts >= _MAX_FAILED_PINS:",
-          "claimed_snippet": "        if account.failed_pin_attempts >= _MAX_FAILED_PINS:",
-          "verified": false,
-          "match": "not_found"
-        },
-        {
-          "file": "ledgerlite/services.py",
-          "line": 109,
-          "claimed_line": 76,
-          "snippet": "        account.locked = True",
-          "claimed_snippet": "            account.locked = True",
-          "verified": true,
-          "match": "relocated"
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
           "line": 102,
-          "claimed_line": 83,
+          "claimed_line": 102,
           "snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter",
-          "claimed_snippet": "    account.failed_pin_attempts = 0",
+          "claimed_snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter",
           "verified": true,
-          "match": "relocated"
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 106,
+          "claimed_line": 106,
+          "snippet": "    account.failed_pin_attempts += 1",
+          "claimed_snippet": "    account.failed_pin_attempts += 1",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 107,
+          "claimed_line": 107,
+          "snippet": "    locked_now = account.failed_pin_attempts >= MAX_FAILED_PINS",
+          "claimed_snippet": "    locked_now = account.failed_pin_attempts >= MAX_FAILED_PINS",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 109,
+          "claimed_line": 109,
+          "snippet": "        account.locked = True",
+          "claimed_snippet": "        account.locked = True",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 111,
+          "claimed_line": 111,
+          "snippet": "    db.commit()  # persist the counter / lock even though the request fails",
+          "claimed_snippet": "    db.commit()  # persist the counter / lock even though the request fails",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 113,
+          "claimed_line": 113,
+          "snippet": "        raise HTTPException(status_code=423, detail=\"Account locked after too many failed PIN attempts\")",
+          "claimed_snippet": "        raise HTTPException(status_code=423, detail=\"Account locked after too many failed PIN attempts\")",
+          "verified": true,
+          "match": "exact"
         }
       ],
       "tests": [
         {
-          "file": "ledgerlite/tests/test_spec7_pin_lockout.py",
-          "test_name": "test_fifth_wrong_pin_locks_account",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req07_pin_lockout.py",
+          "test_name": "test_failed_attempts_are_persisted_between_requests",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec7_pin_lockout.py",
+          "file": "ledgerlite/tests/test_req07_pin_lockout.py",
+          "test_name": "test_fifth_wrong_pin_locks_account",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req07_pin_lockout.py",
+          "test_name": "test_locked_account_cannot_move_money_anywhere",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req07_pin_lockout.py",
           "test_name": "test_correct_pin_resets_counter",
-          "exists": false,
-          "passed": null
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req07_pin_lockout.py",
+          "test_name": "test_brute_force_is_stopped",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req07_pin_lockout.py",
+          "test_name": "test_fifth_wrong_pin_locks_on_every_endpoint",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req07_pin_lockout.py",
+          "test_name": "test_correct_pin_on_every_endpoint_resets_the_counter",
+          "exists": true,
+          "passed": true
         }
       ],
       "checks": {
-        "citations_verified": 4,
-        "citations_total": 8,
-        "tests_passing": 0,
-        "tests_cited": 2,
+        "citations_verified": 9,
+        "citations_total": 9,
+        "tests_passing": 7,
+        "tests_cited": 7,
         "mutations": {
-          "tried": 8,
-          "killed": 8,
+          "tried": 9,
+          "killed": 9,
           "survived": 0,
           "proven": true
         }
@@ -753,99 +993,138 @@
       "risk": "Medium",
       "change": "none",
       "ai_status": "covered",
-      "status": "untested",
-      "reason": "All monetary values are coerced through _to_decimal() (Decimal(str(value))) before arithmetic; the database column is Numeric(12,2); and balance is serialised as a 2dp string via @field_serializer. The critical 0.10+0.20==0.30 criterion is directly asserted by test_point_one_plus_point_two_equals_point_three.",
+      "status": "proven",
+      "reason": "Exact decimal arithmetic is enforced end-to-end by three interlocking mechanisms. (1) Storage: the custom Money TypeDecorator (models.py:13-34) stores every monetary value as an INTEGER count of cents (impl = Integer), converting on write via Decimal * 100 and on read via Decimal(int(value)) / 100 with an explicit .quantize(CENT) — floating-point representation is structurally impossible at the DB layer. (2) Input validation: _validate_amount (schemas.py:29-37) rejects any Decimal whose precision exceeds 2 places with a ValueError rather than silently rounding, and the Amount annotated type gates every API amount field. (3) Serialisation: _money_str (schemas.py:55-56) formats every outgoing monetary Decimal with f'{value:.2f}', and AccountResponse, TransferResponse and AuditEntryResponse each apply it via @field_serializer. The canonical AC (0.10 + 0.20 = 0.30) is directly asserted by test_point_one_plus_point_two_equals_point_three; 2-decimal string output is asserted by test_amounts_are_returned_with_exactly_two_decimals and test_transfer_amount_is_returned_as_a_two_decimal_string; integer-only DB storage is verified by test_money_is_stored_as_integer_cents_not_real; and ORM round-trip exactness is confirmed by test_values_read_back_from_the_database_are_exact_decimals.",
       "suggested_fix": "",
       "evidence": [
         {
           "file": "ledgerlite/models.py",
-          "line": 24,
-          "claimed_line": 24,
-          "snippet": "    balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))",
-          "claimed_snippet": "    balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))",
-          "verified": false,
-          "match": "not_found"
+          "line": 13,
+          "claimed_line": 13,
+          "snippet": "class Money(TypeDecorator):",
+          "claimed_snippet": "class Money(TypeDecorator):  # impl = Integer — stored as integer cents, never REAL",
+          "verified": true,
+          "match": "exact"
         },
         {
-          "file": "ledgerlite/services.py",
-          "line": 11,
-          "claimed_line": 11,
-          "snippet": "from decimal import Decimal, InvalidOperation",
-          "claimed_snippet": "from decimal import Decimal, InvalidOperation",
-          "verified": false,
-          "match": "not_found"
+          "file": "ledgerlite/models.py",
+          "line": 29,
+          "claimed_line": 29,
+          "snippet": "        return int((value * 100).to_integral_value(rounding=ROUND_HALF_EVEN))",
+          "claimed_snippet": "        return int((value * 100).to_integral_value(rounding=ROUND_HALF_EVEN))",
+          "verified": true,
+          "match": "exact"
         },
         {
-          "file": "ledgerlite/services.py",
-          "line": 91,
-          "claimed_line": 91,
-          "snippet": "def _to_decimal(value) -> Decimal:",
-          "claimed_snippet": "def _to_decimal(value) -> Decimal:",
-          "verified": false,
-          "match": "not_found"
+          "file": "ledgerlite/models.py",
+          "line": 34,
+          "claimed_line": 34,
+          "snippet": "        return (Decimal(int(value)) / 100).quantize(CENT)",
+          "claimed_snippet": "        return (Decimal(int(value)) / 100).quantize(CENT)",
+          "verified": true,
+          "match": "exact"
         },
         {
-          "file": "ledgerlite/services.py",
-          "line": 93,
-          "claimed_line": 93,
-          "snippet": "        return Decimal(str(value))",
-          "claimed_snippet": "        return Decimal(str(value))",
-          "verified": false,
-          "match": "not_found"
+          "file": "ledgerlite/schemas.py",
+          "line": 9,
+          "claimed_line": 9,
+          "snippet": "CENT = Decimal(\"0.01\")",
+          "claimed_snippet": "CENT = Decimal(\"0.01\")",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/schemas.py",
+          "line": 35,
+          "claimed_line": 35,
+          "snippet": "    if value != value.quantize(CENT):",
+          "claimed_snippet": "    if value != value.quantize(CENT):\n        raise ValueError(\"amount must have at most 2 decimal places\")",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/schemas.py",
+          "line": 55,
+          "claimed_line": 55,
+          "snippet": "def _money_str(value: Decimal | None) -> str | None:",
+          "claimed_snippet": "def _money_str(value: Decimal | None) -> str | None:\n    return None if value is None else f\"{value:.2f}\"",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/schemas.py",
           "line": 122,
-          "claimed_line": 64,
+          "claimed_line": 122,
           "snippet": "    @field_serializer(\"balance\")",
-          "claimed_snippet": "    @field_serializer(\"balance\")",
+          "claimed_snippet": "    @field_serializer(\"balance\")\n    def serialize_balance(self, v: Decimal) -> str:\n        return _money_str(v)",
           "verified": true,
-          "match": "relocated"
-        },
-        {
-          "file": "ledgerlite/schemas.py",
-          "line": 66,
-          "claimed_line": 66,
-          "snippet": "        return f\"{v:.2f}\"",
-          "claimed_snippet": "        return f\"{v:.2f}\"",
-          "verified": false,
-          "match": "not_found"
+          "match": "exact"
         }
       ],
       "tests": [
         {
-          "file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py",
+          "file": "ledgerlite/tests/test_req08_exact_decimals.py",
           "test_name": "test_point_one_plus_point_two_equals_point_three",
-          "exists": false,
-          "passed": null
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec8_decimal_arithmetic.py",
-          "test_name": "test_balance_serialised_as_two_decimal_places",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+          "test_name": "test_amounts_are_returned_with_exactly_two_decimals",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-          "test_name": "test_multiple_deposits_accumulate",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+          "test_name": "test_money_is_stored_as_integer_cents_not_real",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec2_deposit_limits.py",
-          "test_name": "test_boundary_50000_accepted",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+          "test_name": "test_more_than_two_decimals_is_rejected_not_rounded",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+          "test_name": "test_classic_float_traps_are_exact",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+          "test_name": "test_many_small_amounts_add_up_exactly",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+          "test_name": "test_transfer_amount_is_returned_as_a_two_decimal_string",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+          "test_name": "test_values_read_back_from_the_database_are_exact_decimals",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req08_exact_decimals.py",
+          "test_name": "test_daily_total_arithmetic_is_exact",
+          "exists": true,
+          "passed": true
         }
       ],
       "checks": {
-        "citations_verified": 1,
-        "citations_total": 6,
-        "tests_passing": 0,
-        "tests_cited": 4,
+        "citations_verified": 7,
+        "citations_total": 7,
+        "tests_passing": 9,
+        "tests_cited": 9,
         "mutations": {
-          "tried": 6,
-          "killed": 6,
+          "tried": 7,
+          "killed": 7,
           "survived": 0,
           "proven": true
         }
@@ -861,102 +1140,156 @@
       "risk": "High",
       "change": "new",
       "ai_status": "covered",
-      "status": "unverified",
-      "reason": "The implementation introduces a hard cap of 20,000.00 in outgoing transfers per UTC calendar day. The constant _DAILY_TRANSFER_CAP is defined at module level and the check runs inside the transfer service before any balance mutation: it sums all transfers with status 'completed' or 'pending_approval' for the sender since today_start (UTC midnight), converts the aggregate to Decimal, and raises HTTP 400 when daily_total + amount > _DAILY_TRANSFER_CAP. Three dedicated tests cover the boundary exactly (20,000.00 accepted), the first cent over the boundary (20,000.01 rejected), and a three-transfer scenario where the third transfer is blocked.",
+      "status": "proven",
+      "reason": "The implementation enforces a hard daily outgoing transfer cap of 20,000.00 per UTC calendar day. DAILY_TRANSFER_CAP is defined as Decimal('20000.00') at module level (services.py:31). The helper outgoing_total_today() (services.py:152-161) sums all transfers by the sender with status 'completed' or 'pending_approval' (the _COUNTED_STATUSES tuple at line 34) since the UTC midnight boundary computed by _utc_day_start() (services.py:147-149). In the transfer service (services.py:301), the guard raises HTTP 400 before any balance mutation when outgoing_total_today + amount > DAILY_TRANSFER_CAP. Nine dedicated tests in test_req09_daily_cap.py exercise: exact boundary acceptance (20,000.00), one-cent overage rejection, three-transfer block, per-sender isolation, rejected transfers not counting, yesterday's transfers not counting, midnight boundary precision, UTC day (not server-local day), and concurrent transfer serialisation.",
       "suggested_fix": "",
       "evidence": [
         {
           "file": "ledgerlite/services.py",
-          "line": 22,
-          "claimed_line": 22,
-          "snippet": "_DAILY_TRANSFER_CAP = Decimal(\"20000.00\")",
-          "claimed_snippet": "_DAILY_TRANSFER_CAP = Decimal(\"20000.00\")",
-          "verified": false,
-          "match": "not_found"
+          "line": 31,
+          "claimed_line": 31,
+          "snippet": "DAILY_TRANSFER_CAP = Decimal(\"20000.00\")          # REQ-09",
+          "claimed_snippet": "DAILY_TRANSFER_CAP = Decimal(\"20000.00\")          # REQ-09",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 198,
-          "claimed_line": 198,
-          "snippet": "    today_utc = datetime.datetime.now(timezone.utc).date()",
-          "claimed_snippet": "    today_utc = datetime.datetime.now(timezone.utc).date()",
-          "verified": false,
-          "match": "not_found"
+          "line": 34,
+          "claimed_line": 34,
+          "snippet": "_COUNTED_STATUSES = (\"completed\", \"pending_approval\")",
+          "claimed_snippet": "_COUNTED_STATUSES = (\"completed\", \"pending_approval\")",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 199,
-          "claimed_line": 199,
-          "snippet": "    today_start = datetime.datetime(today_utc.year, today_utc.month, today_utc.day, tzinfo=timezone.utc)",
-          "claimed_snippet": "    today_start = datetime.datetime(today_utc.year, today_utc.month, today_utc.day, tzinfo=timezone.utc)",
-          "verified": false,
-          "match": "not_found"
+          "line": 147,
+          "claimed_line": 147,
+          "snippet": "def _utc_day_start(moment: datetime.datetime) -> datetime.datetime:",
+          "claimed_snippet": "def _utc_day_start(moment: datetime.datetime) -> datetime.datetime:",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 201,
-          "claimed_line": 201,
-          "snippet": "    daily_total_row = (",
-          "claimed_snippet": "    daily_total_row = (",
-          "verified": false,
-          "match": "not_found"
+          "line": 148,
+          "claimed_line": 148,
+          "snippet": "    day = moment.astimezone(datetime.timezone.utc).date()",
+          "claimed_snippet": "    day = moment.astimezone(datetime.timezone.utc).date()",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 210,
-          "claimed_line": 210,
-          "snippet": "    daily_total = Decimal(str(daily_total_row[0]))",
-          "claimed_snippet": "    daily_total = Decimal(str(daily_total_row[0]))",
-          "verified": false,
-          "match": "not_found"
+          "line": 149,
+          "claimed_line": 149,
+          "snippet": "    return datetime.datetime(day.year, day.month, day.day, tzinfo=datetime.timezone.utc)",
+          "claimed_snippet": "    return datetime.datetime(day.year, day.month, day.day, tzinfo=datetime.timezone.utc)",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 211,
-          "claimed_line": 211,
-          "snippet": "    if daily_total + amount > _DAILY_TRANSFER_CAP:",
-          "claimed_snippet": "    if daily_total + amount > _DAILY_TRANSFER_CAP:",
-          "verified": false,
-          "match": "not_found"
+          "line": 152,
+          "claimed_line": 152,
+          "snippet": "def outgoing_total_today(db: Session, sender_id: int, now: datetime.datetime) -> Decimal:",
+          "claimed_snippet": "def outgoing_total_today(db: Session, sender_id: int, now: datetime.datetime) -> Decimal:",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 212,
-          "claimed_line": 212,
-          "snippet": "        raise HTTPException(",
-          "claimed_snippet": "        raise HTTPException(",
-          "verified": false,
-          "match": "ambiguous"
+          "line": 157,
+          "claimed_line": 157,
+          "snippet": "            Transfer.status.in_(_COUNTED_STATUSES),",
+          "claimed_snippet": "            Transfer.status.in_(_COUNTED_STATUSES),",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 158,
+          "claimed_line": 158,
+          "snippet": "            Transfer.created_at >= _utc_day_start(now),",
+          "claimed_snippet": "            Transfer.created_at >= _utc_day_start(now),",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 301,
+          "claimed_line": 301,
+          "snippet": "    if outgoing_total_today(db, sender_id, now) + amount > DAILY_TRANSFER_CAP:",
+          "claimed_snippet": "    if outgoing_total_today(db, sender_id, now) + amount > DAILY_TRANSFER_CAP:",
+          "verified": true,
+          "match": "exact"
         }
       ],
       "tests": [
         {
-          "file": "ledgerlite/tests/test_spec9_daily_cap.py",
-          "test_name": "test_daily_cap_exact_boundary_accepted",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req09_daily_cap.py",
+          "test_name": "test_exactly_20000_accepted",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec9_daily_cap.py",
-          "test_name": "test_daily_cap_exceeded_rejected",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req09_daily_cap.py",
+          "test_name": "test_one_cent_over_the_cap_rejected",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec9_daily_cap.py",
-          "test_name": "test_daily_cap_three_transfers_third_blocked",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req09_daily_cap.py",
+          "test_name": "test_third_of_three_7000_transfers_blocked",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req09_daily_cap.py",
+          "test_name": "test_cap_is_per_sender",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req09_daily_cap.py",
+          "test_name": "test_rejected_transfers_do_not_count",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req09_daily_cap.py",
+          "test_name": "test_yesterdays_transfers_do_not_count",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req09_daily_cap.py",
+          "test_name": "test_concurrent_transfers_cannot_exceed_the_cap",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req09_daily_cap.py",
+          "test_name": "test_transfer_just_after_midnight_counts_for_the_whole_day",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req09_daily_cap.py",
+          "test_name": "test_the_day_is_the_utc_day_not_the_server_local_day",
+          "exists": true,
+          "passed": true
         }
       ],
       "checks": {
-        "citations_verified": 0,
-        "citations_total": 7,
-        "tests_passing": 0,
-        "tests_cited": 3,
+        "citations_verified": 9,
+        "citations_total": 9,
+        "tests_passing": 9,
+        "tests_cited": 9,
         "mutations": {
-          "tried": 9,
-          "killed": 9,
+          "tried": 10,
+          "killed": 10,
           "survived": 0,
           "proven": true
         }
@@ -973,111 +1306,159 @@
       "risk": "High",
       "change": "new",
       "ai_status": "covered",
-      "status": "untested",
-      "reason": "Transfers where the sender or recipient has a country_code in {KP, IR, SY, CU} are rejected with HTTP 400 and detail 'sanctions'. A sanctions_blocked audit entry is written before rejection. All 9 test cases (4 sender-blocked, 4 recipient-blocked, 1 audit-entry) pass.",
+      "status": "proven",
+      "reason": "The implementation at services.py:279-294 performs sanctions screening before any other business logic (KYC, daily cap). It checks both sender and recipient country codes against SANCTIONED_COUNTRIES = frozenset({\"KP\", \"IR\", \"SY\", \"CU\"}) defined at line 32. On a hit it writes a `sanctions_blocked` audit entry recording actor_id (sender), amount, account_id, related_account_id, and the matching country code(s) in detail, then commits and raises HTTPException(400, detail=\"sanctions\"). AC1 (rejected with reason \"sanctions\") is satisfied by line 294; AC2 (audit entry written for blocked transfer) is satisfied by lines 284-293. The test suite covers all four sanctioned codes for both sender-side and recipient-side screening, lower-case normalization, screening before KYC, screening before daily cap, that large transfers are blocked not held, that the sender is the recorded actor, and that clean countries are not blocked.",
       "suggested_fix": "",
       "evidence": [
         {
           "file": "ledgerlite/services.py",
-          "line": 23,
-          "claimed_line": 23,
-          "snippet": "_SANCTIONED_COUNTRIES = {\"KP\", \"IR\", \"SY\", \"CU\"}",
-          "claimed_snippet": "_SANCTIONED_COUNTRIES = {\"KP\", \"IR\", \"SY\", \"CU\"}",
-          "verified": false,
-          "match": "not_found"
+          "line": 32,
+          "claimed_line": 32,
+          "snippet": "SANCTIONED_COUNTRIES = frozenset({\"KP\", \"IR\", \"SY\", \"CU\"})  # REQ-10",
+          "claimed_snippet": "SANCTIONED_COUNTRIES = frozenset({\"KP\", \"IR\", \"SY\", \"CU\"})  # REQ-10",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 180,
-          "claimed_line": 180,
-          "snippet": "    if sender.country_code in _SANCTIONED_COUNTRIES or recipient.country_code in _SANCTIONED_COUNTRIES:",
-          "claimed_snippet": "    if sender.country_code in _SANCTIONED_COUNTRIES or recipient.country_code in _SANCTIONED_COUNTRIES:",
-          "verified": false,
-          "match": "not_found"
+          "line": 280,
+          "claimed_line": 280,
+          "snippet": "    blocked = sorted(",
+          "claimed_snippet": "    blocked = sorted(",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 281,
+          "claimed_line": 281,
+          "snippet": "        {c for c in (sender.country_code, recipient.country_code) if c in SANCTIONED_COUNTRIES}",
+          "claimed_snippet": "        {c for c in (sender.country_code, recipient.country_code) if c in SANCTIONED_COUNTRIES}",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/services.py",
+          "line": 284,
+          "claimed_line": 284,
+          "snippet": "        _write_audit(",
+          "claimed_snippet": "        _write_audit(",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
           "line": 287,
-          "claimed_line": 184,
+          "claimed_line": 287,
           "snippet": "            action=\"sanctions_blocked\",",
           "claimed_snippet": "            action=\"sanctions_blocked\",",
           "verified": true,
-          "match": "relocated"
+          "match": "exact"
         },
         {
           "file": "ledgerlite/services.py",
           "line": 294,
-          "claimed_line": 190,
+          "claimed_line": 294,
           "snippet": "        raise HTTPException(status_code=400, detail=\"sanctions\")",
           "claimed_snippet": "        raise HTTPException(status_code=400, detail=\"sanctions\")",
           "verified": true,
-          "match": "relocated"
+          "match": "exact"
         }
       ],
       "tests": [
         {
-          "file": "ledgerlite/tests/test_spec10_sanctions.py",
-          "test_name": "test_sanctioned_sender_blocked[KP]",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_transfer_to_sanctioned_recipient_blocked_and_logged[KP]",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec10_sanctions.py",
-          "test_name": "test_sanctioned_sender_blocked[IR]",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_transfer_to_sanctioned_recipient_blocked_and_logged[IR]",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec10_sanctions.py",
-          "test_name": "test_sanctioned_sender_blocked[SY]",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_transfer_to_sanctioned_recipient_blocked_and_logged[SY]",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec10_sanctions.py",
-          "test_name": "test_sanctioned_sender_blocked[CU]",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_transfer_to_sanctioned_recipient_blocked_and_logged[CU]",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec10_sanctions.py",
-          "test_name": "test_sanctioned_recipient_blocked[KP]",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_transfer_from_sanctioned_sender_blocked_and_logged[KP]",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec10_sanctions.py",
-          "test_name": "test_sanctioned_recipient_blocked[IR]",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_transfer_from_sanctioned_sender_blocked_and_logged[IR]",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec10_sanctions.py",
-          "test_name": "test_sanctioned_recipient_blocked[SY]",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_transfer_from_sanctioned_sender_blocked_and_logged[SY]",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec10_sanctions.py",
-          "test_name": "test_sanctioned_recipient_blocked[CU]",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_transfer_from_sanctioned_sender_blocked_and_logged[CU]",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec10_sanctions.py",
-          "test_name": "test_audit_entry_written_for_sanctions_block",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_lower_case_country_code_is_still_screened",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_sanctions_hit_is_logged_even_before_kyc",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_clean_countries_are_not_blocked",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_large_transfer_to_sanctioned_country_is_blocked_not_held",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_sanctions_entry_records_the_sender_as_actor",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req10_sanctions.py",
+          "test_name": "test_screening_happens_before_the_daily_cap",
+          "exists": true,
+          "passed": true
         }
       ],
       "checks": {
-        "citations_verified": 2,
-        "citations_total": 4,
-        "tests_passing": 0,
-        "tests_cited": 9,
+        "citations_verified": 6,
+        "citations_total": 6,
+        "tests_passing": 14,
+        "tests_cited": 14,
         "mutations": {
-          "tried": 8,
-          "killed": 8,
+          "tried": 9,
+          "killed": 9,
           "survived": 0,
           "proven": true
         }
@@ -1094,50 +1475,86 @@
       "risk": "Medium",
       "change": "new",
       "ai_status": "covered",
-      "status": "untested",
-      "reason": "StatementAccountResponse overrides the account_number serializer to emit '******' + last-4 digits. The statement route uses StatementResponse (which embeds StatementAccountResponse) as its response_model, so every GET /accounts/{id}/statement response has a masked account number. The detail endpoint continues to use the unmasked AccountResponse. Three tests cover the requirement: pattern format, last-4 preservation, and detail-endpoint passthrough.",
+      "status": "proven",
+      "reason": "The implementation provides a dedicated mask_account_number helper (schemas.py:66-68) that replaces all but the last 4 digits with '****'. A specialised StatementAccountResponse subclass (schemas.py:170-175) overrides the account_number field serialiser to call that helper, ensuring every statement response automatically masks the number. The /accounts/{id}/statement endpoint (main.py:111-114) is bound exclusively to StatementResponse, which requires a StatementAccountResponse for its account field (schemas.py:178-180), so the masking is structural and cannot be bypassed. Five dedicated tests confirm: (1) the masked value matches ****DDDD and preserves the last 4 digits; (2) no full account number (including counterparty numbers) appears anywhere in the statement body; (3) no full account number appears in response headers; (4) the non-statement owner endpoint still returns the full number; and (5) the endpoint requires a valid PIN. All acceptance criteria are satisfied.",
       "suggested_fix": "",
       "evidence": [
         {
           "file": "ledgerlite/schemas.py",
+          "line": 66,
+          "claimed_line": 66,
+          "snippet": "def mask_account_number(number: str) -> str:",
+          "claimed_snippet": "def mask_account_number(number: str) -> str:",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/schemas.py",
+          "line": 68,
+          "claimed_line": 68,
+          "snippet": "    return \"****\" + number[-4:]",
+          "claimed_snippet": "    return \"****\" + number[-4:]",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/schemas.py",
           "line": 170,
-          "claimed_line": 103,
+          "claimed_line": 170,
           "snippet": "class StatementAccountResponse(AccountResponse):",
           "claimed_snippet": "class StatementAccountResponse(AccountResponse):",
           "verified": true,
-          "match": "relocated"
+          "match": "exact"
         },
         {
           "file": "ledgerlite/schemas.py",
-          "line": 174,
-          "claimed_line": 107,
-          "snippet": "    def serialize_account_number(self, v: str) -> str:",
-          "claimed_snippet": "    def serialize_account_number(self, v: str) -> str:",
+          "line": 173,
+          "claimed_line": 173,
+          "snippet": "    @field_serializer(\"account_number\")",
+          "claimed_snippet": "    @field_serializer(\"account_number\")",
           "verified": true,
-          "match": "relocated"
+          "match": "exact"
         },
         {
           "file": "ledgerlite/schemas.py",
-          "line": 108,
-          "claimed_line": 108,
-          "snippet": "        return \"******\" + v[-4:]",
-          "claimed_snippet": "        return \"******\" + v[-4:]",
-          "verified": false,
-          "match": "not_found"
+          "line": 175,
+          "claimed_line": 175,
+          "snippet": "        return mask_account_number(v)",
+          "claimed_snippet": "        return mask_account_number(v)",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/schemas.py",
+          "line": 178,
+          "claimed_line": 178,
+          "snippet": "class StatementResponse(BaseModel):",
+          "claimed_snippet": "class StatementResponse(BaseModel):",
+          "verified": true,
+          "match": "exact"
+        },
+        {
+          "file": "ledgerlite/schemas.py",
+          "line": 179,
+          "claimed_line": 179,
+          "snippet": "    account: StatementAccountResponse",
+          "claimed_snippet": "    account: StatementAccountResponse",
+          "verified": true,
+          "match": "exact"
         },
         {
           "file": "ledgerlite/main.py",
           "line": 111,
-          "claimed_line": 49,
+          "claimed_line": 111,
           "snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)",
           "claimed_snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)",
           "verified": true,
-          "match": "relocated"
+          "match": "exact"
         },
         {
           "file": "ledgerlite/main.py",
           "line": 114,
-          "claimed_line": 60,
+          "claimed_line": 113,
           "snippet": "    return StatementResponse(account=account, transactions=transactions)",
           "claimed_snippet": "    return StatementResponse(account=account, transactions=transactions)",
           "verified": true,
@@ -1146,32 +1563,44 @@
       ],
       "tests": [
         {
-          "file": "ledgerlite/tests/test_spec11_statement_masking.py",
-          "test_name": "test_statement_masks_account_number",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req11_statement_masking.py",
+          "test_name": "test_statement_masks_account_number_like_the_spec_example",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec11_statement_masking.py",
-          "test_name": "test_statement_mask_preserves_last4",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req11_statement_masking.py",
+          "test_name": "test_no_full_account_number_anywhere_in_a_statement",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec11_statement_masking.py",
-          "test_name": "test_account_detail_endpoint_not_masked",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req11_statement_masking.py",
+          "test_name": "test_no_full_account_number_in_statement_headers_either",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req11_statement_masking.py",
+          "test_name": "test_owner_account_view_is_not_a_statement",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req11_statement_masking.py",
+          "test_name": "test_statement_requires_the_account_pin",
+          "exists": true,
+          "passed": true
         }
       ],
       "checks": {
-        "citations_verified": 4,
-        "citations_total": 5,
-        "tests_passing": 0,
-        "tests_cited": 3,
+        "citations_verified": 9,
+        "citations_total": 9,
+        "tests_passing": 5,
+        "tests_cited": 5,
         "mutations": {
-          "tried": 6,
-          "killed": 6,
+          "tried": 7,
+          "killed": 7,
           "survived": 0,
           "proven": true
         }
@@ -1188,39 +1617,72 @@
       "risk": "Medium",
       "change": "none",
       "ai_status": "covered",
-      "status": "unverified",
-      "reason": "No DELETE /audit route is defined in main.py, making audit log deletion impossible at the API level. The GET /audit route at line 95 is the only audit endpoint. Tests confirm that DELETE requests to /audit and /audit/{id} both return 405 Method Not Allowed.",
+      "status": "proven",
+      "reason": "No DELETE route exists for audit entries anywhere in the API. ledgerlite/main.py line 147 explicitly documents this design intent ('read-only by design: no update or delete route exists — REQ-06, REQ-12'), and the only audit endpoint defined is GET /audit (line 149). Six tests in test_req12_audit_retention.py collectively verify: (1) DELETE /audit returns 405, (2) DELETE /audit/{id} returns 404 or 405, (3) no DELETE route is registered on any audit path, (4) the full route inventory matches the approved read-only-audit set exactly, (5) deleting an account cannot remove its audit trail, and (6) known purge paths (/admin/audit/purge, /audit/purge) return 404 or 405. All acceptance criteria are satisfied.",
       "suggested_fix": "",
       "evidence": [
         {
           "file": "ledgerlite/main.py",
-          "line": 95,
-          "claimed_line": 95,
-          "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])",
-          "claimed_snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])",
+          "line": 147,
+          "claimed_line": 147,
+          "snippet": "# ── audit (read-only by design: no update or delete route exists — REQ-06, REQ-12) ──",
+          "claimed_snippet": "# ── audit (read-only by design: no update or delete route exists — REQ-06, REQ-12) ──",
           "verified": false,
-          "match": "not_found"
+          "match": "too_short"
+        },
+        {
+          "file": "ledgerlite/main.py",
+          "line": 149,
+          "claimed_line": 149,
+          "snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+          "claimed_snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse], dependencies=[Depends(require_admin)])",
+          "verified": true,
+          "match": "exact"
         }
       ],
       "tests": [
         {
-          "file": "ledgerlite/tests/test_spec12_audit_retention.py",
-          "test_name": "test_delete_audit_returns_405",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req12_audit_retention.py",
+          "test_name": "test_delete_audit_collection_returns_405",
+          "exists": true,
+          "passed": true
         },
         {
-          "file": "ledgerlite/tests/test_spec12_audit_retention.py",
-          "test_name": "test_delete_audit_entry_returns_405",
-          "exists": false,
-          "passed": null
+          "file": "ledgerlite/tests/test_req12_audit_retention.py",
+          "test_name": "test_delete_existing_audit_entry_is_refused_and_entry_survives",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req12_audit_retention.py",
+          "test_name": "test_no_delete_route_exists_for_audit_entries",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req12_audit_retention.py",
+          "test_name": "test_route_inventory_is_exactly_the_reviewed_set",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req12_audit_retention.py",
+          "test_name": "test_deleting_an_account_cannot_remove_its_audit_trail",
+          "exists": true,
+          "passed": true
+        },
+        {
+          "file": "ledgerlite/tests/test_req12_audit_retention.py",
+          "test_name": "test_no_purge_action_removes_audit_entries",
+          "exists": true,
+          "passed": true
         }
       ],
       "checks": {
-        "citations_verified": 0,
-        "citations_total": 1,
-        "tests_passing": 0,
-        "tests_cited": 2,
+        "citations_verified": 1,
+        "citations_total": 2,
+        "tests_passing": 6,
+        "tests_cited": 6,
         "mutations": {
           "tried": 5,
           "killed": 5,

@@ -1,162 +1,139 @@
 {
   "tool": "solotrace verify",
   "version": "2.0.0",
-  "generated_at": "2026-09-26T01:09:25+00:00",
+  "generated_at": "2026-09-26T02:09:37+00:00",
   "source": {
     "kind": "working-tree",
-    "commit": "faf3ba60141d1b4533df05185d901b1b626f7922",
-    "dirty": true
+    "commit": "08a08b04147ec6935476a4d41752a69cd80887c4",
+    "dirty": false
   },
   "totals": {
-    "checked": 57,
-    "verified": 18,
-    "exact": 0,
-    "relocated": 18,
-    "not_found": 31,
-    "ambiguous": 6,
-    "too_short": 2,
+    "checked": 85,
+    "verified": 82,
+    "exact": 79,
+    "relocated": 3,
+    "not_found": 0,
+    "ambiguous": 0,
+    "too_short": 3,
     "invalid_path": 0,
     "missing_file": 0,
-    "tests_checked": 48,
-    "tests_missing": 48,
-    "covered_without_evidence": 12
+    "tests_checked": 83,
+    "tests_missing": 0,
+    "covered_without_evidence": 0
   },
-  "covered_without_evidence": [
-    "REQ-01",
-    "REQ-02",
-    "REQ-03",
-    "REQ-04",
-    "REQ-05",
-    "REQ-06",
-    "REQ-07",
-    "REQ-08",
-    "REQ-09",
-    "REQ-10",
-    "REQ-11",
-    "REQ-12"
-  ],
+  "covered_without_evidence": [],
   "verdicts": [
     {
       "id": "REQ-01",
-      "code_evidence": 3,
+      "code_evidence": 6,
       "stats": {
-        "not_found": 2,
+        "exact": 5,
         "relocated": 1,
-        "tests_checked": 5,
-        "tests_missing": 5
+        "tests_checked": 6,
+        "tests_missing": 0
       }
     },
     {
       "id": "REQ-02",
-      "code_evidence": 5,
+      "code_evidence": 6,
       "stats": {
-        "not_found": 4,
-        "relocated": 1,
-        "tests_checked": 6,
-        "tests_missing": 6
+        "exact": 6,
+        "tests_checked": 5,
+        "tests_missing": 0
       }
     },
     {
       "id": "REQ-03",
-      "code_evidence": 3,
+      "code_evidence": 5,
       "stats": {
-        "ambiguous": 1,
-        "not_found": 2,
-        "tests_checked": 3,
-        "tests_missing": 3
+        "exact": 5,
+        "tests_checked": 6,
+        "tests_missing": 0
       }
     },
     {
       "id": "REQ-04",
-      "code_evidence": 7,
+      "code_evidence": 11,
       "stats": {
-        "ambiguous": 2,
-        "not_found": 2,
-        "relocated": 1,
-        "tests_checked": 2,
-        "tests_missing": 2,
+        "exact": 9,
+        "tests_checked": 4,
+        "tests_missing": 0,
         "too_short": 2
       }
     },
     {
       "id": "REQ-05",
-      "code_evidence": 3,
+      "code_evidence": 5,
       "stats": {
-        "not_found": 2,
-        "relocated": 1,
-        "tests_checked": 4,
-        "tests_missing": 4
+        "exact": 5,
+        "tests_checked": 2,
+        "tests_missing": 0
       }
     },
     {
       "id": "REQ-06",
-      "code_evidence": 5,
+      "code_evidence": 10,
       "stats": {
-        "ambiguous": 1,
-        "not_found": 1,
-        "relocated": 3,
-        "tests_checked": 5,
-        "tests_missing": 5
+        "exact": 9,
+        "relocated": 1,
+        "tests_checked": 10,
+        "tests_missing": 0
       }
     },
     {
       "id": "REQ-07",
-      "code_evidence": 8,
+      "code_evidence": 9,
       "stats": {
-        "ambiguous": 1,
-        "not_found": 3,
-        "relocated": 4,
-        "tests_checked": 2,
-        "tests_missing": 2
+        "exact": 9,
+        "tests_checked": 7,
+        "tests_missing": 0
       }
     },
     {
       "id": "REQ-08",
-      "code_evidence": 6,
+      "code_evidence": 7,
       "stats": {
-        "not_found": 5,
-        "relocated": 1,
-        "tests_checked": 4,
-        "tests_missing": 4
+        "exact": 7,
+        "tests_checked": 9,
+        "tests_missing": 0
       }
     },
     {
       "id": "REQ-09",
-      "code_evidence": 7,
+      "code_evidence": 9,
       "stats": {
-        "ambiguous": 1,
-        "not_found": 6,
-        "tests_checked": 3,
-        "tests_missing": 3
+        "exact": 9,
+        "tests_checked": 9,
+        "tests_missing": 0
       }
     },
     {
       "id": "REQ-10",
-      "code_evidence": 4,
+      "code_evidence": 6,
       "stats": {
-        "not_found": 2,
-        "relocated": 2,
-        "tests_checked": 9,
-        "tests_missing": 9
+        "exact": 6,
+        "tests_checked": 14,
+        "tests_missing": 0
       }
     },
     {
       "id": "REQ-11",
-      "code_evidence": 5,
+      "code_evidence": 9,
       "stats": {
-        "not_found": 1,
-        "relocated": 4,
-        "tests_checked": 3,
-        "tests_missing": 3
+        "exact": 8,
+        "relocated": 1,
+        "tests_checked": 5,
+        "tests_missing": 0
       }
     },
     {
       "id": "REQ-12",
-      "code_evidence": 1,
+      "code_evidence": 2,
       "stats": {
-        "not_found": 1,
-        "tests_checked": 2,
-        "tests_missing": 2
+        "exact": 1,
+        "tests_checked": 6,
+        "tests_missing": 0,
+        "too_short": 1
       }
     }
   ]
