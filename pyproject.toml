@@ -1,0 +1,39 @@
+[project]
+name = "solotrace"
+version = "2.0.0"
+description = "Requirements-to-code traceability audits run by IBM Bob, proven by evidence verification and mutation testing."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+dependencies = [
+  "pypdf==6.19.0",
+  "fastapi==0.141.1",
+  "starlette==1.7.0",
+  "uvicorn[standard]==0.54.0",
+  "sqlalchemy==2.1.1",
+  "pydantic==2.13.5",
+  "email-validator==2.3.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest==9.1.1", "httpx==0.28.1"]
+
+[project.scripts]
+solotrace = "solotrace.__main__:main"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["solotrace*", "ledgerlite*"]
+
+[tool.setuptools.package-data]
+solotrace = ["schemas/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["ledgerlite/tests", "solotrace/tests"]
+filterwarnings = [
+  # third-party notice from Starlette's TestClient; not about this project's code
+  "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]

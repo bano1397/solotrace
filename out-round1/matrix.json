@@ -2,6 +2,7 @@
   "tool": "solotrace matrix",
   "version": "2.0.0",
   "audit": {
+    "project": "LedgerLite Payments API",
     "label": "Round 1 — after Bob's fixes",
     "description": "IBM Bob fixed the 8 gaps after a human compliance sign-off, then re-audited.",
     "auditor": "IBM Bob 2.0 — task 3 (SoloTrace Auditor mode, 12 parallel subagents)",

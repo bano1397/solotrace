@@ -29,8 +29,10 @@ from typing import Any
 
 from solotrace import __version__
 from solotrace.extract import load_requirements
+from solotrace.repo import SourceReader, repo_root
 from solotrace.schemas import validate_verdict
 from solotrace.testrun import lookup
+from solotrace.verify import verify_code_evidence, verify_test_evidence
 
 FINAL_STATUSES = ("proven", "covered", "weak", "unverified", "untested", "contradicts", "missing")
 
@@ -127,6 +129,14 @@ def build_matrix(out_dir: Path) -> dict[str, Any]:
     tests = _load_json(out_dir / "tests.json")
     prove = _load_json(out_dir / "prove.json")
     meta = _load_json(out_dir / "audit.json") or {}
+
+    # Evidence is always re-checked here against the audited code; "verified" flags that
+    # happen to be present in a verdict file are ignored.
+    commit = meta.get("code_commit") if meta.get("code_commit") and not meta.get("dirty") else None
+    reader = SourceReader(repo_root(), commit=commit)
+    for v in verdicts.values():
+        v["code_evidence"] = [verify_code_evidence(e, reader) for e in v["code_evidence"]]
+        v["test_evidence"] = [verify_test_evidence(t, reader) for t in v["test_evidence"]]
 
     rows = [build_row(r, verdicts.get(r["id"]), tests, prove) for r in requirements]
     total = len(rows)

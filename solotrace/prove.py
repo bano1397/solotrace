@@ -37,7 +37,7 @@ from pathlib import Path
 from typing import Any
 
 from solotrace import __version__
-from solotrace.repo import SourceReader, UnsafePathError, head_commit, is_dirty, repo_root
+from solotrace.repo import SourceReader, UnsafePathError, head_commit, is_dirty, project_files, repo_root
 
 _COPY_IGNORE = shutil.ignore_patterns(
     ".git", ".venv", "venv", "__pycache__", ".pytest_cache", "out", "out-*", "docs",
@@ -73,7 +73,8 @@ def load_mutations(mutations_dir: Path, reader: SourceReader) -> tuple[list[dict
                 errors.append(f"{where}: duplicate mutation id {m['id']!r}")
                 continue
             try:
-                text = reader.text(m["file"])
+                rel = reader.check(m["file"])
+                text = reader.text(rel)
             except UnsafePathError as exc:
                 errors.append(f"{where}: {exc}")
                 continue
@@ -89,7 +90,7 @@ def load_mutations(mutations_dir: Path, reader: SourceReader) -> tuple[list[dict
                 continue
             seen_ids.add(m["id"])
             line = text[: text.index(m["find"])].count("\n") + 1
-            mutations.append({**m, "requirement": requirement, "line": line})
+            mutations.append({**m, "file": rel, "requirement": requirement, "line": line})
     return mutations, errors
 
 
@@ -115,30 +116,55 @@ def _pytest(copy: Path, tests_path: str, timeout: int) -> tuple[str, str | None,
     return "invalid", None, duration
 
 
+_SKIP_PREFIXES = ("out/", "out-", "docs/", "bob_sessions/")
+
+
+def copy_project(root: Path, dest: Path) -> None:
+    """Copy the project's own files (tracked or untracked-but-not-ignored) — never venvs or secrets."""
+    files = project_files(root)
+    if files is None:
+        shutil.copytree(root, dest, ignore=_COPY_IGNORE)
+        return
+    for rel in sorted(files):
+        if rel.startswith(_SKIP_PREFIXES):
+            continue
+        src = root / rel
+        if not src.is_file():
+            continue
+        target = dest / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, target)
+
+
 def _worker(root: Path, tests_path: str, jobs: "queue.Queue", results: list, timeout: int, lock: threading.Lock) -> None:
     with tempfile.TemporaryDirectory(prefix="solotrace-prove-") as tmp:
         copy = Path(tmp) / "repo"
-        shutil.copytree(root, copy, ignore=_COPY_IGNORE)
+        copy_project(root, copy)
         while True:
             try:
                 mutation = jobs.get_nowait()
             except queue.Empty:
                 return
-            target = copy / mutation["file"]
-            original = target.read_text(encoding="utf-8")
-            target.write_text(original.replace(mutation["find"], mutation["replace"], 1), encoding="utf-8")
             try:
-                outcome, killed_by, duration = _pytest(copy, tests_path, timeout)
-            finally:
-                target.write_text(original, encoding="utf-8")
+                target = copy / mutation["file"]
+                original = target.read_text(encoding="utf-8")
+                target.write_text(original.replace(mutation["find"], mutation["replace"], 1), encoding="utf-8")
+                try:
+                    outcome, killed_by, duration = _pytest(copy, tests_path, timeout)
+                finally:
+                    target.write_text(original, encoding="utf-8")
+                record = {**mutation, "outcome": outcome, "killed_by": killed_by, "duration_s": round(duration, 2)}
+            except Exception as exc:  # never lose a mutation silently
+                record = {**mutation, "outcome": "invalid", "killed_by": None, "duration_s": 0.0,
+                          "error": f"{type(exc).__name__}: {exc}"}
             with lock:
-                results.append({**mutation, "outcome": outcome, "killed_by": killed_by, "duration_s": round(duration, 2)})
+                results.append(record)
 
 
 def baseline_passes(root: Path, tests_path: str, timeout: int) -> tuple[bool, float]:
     with tempfile.TemporaryDirectory(prefix="solotrace-prove-") as tmp:
         copy = Path(tmp) / "repo"
-        shutil.copytree(root, copy, ignore=_COPY_IGNORE)
+        copy_project(root, copy)
         outcome, _, duration = _pytest(copy, tests_path, timeout)
     return outcome == "survived", duration
 
@@ -158,6 +184,8 @@ def run_mutations(root: Path, mutations: list[dict[str, Any]], tests_path: str,
         t.start()
     for t in threads:
         t.join()
+    if len(results) != len(mutations):
+        raise RuntimeError(f"only {len(results)} of {len(mutations)} mutations produced a result")
     order = {m["id"]: i for i, m in enumerate(mutations)}
     return sorted(results, key=lambda r: order[r["id"]])
 
@@ -244,4 +272,5 @@ def cmd_prove(out: str, tests_path: str, workers: int = 4, timeout: int = 300) -
     t = summary["totals"]
     print(f"Mutations killed: {t['killed']}/{t['mutations']} · requirements proven: "
           f"{t['requirements_proven']}/{t['requirements']} · {report['duration_s']}s")
-    return 0 if t["survived"] == 0 and t["invalid"] == 0 else 2
+    # Exit 0 only if every requirement is proven (a requirement without mutations is not).
+    return 0 if t["requirements_proven"] == t["requirements"] else 2

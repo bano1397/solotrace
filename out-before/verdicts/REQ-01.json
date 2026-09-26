@@ -28,7 +28,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "    _check_pin(account, pin)"
+      "actual_snippet": null
     }
   ],
   "test_evidence": [

@@ -113,11 +113,21 @@ def _reflow_span(source: list[str], i: int, quoted: str) -> int:
     return 0
 
 
+def _is_code(line: str) -> bool:
+    """A line that contains code (not blank, not a comment-only line)."""
+    stripped = line.strip()
+    return bool(stripped) and not stripped.startswith("#")
+
+
 def match_at(source: list[str], start: int, quoted: list[str]) -> bool:
-    """Do the quoted lines match the source starting at index *start* (blank lines skipped)?"""
+    """Do the quoted lines match the source starting at index *start*?
+
+    Blank and comment-only source lines between quoted lines are skipped, because
+    ``snippet_lines`` drops them from the quote as well.
+    """
     i = start
     for q in quoted:
-        while i < len(source) and not source[i].strip():
+        while i < len(source) and not _is_code(source[i]):
             i += 1
         if i >= len(source):
             return False
@@ -136,7 +146,7 @@ def locate(source: list[str], cited_line: int, quoted: list[str]) -> int | None:
     cited = cited_line - 1
     if 0 <= cited < len(source) and match_at(source, cited, quoted):
         return cited
-    hits = [i for i in range(len(source)) if source[i].strip() and match_at(source, i, quoted)]
+    hits = [i for i in range(len(source)) if _is_code(source[i]) and match_at(source, i, quoted)]
     if not hits:
         return None
     return min(hits, key=lambda i: (abs(i - cited), i))
@@ -153,13 +163,13 @@ def verify_code_evidence(entry: dict[str, Any], reader: SourceReader) -> dict[st
         return {**result, "verified": False, "match": "missing_file", "actual_line": None, "actual_snippet": None}
 
     quoted = snippet_lines(entry["snippet"])
-    at_cited = source[entry["line"] - 1] if 0 < entry["line"] <= len(source) else None
+    # Unverified citations never get a copy of real file content (nothing leaks into outputs).
     if not is_meaningful(quoted):
-        return {**result, "verified": False, "match": "too_short", "actual_line": None, "actual_snippet": at_cited}
+        return {**result, "verified": False, "match": "too_short", "actual_line": None, "actual_snippet": None}
 
     index = locate(source, entry["line"], quoted)
     if index is None:
-        return {**result, "verified": False, "match": "not_found", "actual_line": None, "actual_snippet": at_cited}
+        return {**result, "verified": False, "match": "not_found", "actual_line": None, "actual_snippet": None}
     return {
         **result,
         "verified": True,

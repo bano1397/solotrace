@@ -1,6 +1,6 @@
 # SoloTrace audit report — LedgerLite Payments API
 
-*Generated 2026-09-26T00:04:24+00:00 by SoloTrace 2.0.0 · verdicts by INTERIM — round-1 verdicts, to be replaced by the final IBM Bob audit.*
+*Generated 2026-09-26T00:46:06+00:00 by SoloTrace 2.0.0 · verdicts by INTERIM — round-1 verdicts, to be replaced by the final IBM Bob audit.*
 
 > **Result:** 0 of 12 requirements are **proven**: implemented, cited with verified file:line evidence, covered by passing tests, and every deliberate sabotage of them was caught by the tests.
 
@@ -10,12 +10,12 @@
 |---|---|
 | Specification | `demo-data/LedgerLite-Requirements-v2.0.pdf` (version 2.0) |
 | Specification SHA-256 | `cf06e0a2c238e7806ae6692702a6d4a713816333b83e22a8b2e7ff14007f9250` |
-| Code audited | commit `f6a47e4e98e9293bd8707aed14b5f63d02cf527f` (uncommitted changes present) |
-| Test suite | `ledgerlite/tests`: 119 passed, 0 failed, 0 skipped |
+| Code audited | commit `cad816684d7f1f8af758e0962416aec1dc2c975f` (uncommitted changes present) |
+| Test suite | `ledgerlite/tests`: 135 passed, 0 failed, 0 skipped |
 | Evidence verification | 24/57 code citations verified against the audited commit |
-| Mutation testing | 43/43 mutations killed |
+| Mutation testing | 45/45 mutations killed |
 | Auditor | INTERIM — round-1 verdicts, to be replaced by the final IBM Bob audit |
-| Audited at | 2026-09-25T17:32:22+00:00 |
+| Audited at | 2026-09-26T00:45:31+00:00 |
 
 ## 2. Results across audit rounds
 
@@ -23,7 +23,7 @@
 |---|---|---|---|---|---|---|
 | Baseline (IBM Bob task 1) | `b52c5e4` | 4/12 | 27/36 | 28 passed / 0 failed | — | not tested |
 | Round 1 (after Bob's fixes, task 3) | `149d409` | 12/12 | 55/57 | 58 passed / 0 failed | 23/34 | 6/12 |
-| Round 2 (final) | `f6a47e4` | 12/12 | 24/57 | 119 passed / 0 failed | 43/43 | 0/12 |
+| Round 2 (final) | `cad8166` | 12/12 | 24/57 | 135 passed / 0 failed | 45/45 | 0/12 |
 
 *Proven* = the AI verdict is `covered`, at least one code citation is verified verbatim, at least one cited test exists and passed, and every mutation of the requirement was killed by the test suite.
 
@@ -35,9 +35,9 @@
 | REQ-02 | Deposit amount limits | Medium | none | ☑️ covered | ✅ proven | ⚠️ untested | 1/5 | 0/6 | 3/3 |
 | REQ-03 | Withdrawal floor — no negative balance | High | none | ☑️ covered | ✅ proven | ⚠️ untested | 1/3 | 0/3 | 2/2 |
 | REQ-04 | Atomic transfers | High | none | ⚠️ unverified | 🟠 weak | ⚠️ untested | 3/7 | 0/2 | 2/2 |
-| REQ-05 | Large-transfer pending approval threshold | High | changed | ❌ contradicts | 🟠 weak | ⚠️ untested | 1/3 | 0/4 | 6/6 |
+| REQ-05 | Large-transfer pending approval threshold | High | changed | ❌ contradicts | 🟠 weak | ⚠️ untested | 1/3 | 0/4 | 7/7 |
 | REQ-06 | Audit log for every money movement | High | none | ⚠️ untested | 🟠 weak | ⚠️ untested | 4/5 | 0/5 | 6/6 |
-| REQ-07 | Account lockout after failed PIN attempts | Medium | none | ⚠️ untested | ✅ proven | ⚠️ untested | 5/8 | 0/2 | 4/4 |
+| REQ-07 | Account lockout after failed PIN attempts | Medium | none | ⚠️ untested | ✅ proven | ⚠️ untested | 5/8 | 0/2 | 5/5 |
 | REQ-08 | Exact decimal arithmetic | Medium | none | ⚠️ untested | 🟠 weak | ⚠️ untested | 1/6 | 0/4 | 3/3 |
 | REQ-09 | Daily outgoing transfer cap | High | new | ⛔ missing | 🟠 weak | ⚠️ untested | 1/7 | 0/3 | 5/5 |
 | REQ-10 | Sanctions list blocking | High | new | ⛔ missing | ✅ proven | ⚠️ untested | 2/4 | 0/9 | 4/4 |
@@ -61,7 +61,7 @@ Auditor's reasoning: Unique email is enforced at account creation by querying fo
 Code evidence:
 - `ledgerlite/services.py:101` `if db.query(Account).filter(Account.email == email).first():` — ✘ not_found
 - `ledgerlite/services.py:86` `def _require_kyc(account: Account) -> None:` — ✘ not_found
-- `ledgerlite/services.py:106` `if account.kyc_status != "verified":` — ✔ verified
+- `ledgerlite/services.py:118` `if account.kyc_status != "verified":` — ✔ verified
 
 Tests:
 - `ledgerlite/tests/test_spec1_accounts_kyc.py` · `test_duplicate_email_rejected` — ✘ not found
@@ -91,7 +91,7 @@ Auditor's reasoning: Deposit validation enforces a lower bound (amount must be >
 
 Code evidence:
 - `ledgerlite/services.py:19` `_MAX_DEPOSIT = Decimal("50000.00")` — ✘ not_found
-- `ledgerlite/services.py:111` `if amount <= Decimal("0"):` — ✔ verified
+- `ledgerlite/services.py:123` `if amount <= Decimal("0"):` — ✔ verified
 - `ledgerlite/services.py:136` `raise HTTPException(status_code=400, detail="Deposit amount must be greater than 0")` — ✘ not_found
 - `ledgerlite/services.py:137` `if amount > _MAX_DEPOSIT:` — ✘ not_found
 - `ledgerlite/services.py:138` `raise HTTPException(status_code=400, detail=f"Deposit amount must not exceed {_MAX_DEPOSIT}")` — ✘ not_found
@@ -123,7 +123,7 @@ Auditor's reasoning: The withdrawal floor is enforced in services.py at lines 15
 
 Code evidence:
 - `ledgerlite/services.py:156` `if account.balance - amount < Decimal("0"):` — ✘ not_found
-- `ledgerlite/services.py:236` `raise HTTPException(status_code=400, detail="Insufficient funds")` — ✔ verified
+- `ledgerlite/services.py:261` `raise HTTPException(status_code=400, detail="Insufficient funds")` — ✔ verified
 - `ledgerlite/services.py:159` `account.balance -= amount` — ✘ not_found
 
 Tests:
@@ -150,9 +150,9 @@ Code evidence:
 - `ledgerlite/services.py:220` `try:` — ✘ too_short
 - `ledgerlite/services.py:221` `sender.balance -= amount` — ✘ not_found
 - `ledgerlite/services.py:223` `recipient.balance += amount` — ✘ not_found
-- `ledgerlite/services.py:239` `db.commit()` — ✔ verified
-- `ledgerlite/services.py:313` `except Exception:` — ✔ verified
-- `ledgerlite/services.py:235` `db.rollback()` — ✔ verified
+- `ledgerlite/services.py:247` `db.commit()` — ✔ verified
+- `ledgerlite/services.py:339` `except Exception:` — ✔ verified
+- `ledgerlite/services.py:260` `db.rollback()` — ✔ verified
 - `ledgerlite/services.py:245` `raise` — ✘ too_short
 
 Tests:
@@ -178,7 +178,7 @@ Auditor's reasoning: The v2.0 threshold of 5,000.00 is correctly implemented. Tr
 Code evidence:
 - `ledgerlite/services.py:20` `_LARGE_TRANSFER_THRESHOLD = Decimal("5000.00")` — ✘ not_found
 - `ledgerlite/services.py:217` `large = amount >= _LARGE_TRANSFER_THRESHOLD` — ✘ not_found
-- `ledgerlite/services.py:282` `status = "pending_approval" if large else "completed"` — ✔ verified
+- `ledgerlite/services.py:308` `status = "pending_approval" if large else "completed"` — ✔ verified
 
 Tests:
 - `ledgerlite/tests/test_spec5_large_transfer_threshold.py` · `test_transfer_below_threshold_completed` — ✘ not found
@@ -193,6 +193,7 @@ Mutations (deliberate sabotage — each must make a test fail):
 - REQ-05-M4: let the recipient approve the transfer — **killed** by `test_recipient_cannot_approve`
 - REQ-05-M5: approve without the approver's PIN — **killed** by `test_approver_needs_correct_pin`
 - REQ-05-M6: a transfer can be approved twice (recipient credited twice) — **killed** by `test_double_approval_rejected_and_credits_once`
+- REQ-05-M7: any customer can approve (approver role not required) — **killed** by `test_customer_without_approver_role_cannot_approve`
 
 ### REQ-06 — Audit log for every money movement
 
@@ -208,9 +209,9 @@ Auditor's reasoning: _write_audit() is called in deposit() (line 141), withdraw(
 
 Code evidence:
 - `ledgerlite/services.py:52` `def _write_audit(` — ✔ verified
-- `ledgerlite/services.py:222` `_write_audit(db, actor_id=account_id, action="deposit", amount=amount, account_id=account_id)` — ✔ verified
-- `ledgerlite/services.py:238` `_write_audit(db, actor_id=account_id, action="withdrawal", amount=amount, account_id=account_id)` — ✔ verified
-- `ledgerlite/services.py:258` `_write_audit(` — ✔ verified
+- `ledgerlite/services.py:246` `_write_audit(db, actor_id=account_id, action="deposit", amount=amount, account_id=account_id)` — ✔ verified
+- `ledgerlite/services.py:263` `_write_audit(db, actor_id=account_id, action="withdrawal", amount=amount, account_id=account_id)` — ✔ verified
+- `ledgerlite/services.py:284` `_write_audit(` — ✔ verified
 - `ledgerlite/main.py:95` `@app.get("/audit", response_model=list[AuditEntryResponse])` — ✘ not_found
 
 Tests:
@@ -242,13 +243,13 @@ Auditor's reasoning: _check_pin() increments failed_pin_attempts on each wrong P
 
 Code evidence:
 - `ledgerlite/services.py:21` `_MAX_FAILED_PINS = 5` — ✘ not_found
-- `ledgerlite/services.py:85` `if account.locked:` — ✔ verified
-- `ledgerlite/services.py:86` `raise HTTPException(status_code=423, detail="Account is locked due to too many failed PIN attempts")` — ✔ verified
+- `ledgerlite/services.py:97` `if account.locked:` — ✔ verified
+- `ledgerlite/services.py:98` `raise HTTPException(status_code=423, detail="Account is locked due to too many failed PIN attempts")` — ✔ verified
 - `ledgerlite/services.py:73` `if not verify_pin(pin, account.pin_hash):` — ✘ not_found
-- `ledgerlite/services.py:90` `account.failed_pin_attempts = 0  # a correct PIN resets the counter` — ✔ verified
+- `ledgerlite/services.py:102` `account.failed_pin_attempts = 0  # a correct PIN resets the counter` — ✔ verified
 - `ledgerlite/services.py:75` `if account.failed_pin_attempts >= _MAX_FAILED_PINS:` — ✘ not_found
-- `ledgerlite/services.py:97` `account.locked = True` — ✔ verified
-- `ledgerlite/services.py:90` `account.failed_pin_attempts = 0  # a correct PIN resets the counter` — ✔ verified
+- `ledgerlite/services.py:109` `account.locked = True` — ✔ verified
+- `ledgerlite/services.py:102` `account.failed_pin_attempts = 0  # a correct PIN resets the counter` — ✔ verified
 
 Tests:
 - `ledgerlite/tests/test_spec7_pin_lockout.py` · `test_fifth_wrong_pin_locks_account` — ✘ not found
@@ -259,6 +260,7 @@ Mutations (deliberate sabotage — each must make a test fail):
 - REQ-07-M2: do not persist the failure counter (the original lockout bug) — **killed** by `test_failed_attempts_are_persisted_between_requests`
 - REQ-07-M3: a correct PIN no longer resets the counter — **killed** by `test_correct_pin_resets_counter`
 - REQ-07-M4: locked accounts can still move money — **killed** by `test_fifth_wrong_pin_locks_account`
+- REQ-07-M5: any PIN is accepted — **killed** by `test_approver_needs_correct_pin`
 
 ### REQ-08 — Exact decimal arithmetic
 
@@ -277,7 +279,7 @@ Code evidence:
 - `ledgerlite/services.py:11` `from decimal import Decimal, InvalidOperation` — ✘ not_found
 - `ledgerlite/services.py:91` `def _to_decimal(value) -> Decimal:` — ✘ not_found
 - `ledgerlite/services.py:93` `return Decimal(str(value))` — ✘ not_found
-- `ledgerlite/schemas.py:117` `@field_serializer("balance")` — ✔ verified
+- `ledgerlite/schemas.py:122` `@field_serializer("balance")` — ✔ verified
 - `ledgerlite/schemas.py:66` `return f"{v:.2f}"` — ✘ not_found
 
 Tests:
@@ -309,7 +311,7 @@ Code evidence:
 - `ledgerlite/services.py:201` `daily_total_row = (` — ✘ not_found
 - `ledgerlite/services.py:210` `daily_total = Decimal(str(daily_total_row[0]))` — ✘ not_found
 - `ledgerlite/services.py:211` `if daily_total + amount > _DAILY_TRANSFER_CAP:` — ✘ not_found
-- `ledgerlite/services.py:219` `raise HTTPException(status_code=400, detail=f"Deposit amount must not exceed {MAX_DEPOSIT}")` — ✔ verified
+- `ledgerlite/services.py:186` `raise HTTPException(status_code=409, detail="Email already registered")` — ✔ verified
 
 Tests:
 - `ledgerlite/tests/test_spec9_daily_cap.py` · `test_daily_cap_exact_boundary_accepted` — ✘ not found
@@ -320,7 +322,7 @@ Mutations (deliberate sabotage — each must make a test fail):
 - REQ-09-M1: raise the daily cap by one cent — **killed** by `test_one_cent_over_the_cap_rejected`
 - REQ-09-M2: pending transfers no longer count toward the cap — **killed** by `test_one_cent_over_the_cap_rejected`
 - REQ-09-M3: count yesterday's transfers too — **killed** by `test_yesterdays_transfers_do_not_count`
-- REQ-09-M4: stop serialising transactions (concurrent transfers race the cap) — **killed** by `test_concurrent_withdrawals_cannot_overdraw`
+- REQ-09-M4: stop serialising transactions (concurrent transfers race the cap) — **killed** by `test_concurrent_duplicate_signups_give_one_account`
 - REQ-09-M5: drop the UTC-day window (cap becomes all-time) — **killed** by `test_yesterdays_transfers_do_not_count`
 
 ### REQ-10 — Sanctions list blocking
@@ -338,8 +340,8 @@ Auditor's reasoning: Transfers where the sender or recipient has a country_code 
 Code evidence:
 - `ledgerlite/services.py:23` `_SANCTIONED_COUNTRIES = {"KP", "IR", "SY", "CU"}` — ✘ not_found
 - `ledgerlite/services.py:180` `if sender.country_code in _SANCTIONED_COUNTRIES or recipient.country_code in _SANCTIONED_COUNTRIES:` — ✘ not_found
-- `ledgerlite/services.py:261` `action="sanctions_blocked",` — ✔ verified
-- `ledgerlite/services.py:268` `raise HTTPException(status_code=400, detail="sanctions")` — ✔ verified
+- `ledgerlite/services.py:287` `action="sanctions_blocked",` — ✔ verified
+- `ledgerlite/services.py:294` `raise HTTPException(status_code=400, detail="sanctions")` — ✔ verified
 
 Tests:
 - `ledgerlite/tests/test_spec10_sanctions.py` · `test_sanctioned_sender_blocked[KP]` — ✘ not found
@@ -371,11 +373,11 @@ Acceptance criteria:
 Auditor's reasoning: StatementAccountResponse overrides the account_number serializer to emit '******' + last-4 digits. The statement route uses StatementResponse (which embeds StatementAccountResponse) as its response_model, so every GET /accounts/{id}/statement response has a masked account number. The detail endpoint continues to use the unmasked AccountResponse. Three tests cover the requirement: pattern format, last-4 preservation, and detail-endpoint passthrough.
 
 Code evidence:
-- `ledgerlite/schemas.py:165` `class StatementAccountResponse(AccountResponse):` — ✔ verified
-- `ledgerlite/schemas.py:169` `def serialize_account_number(self, v: str) -> str:` — ✔ verified
+- `ledgerlite/schemas.py:170` `class StatementAccountResponse(AccountResponse):` — ✔ verified
+- `ledgerlite/schemas.py:174` `def serialize_account_number(self, v: str) -> str:` — ✔ verified
 - `ledgerlite/schemas.py:108` `return "******" + v[-4:]` — ✘ not_found
-- `ledgerlite/main.py:82` `@app.get("/accounts/{account_id}/statement", response_model=StatementResponse)` — ✔ verified
-- `ledgerlite/main.py:85` `return StatementResponse(account=account, transactions=transactions)` — ✔ verified
+- `ledgerlite/main.py:111` `@app.get("/accounts/{account_id}/statement", response_model=StatementResponse)` — ✔ verified
+- `ledgerlite/main.py:114` `return StatementResponse(account=account, transactions=transactions)` — ✔ verified
 
 Tests:
 - `ledgerlite/tests/test_spec11_statement_masking.py` · `test_statement_masks_account_number` — ✘ not found
@@ -431,5 +433,6 @@ Screenshots of each task's session summary are in `bob_sessions/`.
 
 - Verdicts are written by AI subagents (one per requirement). SoloTrace never trusts them blindly: every code citation is re-located in the audited commit (verbatim, re-wrapped or with a stripped comment), citations outside the repository are rejected, and cited tests must exist and pass.
 - Mutation testing shows the tests *guard* each requirement; it cannot prove the absence of every possible defect.
-- LedgerLite is a deliberately small sample API (SQLite, PIN-based access, static sanctions list); it is not a production banking system.
+- LedgerLite is a deliberately small sample API (SQLite, PIN-based access control, an admin token instead of identity management, a static sanctions list); it is an audit target, not a production banking system.
+- Held transfers have no reject/expiry path yet; funds stay reserved until approved.
 

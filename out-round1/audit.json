@@ -1,4 +1,5 @@
 {
+  "project": "LedgerLite Payments API",
   "label": "Round 1 \u2014 after Bob's fixes",
   "description": "IBM Bob fixed the 8 gaps after a human compliance sign-off, then re-audited.",
   "auditor": "IBM Bob 2.0 \u2014 task 3 (SoloTrace Auditor mode, 12 parallel subagents)",

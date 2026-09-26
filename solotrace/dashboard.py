@@ -141,6 +141,7 @@ def collect(before: str, round1: str, after: str, docs: Path, video_url: str | N
     audit = final.get("audit", {})
     return {
         "version": __version__,
+        "project": audit.get("project", "the audited project"),
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "repo_url": REPO_URL,
         "pages_url": PAGES_URL,
@@ -348,7 +349,8 @@ footer{border-top:1px solid var(--border);padding:28px 0 40px;color:var(--muted)
   <section class="hero"><div class="wrap" id="hero"></div></section>
   <section><div class="wrap">
     <h2>From "the AI says 100%" to "proven"</h2>
-    <p class="sub">Three audit rounds of the same payments API against the same spec. Green tests are not enough: SoloTrace only counts a requirement once its tests catch deliberate sabotage.</p>
+    <p class="sub">Three audit rounds of the same code base against the same spec. Green tests are not enough: SoloTrace only counts a requirement once its tests catch deliberate sabotage.</p>
+    <p class="muted small" id="journey-sub"></p>
     <div class="journey" id="journey"></div>
   </div></section>
   <section><div class="wrap"><div class="kpis" id="kpis"></div></div></section>
@@ -431,6 +433,8 @@ footer{border-top:1px solid var(--border);padding:28px 0 40px;color:var(--muted)
   // journey
   var bars = [];
   var journey = document.getElementById("journey");
+  var jsub = document.getElementById("journey-sub");
+  if (jsub) jsub.textContent = "Audited project: " + D.project + " · specification v" + (D.spec.version || "?") + ".";
   stages.forEach(function (s) {
     var card = h("div", {class: "stage" + (s.key === "final" ? " final" : "")});
     card.appendChild(h("div", {class: "kicker", text: (s.task ? "IBM Bob " + s.task.replace("task0", "task ") : "") + (s.commit ? " · commit " + s.commit : "")}));

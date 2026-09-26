@@ -10,7 +10,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "from sqlalchemy import func, select, update"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -18,7 +18,7 @@
       "snippet": "    if account.locked:",
       "verified": true,
       "match": "relocated",
-      "actual_line": 85,
+      "actual_line": 97,
       "actual_snippet": "    if account.locked:"
     },
     {
@@ -27,7 +27,7 @@
       "snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")",
       "verified": true,
       "match": "relocated",
-      "actual_line": 86,
+      "actual_line": 98,
       "actual_snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")"
     },
     {
@@ -37,7 +37,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "    return entry"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -45,7 +45,7 @@
       "snippet": "        account.failed_pin_attempts += 1",
       "verified": true,
       "match": "relocated",
-      "actual_line": 90,
+      "actual_line": 102,
       "actual_snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter"
     },
     {
@@ -55,7 +55,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": ""
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -63,7 +63,7 @@
       "snippet": "            account.locked = True",
       "verified": true,
       "match": "relocated",
-      "actual_line": 97,
+      "actual_line": 109,
       "actual_snippet": "        account.locked = True"
     },
     {
@@ -72,7 +72,7 @@
       "snippet": "    account.failed_pin_attempts = 0",
       "verified": true,
       "match": "relocated",
-      "actual_line": 90,
+      "actual_line": 102,
       "actual_snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter"
     }
   ],

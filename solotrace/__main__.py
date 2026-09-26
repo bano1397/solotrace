@@ -38,6 +38,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--bob-task", help="IBM Bob task that produced the verdicts")
     p.add_argument("--video-url", help="demo video link for the dashboard")
     p.add_argument("--strict", action="store_true", help="exit 2 unless every requirement is proven")
+    p.add_argument("--project", help="name of the audited project (recorded in audit.json)")
 
     p = sub.add_parser("verify", help="evidence verifier")
     p.add_argument("--out", default="out")
@@ -78,7 +79,7 @@ def main(argv: list[str] | None = None) -> int:
         from solotrace.pipeline import cmd_run
         return cmd_run(args.spec, args.out, args.before, args.round1, args.tests, prove=not args.no_prove,
                        workers=args.workers, auditor=args.auditor, bob_task=args.bob_task,
-                       video_url=args.video_url, strict=args.strict)
+                       video_url=args.video_url, strict=args.strict, project=args.project)
     if args.command == "verify":
         from solotrace.verify import cmd_verify
         return cmd_verify(args.out, args.source_commit, args.check)

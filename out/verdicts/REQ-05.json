@@ -10,7 +10,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "from fastapi import HTTPException"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -19,7 +19,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "    _require_positive(amount, \"Deposit\")"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -27,7 +27,7 @@
       "snippet": "    status = \"pending_approval\" if large else \"completed\"",
       "verified": true,
       "match": "relocated",
-      "actual_line": 282,
+      "actual_line": 308,
       "actual_snippet": "    status = \"pending_approval\" if large else \"completed\""
     }
   ],

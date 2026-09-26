@@ -10,7 +10,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "    balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=Decimal(\"0.00\"))"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -28,7 +28,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "def _to_decimal(value) -> Decimal:"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -46,7 +46,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "    @field_serializer(\"balance\")"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/schemas.py",
@@ -55,7 +55,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "    @field_serializer(\"amount\")"
+      "actual_snippet": null
     }
   ],
   "test_evidence": [

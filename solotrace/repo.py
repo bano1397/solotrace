@@ -14,6 +14,7 @@ import subprocess
 from pathlib import Path, PurePosixPath
 
 __all__ = [
+    "project_files",
     "UnsafePathError",
     "SourceReader",
     "repo_root",
@@ -71,9 +72,19 @@ def relative_display(path: Path, root: Path) -> str:
         return Path(path).name
 
 
+def project_files(root: Path) -> set[str] | None:
+    """Files that belong to the project: tracked or untracked-but-not-ignored (None outside git)."""
+    out = _git(root, "ls-files", "-z", "--cached", "--others", "--exclude-standard")
+    if out is None:
+        return None
+    return {name for name in out.split("\0") if name}
+
+
 def _normalise_relpath(relpath: str) -> str:
     if not isinstance(relpath, str) or not relpath.strip():
         raise UnsafePathError("empty path")
+    if "\0" in relpath:
+        raise UnsafePathError("NUL byte in path")
     candidate = relpath.strip().replace("\\", "/")
     pure = PurePosixPath(candidate)
     if pure.is_absolute() or candidate.startswith("~") or (len(candidate) > 1 and candidate[1] == ":"):
@@ -94,6 +105,8 @@ class SourceReader:
         self.root = Path(root).resolve()
         self.commit = commit
         self._cache: dict[str, list[str] | None] = {}
+        # In the working tree only project files may be read (never .git/, .env, venvs…).
+        self._allowed = project_files(self.root) if commit is None else None
 
     def check(self, relpath: str) -> str:
         """Validate *relpath*; return its normalised repo-relative form."""
@@ -104,6 +117,8 @@ class SourceReader:
                 resolved.relative_to(self.root)
             except ValueError as exc:  # e.g. a symlink pointing outside the repo
                 raise UnsafePathError(f"path escapes the repository: {relpath!r}") from exc
+            if self._allowed is not None and rel not in self._allowed and (self.root / rel).exists():
+                raise UnsafePathError(f"not a project file (ignored or git-internal): {relpath!r}")
         return rel
 
     def text(self, relpath: str) -> str | None:

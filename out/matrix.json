@@ -2,19 +2,25 @@
   "tool": "solotrace matrix",
   "version": "2.0.0",
   "audit": {
+    "project": "LedgerLite Payments API",
     "label": "Round 2 — final",
     "description": "Final audit of LedgerLite against spec v2.0.",
     "auditor": "INTERIM — round-1 verdicts, to be replaced by the final IBM Bob audit",
     "bob_task": null,
-    "audited_at": "2026-09-25T17:32:22+00:00",
-    "code_commit": "f6a47e4e98e9293bd8707aed14b5f63d02cf527f",
+    "audited_at": "2026-09-26T00:45:31+00:00",
+    "verdicts_sha256": "e917b534533da700005e6d7fc8f391813fe7b808638b528e897590221e488c27",
+    "code_commit": "cad816684d7f1f8af758e0962416aec1dc2c975f",
     "dirty": true,
     "spec": {
       "path": "demo-data/LedgerLite-Requirements-v2.0.pdf",
       "sha256": "cf06e0a2c238e7806ae6692702a6d4a713816333b83e22a8b2e7ff14007f9250",
       "version": "2.0",
       "requirements_in_spec": 12
-    }
+    },
+    "limitations": [
+      "LedgerLite is a deliberately small sample API (SQLite, PIN-based access control, an admin token instead of identity management, a static sanctions list); it is an audit target, not a production banking system.",
+      "Held transfers have no reject/expiry path yet; funds stay reserved until approved."
+    ]
   },
   "summary": {
     "total": 12,
@@ -39,14 +45,14 @@
     "citations_verified": 24,
     "citations_total": 57,
     "mutation_testing": true,
-    "mutations_killed": 43,
-    "mutations_total": 43,
+    "mutations_killed": 45,
+    "mutations_total": 45,
     "tests_run": {
-      "total": 119,
-      "passed": 119,
+      "total": 135,
+      "passed": 135,
       "failed": 0,
       "skipped": 0,
-      "commit": "f6a47e4e98e9293bd8707aed14b5f63d02cf527f"
+      "commit": "cad816684d7f1f8af758e0962416aec1dc2c975f"
     }
   },
   "rows": [
@@ -85,7 +91,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 106,
+          "line": 118,
           "claimed_line": 87,
           "snippet": "    if account.kyc_status != \"verified\":",
           "claimed_snippet": "    if account.kyc_status != \"verified\":",
@@ -166,7 +172,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 111,
+          "line": 123,
           "claimed_line": 135,
           "snippet": "    if amount <= Decimal(\"0\"):",
           "claimed_snippet": "    if amount <= Decimal(\"0\"):",
@@ -278,7 +284,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 236,
+          "line": 261,
           "claimed_line": 157,
           "snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")",
           "claimed_snippet": "        raise HTTPException(status_code=400, detail=\"Insufficient funds\")",
@@ -371,7 +377,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 239,
+          "line": 247,
           "claimed_line": 242,
           "snippet": "    db.commit()",
           "claimed_snippet": "        db.commit()",
@@ -380,7 +386,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 313,
+          "line": 339,
           "claimed_line": 243,
           "snippet": "    except Exception:",
           "claimed_snippet": "    except Exception:",
@@ -389,7 +395,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 235,
+          "line": 260,
           "claimed_line": 244,
           "snippet": "        db.rollback()",
           "claimed_snippet": "        db.rollback()",
@@ -468,7 +474,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 282,
+          "line": 308,
           "claimed_line": 218,
           "snippet": "    status = \"pending_approval\" if large else \"completed\"",
           "claimed_snippet": "    status = \"pending_approval\" if large else \"completed\"",
@@ -508,8 +514,8 @@
         "tests_passing": 0,
         "tests_cited": 4,
         "mutations": {
-          "tried": 6,
-          "killed": 6,
+          "tried": 7,
+          "killed": 7,
           "survived": 0,
           "proven": true
         }
@@ -541,7 +547,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 222,
+          "line": 246,
           "claimed_line": 141,
           "snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
           "claimed_snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
@@ -550,7 +556,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 238,
+          "line": 263,
           "claimed_line": 160,
           "snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)",
           "claimed_snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)",
@@ -559,7 +565,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 258,
+          "line": 284,
           "claimed_line": 234,
           "snippet": "        _write_audit(",
           "claimed_snippet": "        _write_audit(",
@@ -647,7 +653,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 85,
+          "line": 97,
           "claimed_line": 70,
           "snippet": "    if account.locked:",
           "claimed_snippet": "    if account.locked:",
@@ -656,7 +662,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 86,
+          "line": 98,
           "claimed_line": 71,
           "snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")",
           "claimed_snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")",
@@ -674,7 +680,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 90,
+          "line": 102,
           "claimed_line": 74,
           "snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter",
           "claimed_snippet": "        account.failed_pin_attempts += 1",
@@ -692,7 +698,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 97,
+          "line": 109,
           "claimed_line": 76,
           "snippet": "        account.locked = True",
           "claimed_snippet": "            account.locked = True",
@@ -701,7 +707,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 90,
+          "line": 102,
           "claimed_line": 83,
           "snippet": "            account.failed_pin_attempts = 0  # a correct PIN resets the counter",
           "claimed_snippet": "    account.failed_pin_attempts = 0",
@@ -729,8 +735,8 @@
         "tests_passing": 0,
         "tests_cited": 2,
         "mutations": {
-          "tried": 4,
-          "killed": 4,
+          "tried": 5,
+          "killed": 5,
           "survived": 0,
           "proven": true
         }
@@ -789,7 +795,7 @@
         },
         {
           "file": "ledgerlite/schemas.py",
-          "line": 117,
+          "line": 122,
           "claimed_line": 64,
           "snippet": "    @field_serializer(\"balance\")",
           "claimed_snippet": "    @field_serializer(\"balance\")",
@@ -915,9 +921,9 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 219,
+          "line": 186,
           "claimed_line": 212,
-          "snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {MAX_DEPOSIT}\")",
+          "snippet": "        raise HTTPException(status_code=409, detail=\"Email already registered\")",
           "claimed_snippet": "        raise HTTPException(",
           "verified": true,
           "match": "relocated"
@@ -991,7 +997,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 261,
+          "line": 287,
           "claimed_line": 184,
           "snippet": "            action=\"sanctions_blocked\",",
           "claimed_snippet": "            action=\"sanctions_blocked\",",
@@ -1000,7 +1006,7 @@
         },
         {
           "file": "ledgerlite/services.py",
-          "line": 268,
+          "line": 294,
           "claimed_line": 190,
           "snippet": "        raise HTTPException(status_code=400, detail=\"sanctions\")",
           "claimed_snippet": "        raise HTTPException(status_code=400, detail=\"sanctions\")",
@@ -1094,7 +1100,7 @@
       "evidence": [
         {
           "file": "ledgerlite/schemas.py",
-          "line": 165,
+          "line": 170,
           "claimed_line": 103,
           "snippet": "class StatementAccountResponse(AccountResponse):",
           "claimed_snippet": "class StatementAccountResponse(AccountResponse):",
@@ -1103,7 +1109,7 @@
         },
         {
           "file": "ledgerlite/schemas.py",
-          "line": 169,
+          "line": 174,
           "claimed_line": 107,
           "snippet": "    def serialize_account_number(self, v: str) -> str:",
           "claimed_snippet": "    def serialize_account_number(self, v: str) -> str:",
@@ -1121,7 +1127,7 @@
         },
         {
           "file": "ledgerlite/main.py",
-          "line": 82,
+          "line": 111,
           "claimed_line": 49,
           "snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)",
           "claimed_snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)",
@@ -1130,7 +1136,7 @@
         },
         {
           "file": "ledgerlite/main.py",
-          "line": 85,
+          "line": 114,
           "claimed_line": 60,
           "snippet": "    return StatementResponse(account=account, transactions=transactions)",
           "claimed_snippet": "    return StatementResponse(account=account, transactions=transactions)",

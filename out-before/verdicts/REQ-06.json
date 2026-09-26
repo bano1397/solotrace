@@ -10,7 +10,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "def _write_audit("
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",

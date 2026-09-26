@@ -198,3 +198,35 @@ def test_verification_report_has_no_absolute_paths(repo, reader, tmp_path):
     _write_verdict(out, "REQ-01", [cite(6, "if amount > MAX_DEPOSIT:")], [])
     verify_dir(out, reader)
     assert str(tmp_path) not in (out / "verification.json").read_text()
+
+
+def test_quote_spanning_a_comment_only_line_is_verified(tmp_path):
+    (tmp_path / "m.py").write_text("def f(x):\n    # guard against bad input\n    if x < 0:\n        raise ValueError(x)\n")
+    reader = SourceReader(tmp_path)
+    quote = "def f(x):\n    # guard against bad input\n    if x < 0:"
+    assert verify_code_evidence({"file": "m.py", "line": 1, "snippet": quote}, reader)["verified"]
+
+
+def test_unverified_citations_never_copy_file_content(reader):
+    for snippet in ("totally invented statement", "("):
+        r = verify_code_evidence(cite(6, snippet), reader)
+        assert r["verified"] is False and r["actual_snippet"] is None
+
+
+def test_nul_byte_in_path_is_refused(reader):
+    r = verify_code_evidence(cite(1, "MAX_DEPOSIT = Decimal", file="app/svc.py\x00.txt"), reader)
+    assert r["match"] == "invalid_path"
+
+
+def test_ignored_and_git_internal_files_are_refused(tmp_path):
+    import subprocess
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / ".gitignore").write_text(".env\n")
+    (tmp_path / ".env").write_text("API_TOKEN=super-secret-value\n")
+    (tmp_path / "code.py").write_text("API_LIMIT = 10  # real code\n")
+    reader = SourceReader(tmp_path)
+    ok = verify_code_evidence({"file": "code.py", "line": 1, "snippet": "API_LIMIT = 10"}, reader)
+    assert ok["verified"]
+    for path in (".env", ".git/config"):
+        r = verify_code_evidence({"file": path, "line": 1, "snippet": "API_TOKEN=super-secret-value"}, reader)
+        assert r["match"] == "invalid_path" and r["actual_snippet"] is None

@@ -10,7 +10,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "@app.post(\"/accounts/{account_id}/withdraw\", response_model=AccountResponse)"
+      "actual_snippet": null
     }
   ],
   "test_evidence": [

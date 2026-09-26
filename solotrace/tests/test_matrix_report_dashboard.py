@@ -98,3 +98,24 @@ def test_dashboard_embeds_data_without_breaking_out_of_the_script_tag():
     payload = html.split('<script id="data" type="application/json">', 1)[1].split("</script>", 1)[0]
     assert "</script>" not in payload and "<img" not in payload
     assert json.loads(payload)["title"] == evil  # the JSON still round-trips exactly
+
+
+def test_matrix_rechecks_evidence_instead_of_trusting_flags(tmp_path, monkeypatch):
+    """A verdict file that claims verified:true for invented code must not score."""
+    from solotrace.matrix import build_matrix
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "app.py").write_text("LIMIT = 50000\n")
+    out = tmp_path / "out"
+    (out / "verdicts").mkdir(parents=True)
+    req = {**REQ, "id": "REQ-01"}
+    (out / "requirements.json").write_text(json.dumps([req]))
+    fake = {"id": "REQ-01", "status": "covered", "reason": "trust me",
+            "code_evidence": [{"file": "app.py", "line": 1, "snippet": "enforce_limit(amount, LIMIT)", "verified": True,
+                               "match": "exact", "actual_line": 1, "actual_snippet": "enforce_limit(amount, LIMIT)"}],
+            "test_evidence": [{"file": "tests/test_app.py", "test_name": "test_limit", "exists": True}]}
+    (out / "verdicts" / "REQ-01.json").write_text(json.dumps(fake))
+    matrix = build_matrix(out)
+    row = matrix["rows"][0]
+    assert row["checks"]["citations_verified"] == 0
+    assert row["status"] == "unverified"

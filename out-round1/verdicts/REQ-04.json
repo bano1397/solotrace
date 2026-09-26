@@ -10,7 +10,7 @@
       "verified": false,
       "match": "too_short",
       "actual_line": null,
-      "actual_snippet": "    try:"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -64,7 +64,7 @@
       "verified": false,
       "match": "too_short",
       "actual_line": null,
-      "actual_snippet": "        raise"
+      "actual_snippet": null
     }
   ],
   "test_evidence": [

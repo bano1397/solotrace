@@ -118,7 +118,7 @@ def rebuild(key: str) -> None:
         finally:
             git("worktree", "remove", "--force", str(worktree))
 
-    meta = {k: cfg[k] for k in ("label", "description", "auditor", "bob_task", "audited_at")}
+    meta = {"project": "LedgerLite Payments API", **{k: cfg[k] for k in ("label", "description", "auditor", "bob_task", "audited_at")}}
     meta["code_commit"] = full_commit
     (stage_dir / "audit.json").write_text(json.dumps(meta, indent=2) + "\n")
     matrix = build_matrix(stage_dir)

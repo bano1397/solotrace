@@ -10,7 +10,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": ""
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -18,7 +18,7 @@
       "snippet": "    if amount <= Decimal(\"0\"):",
       "verified": true,
       "match": "relocated",
-      "actual_line": 111,
+      "actual_line": 123,
       "actual_snippet": "    if amount <= Decimal(\"0\"):"
     },
     {
@@ -28,7 +28,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "    day = moment.astimezone(datetime.timezone.utc).date()"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -37,7 +37,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "    return datetime.datetime(day.year, day.month, day.day, tzinfo=datetime.timezone.utc)"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -46,7 +46,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": ""
+      "actual_snippet": null
     }
   ],
   "test_evidence": [

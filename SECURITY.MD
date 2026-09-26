@@ -1,4 +1,23 @@
-# Security Guidelines for Watsonx Hackathon
+# Security
+
+## This project
+
+- **No credentials live in this repository.** `.gitignore` and `.bobignore` (from the official IBM
+  hackathon template) keep `.env` files, keys and tokens out of git and out of IBM Bob's context.
+- **SoloTrace treats AI output as untrusted input.** Paths cited in verdicts or mutation files are
+  confined to the repository's own files (absolute paths, `..`, symlinks leaving the repo, ignored
+  files and `.git/` are refused), unverified citations never copy file content into outputs, and the
+  dashboard embeds data as escaped JSON rendered with `textContent`.
+- **LedgerLite is a demo target**, not a bank: PINs are PBKDF2-HMAC-SHA256 (600,000 iterations,
+  constant-time comparison, 5-attempt lockout), compliance-officer endpoints need an admin token from
+  the `LEDGERLITE_ADMIN_TOKEN` environment variable, and all demo data is synthetic.
+- Report a vulnerability by opening a GitHub issue without exploit details, or contact the maintainer.
+
+---
+
+*The guidance below comes from the IBM hackathon repository template and is kept for reference.*
+
+## Hackathon template: credential guidelines
 
 ## 🔒 Credential Management
 

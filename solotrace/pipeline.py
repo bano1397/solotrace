@@ -45,17 +45,26 @@ def _spec_info(spec: Path, root: Path, requirement_ids: list[str]) -> dict[str, 
     }
 
 
-def _verdicts_written_at(out_dir: Path) -> str | None:
-    """When the auditor wrote the verdicts (newest verdict file), as ISO-8601 UTC."""
-    stamps = [p.stat().st_mtime for p in (out_dir / "verdicts").glob("REQ-*.json")]
-    if not stamps:
-        return None
-    return datetime.fromtimestamp(max(stamps), timezone.utc).isoformat(timespec="seconds")
+def verdict_claims_hash(out_dir: Path) -> str:
+    """Hash of what the auditor claimed (verifier annotations excluded)."""
+    import hashlib
+
+    digest = hashlib.sha256()
+    for path in sorted((out_dir / "verdicts").glob("REQ-*.json")):
+        v = json.loads(path.read_text(encoding="utf-8"))
+        claim = {
+            "id": v.get("id"), "status": v.get("status"), "reason": v.get("reason"),
+            "code": [(e.get("file"), e.get("line"), e.get("snippet")) for e in v.get("code_evidence", [])],
+            "tests": [(t.get("file"), t.get("test_name")) for t in v.get("test_evidence", [])],
+        }
+        digest.update(json.dumps(claim, sort_keys=True).encode())
+    return digest.hexdigest()
 
 
 def cmd_run(spec: str, out: str, before: str | None, round1: str | None, tests_path: str,
             prove: bool = True, workers: int = 4, auditor: str | None = None,
-            bob_task: str | None = None, video_url: str | None = None, strict: bool = False) -> int:
+            bob_task: str | None = None, video_url: str | None = None, strict: bool = False,
+            project: str | None = None) -> int:
     from solotrace.dashboard import cmd_dashboard
     from solotrace.report import cmd_report
 
@@ -77,15 +86,22 @@ def cmd_run(spec: str, out: str, before: str | None, round1: str | None, tests_p
         ids = [r["id"] for r in reqs]
         info = _spec_info(Path(spec), root, ids)
         previous = json.loads((out_dir / "audit.json").read_text()) if (out_dir / "audit.json").exists() else {}
+        claims = verdict_claims_hash(out_dir)
+        same_verdicts = previous.get("verdicts_sha256") == claims
         meta = {
+            "project": project or previous.get("project", "the audited project"),
             "label": previous.get("label", "Round 2 — final"),
-            "description": previous.get("description", "Final audit of LedgerLite against spec v2.0."),
+            "description": previous.get("description", "Final audit against the current specification."),
             "auditor": auditor or previous.get("auditor", "IBM Bob 2.0 — SoloTrace Auditor mode"),
             "bob_task": bob_task or previous.get("bob_task"),
-            "audited_at": _verdicts_written_at(out_dir),
+            # The audit time changes only when the auditor's verdicts change.
+            "audited_at": previous.get("audited_at") if same_verdicts and previous.get("audited_at")
+            else datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "verdicts_sha256": claims,
             "code_commit": head_commit(root),
             "dirty": is_dirty(root),
             "spec": info,
+            "limitations": previous.get("limitations", []),
         }
         (out_dir / "audit.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
         context["ids"] = ids
@@ -156,8 +172,12 @@ def cmd_run(spec: str, out: str, before: str | None, round1: str | None, tests_p
         return 1
 
     total = sum(t for _, t, _ in timings)
-    print(f"Done in {total:.1f}s.")
     s = context["summary"]
+    proven = f"{s['statuses']['proven']}/{s['total']} requirements proven" if s["mutation_testing"] else "no mutation testing"
+    print(f"SUMMARY: AI {s['ai']['covered']}/{s['total']} covered · citations {s['citations_verified']}/"
+          f"{s['citations_total']} verified · {proven} · {total:.1f}s")
+    if is_dirty(root):
+        print("NOTE: uncommitted changes were present; commit and re-run for a reproducible audit record.")
     if strict and s["statuses"]["proven"] != s["total"]:
         return 2
     return 0

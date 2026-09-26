@@ -10,7 +10,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "@app.get(\"/audit\", response_model=list[AuditEntryResponse])"
+      "actual_snippet": null
     }
   ],
   "test_evidence": [],

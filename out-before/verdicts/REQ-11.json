@@ -19,7 +19,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)"
+      "actual_snippet": null
     }
   ],
   "test_evidence": [],

@@ -10,7 +10,7 @@
       "verified": false,
       "match": "too_short",
       "actual_line": null,
-      "actual_snippet": ""
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -19,7 +19,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "    _credit(db, account_id, amount)"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -28,7 +28,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "    db.commit()"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -36,7 +36,7 @@
       "snippet": "        db.commit()",
       "verified": true,
       "match": "relocated",
-      "actual_line": 239,
+      "actual_line": 247,
       "actual_snippet": "    db.commit()"
     },
     {
@@ -45,7 +45,7 @@
       "snippet": "    except Exception:",
       "verified": true,
       "match": "relocated",
-      "actual_line": 313,
+      "actual_line": 339,
       "actual_snippet": "    except Exception:"
     },
     {
@@ -54,7 +54,7 @@
       "snippet": "        db.rollback()",
       "verified": true,
       "match": "relocated",
-      "actual_line": 235,
+      "actual_line": 260,
       "actual_snippet": "        db.rollback()"
     },
     {
@@ -64,7 +64,7 @@
       "verified": false,
       "match": "too_short",
       "actual_line": null,
-      "actual_snippet": "    _require_positive(amount, \"Transfer\")"
+      "actual_snippet": null
     }
   ],
   "test_evidence": [

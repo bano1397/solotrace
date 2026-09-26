@@ -18,7 +18,7 @@
       "snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)",
       "verified": true,
       "match": "relocated",
-      "actual_line": 222,
+      "actual_line": 246,
       "actual_snippet": "    _write_audit(db, actor_id=account_id, action=\"deposit\", amount=amount, account_id=account_id)"
     },
     {
@@ -27,7 +27,7 @@
       "snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)",
       "verified": true,
       "match": "relocated",
-      "actual_line": 238,
+      "actual_line": 263,
       "actual_snippet": "    _write_audit(db, actor_id=account_id, action=\"withdrawal\", amount=amount, account_id=account_id)"
     },
     {
@@ -36,7 +36,7 @@
       "snippet": "        _write_audit(",
       "verified": true,
       "match": "relocated",
-      "actual_line": 258,
+      "actual_line": 284,
       "actual_snippet": "        _write_audit("
     },
     {
@@ -46,7 +46,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "@app.post(\"/accounts/{account_id}/withdraw\", response_model=AccountResponse)"
+      "actual_snippet": null
     }
   ],
   "test_evidence": [

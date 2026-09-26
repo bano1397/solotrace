@@ -66,7 +66,7 @@ def build_report(before: dict | None, round1: dict | None, after: dict, extras: 
     lines: list[str] = []
     add = lines.append
 
-    add("# SoloTrace audit report — LedgerLite Payments API")
+    add(f"# SoloTrace audit report — {audit.get('project', 'audited project')}")
     add("")
     add(f"*Generated {now} by SoloTrace {__version__} · verdicts by {audit.get('auditor', 'the AI auditor')}.*")
     add("")
@@ -192,7 +192,8 @@ def build_report(before: dict | None, round1: dict | None, after: dict, extras: 
         "code citation is re-located in the audited commit (verbatim, re-wrapped or with a stripped comment), citations "
         "outside the repository are rejected, and cited tests must exist and pass.")
     add("- Mutation testing shows the tests *guard* each requirement; it cannot prove the absence of every possible defect.")
-    add("- LedgerLite is a deliberately small sample API (SQLite, PIN-based access, static sanctions list); it is not a production banking system.")
+    for note in audit.get("limitations", []):
+        add(f"- {note}")
     add("")
     return "\n".join(lines) + "\n"
 

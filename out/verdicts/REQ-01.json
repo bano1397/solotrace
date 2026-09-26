@@ -10,7 +10,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "        raise HTTPException(status_code=423, detail=\"Account locked after too many failed PIN attempts\")"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -19,7 +19,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "        raise HTTPException(status_code=423, detail=\"Account is locked due to too many failed PIN attempts\")"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -27,7 +27,7 @@
       "snippet": "    if account.kyc_status != \"verified\":",
       "verified": true,
       "match": "relocated",
-      "actual_line": 106,
+      "actual_line": 118,
       "actual_snippet": "    if account.kyc_status != \"verified\":"
     }
   ],

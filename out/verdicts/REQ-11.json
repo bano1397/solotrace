@@ -9,7 +9,7 @@
       "snippet": "class StatementAccountResponse(AccountResponse):",
       "verified": true,
       "match": "relocated",
-      "actual_line": 165,
+      "actual_line": 170,
       "actual_snippet": "class StatementAccountResponse(AccountResponse):"
     },
     {
@@ -18,7 +18,7 @@
       "snippet": "    def serialize_account_number(self, v: str) -> str:",
       "verified": true,
       "match": "relocated",
-      "actual_line": 169,
+      "actual_line": 174,
       "actual_snippet": "    def serialize_account_number(self, v: str) -> str:"
     },
     {
@@ -28,7 +28,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "    id: int"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/main.py",
@@ -36,7 +36,7 @@
       "snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)",
       "verified": true,
       "match": "relocated",
-      "actual_line": 82,
+      "actual_line": 111,
       "actual_snippet": "@app.get(\"/accounts/{account_id}/statement\", response_model=StatementResponse)"
     },
     {
@@ -45,7 +45,7 @@
       "snippet": "    return StatementResponse(account=account, transactions=transactions)",
       "verified": true,
       "match": "relocated",
-      "actual_line": 85,
+      "actual_line": 114,
       "actual_snippet": "    return StatementResponse(account=account, transactions=transactions)"
     }
   ],

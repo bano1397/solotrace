@@ -10,7 +10,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "from sqlalchemy.exc import IntegrityError"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -19,7 +19,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "    transactions = db.scalars("
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -28,7 +28,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "        select(Transfer)"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -37,7 +37,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "        .order_by(Transfer.created_at.desc(), Transfer.id.desc())"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -46,7 +46,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "# ── money movement ────────────────────────────────────────────────────────────"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -55,7 +55,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": ""
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -63,8 +63,8 @@
       "snippet": "        raise HTTPException(",
       "verified": true,
       "match": "relocated",
-      "actual_line": 219,
-      "actual_snippet": "        raise HTTPException(status_code=400, detail=f\"Deposit amount must not exceed {MAX_DEPOSIT}\")"
+      "actual_line": 186,
+      "actual_snippet": "        raise HTTPException(status_code=409, detail=\"Email already registered\")"
     }
   ],
   "test_evidence": [

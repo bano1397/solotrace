@@ -10,7 +10,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "            return None"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -19,7 +19,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "* Failed PIN attempts are committed *before* the error is raised, so the lockout"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -28,7 +28,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": "            db.commit()"
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/services.py",
@@ -37,7 +37,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": ""
+      "actual_snippet": null
     },
     {
       "file": "ledgerlite/schemas.py",
@@ -45,7 +45,7 @@
       "snippet": "    @field_serializer(\"balance\")",
       "verified": true,
       "match": "relocated",
-      "actual_line": 117,
+      "actual_line": 122,
       "actual_snippet": "    @field_serializer(\"balance\")"
     },
     {
@@ -55,7 +55,7 @@
       "verified": false,
       "match": "not_found",
       "actual_line": null,
-      "actual_snippet": ""
+      "actual_snippet": null
     }
   ],
   "test_evidence": [

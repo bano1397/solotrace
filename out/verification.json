@@ -1,10 +1,10 @@
 {
   "tool": "solotrace verify",
   "version": "2.0.0",
-  "generated_at": "2026-09-26T00:04:08+00:00",
+  "generated_at": "2026-09-26T00:45:34+00:00",
   "source": {
     "kind": "working-tree",
-    "commit": "f6a47e4e98e9293bd8707aed14b5f63d02cf527f",
+    "commit": "cad816684d7f1f8af758e0962416aec1dc2c975f",
     "dirty": true
   },
   "totals": {
